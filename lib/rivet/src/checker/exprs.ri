@@ -605,7 +605,7 @@ extend Checker {
                     indexable_pointer = opt_ptr.is_indexable;
                 }
                 mut right := unary.right.clean_paren();
-                if right is .Index(index) {
+                if right is .Index(&mut index) {
                     if index.left_type is .Pointer && !expected_pointer {
                         report.error("cannot take the address of a pointer indexing", unary.pos);
                     }
@@ -660,7 +660,7 @@ extend Checker {
         if left_sym := left_type.symbol() {
             match binary.op {
                 .Plus, .Minus, .Mul, .Div, .Mod, .Xor, .Amp, .Pipe -> {
-                    mut promoted_type := ast.Type.Void;
+                    mut promoted_type := +mut ast.Type.Void;
                     if left_sym.info.is_compound() {
                         if op_method := left_sym.find_method(binary.op.to_string()) {
                             promoted_type = op_method.ret_type;
@@ -770,7 +770,7 @@ extend Checker {
                                             "cannot take the address of a boxed value", binary.var_obj.pos
                                         );
                                     }
-                                    ast.Type.Pointer(variant.type, binary.var_obj.is_mut)
+                                    +mut ast.Type.Pointer(variant.type, binary.var_obj.is_mut)
                                 } else {
                                     variant.type
                                 };
@@ -872,7 +872,7 @@ extend Checker {
 
     func check_if(+mut self, if_expr: &mut ast.Expr.If) -> +mut ast.Type {
         if_expr.expected_type = self.expected_type;
-        for i, mut branch in if_expr.branches {
+        for i, &mut branch in if_expr.branches {
             if !branch.is_else {
                 bcond_t := self.check_expr(branch.cond);
                 if branch.cond !is .Guard && bcond_t != self.env.bool_t {
@@ -930,7 +930,7 @@ extend Checker {
                 expr_type := self.check_expr(return_expr.expr);
                 self.expected_type = old_expected_type;
                 self.check_types(expr_type, self.cur_func.ret_type) catch |err| {
-                    mut err_b := report.error_builder(
+                    err_b := report.error_builder(
                         err.to_string(), return_expr.expr.position()
                     );
                     err_b.add_note(
@@ -968,7 +968,7 @@ extend Checker {
             if !(expr_sym == self.env.throwable_sym
                 || expr_sym.implement_trait(self.env.throwable_sym)
             ) {
-                mut err_b := report.error_builder(
+                err_b := report.error_builder(
                     "using an invalid value as an error to throw",
                     throw_expr.expr.position()
                 );
@@ -982,7 +982,7 @@ extend Checker {
                 err_b.emit();
             }
         } else {
-            mut err_b := report.error_builder(
+            err_b := report.error_builder(
                 "{} `{}` cannot throws errors".fmt(
                     self.cur_func.kind(), self.cur_func.name
                 ), throw_expr.expr.position()

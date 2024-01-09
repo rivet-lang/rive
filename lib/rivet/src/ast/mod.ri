@@ -30,7 +30,7 @@ pub struct ObjectData {
     pub mut type: +mut Type;
     pub level: VarLevel;
     pub pos: token.Pos;
-    pub mut sym: +Var;
+    pub mut sym: +mut Var;
     pub is_extern: bool;
     pub is_global: bool;
 }

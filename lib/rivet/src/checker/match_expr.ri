@@ -62,7 +62,7 @@ extend Checker {
 
         mut branch_exprs := maps.MapStringUint();
         match_expr.expected_type = self.expected_type;
-        for ib, mut branch in match_expr.branches {
+        for ib, &mut branch in match_expr.branches {
             if !branch.is_else {
                 self.expected_type = expr_type;
                 for i, mut pattern in branch.patterns {
