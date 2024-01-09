@@ -6,7 +6,7 @@ import ../{ ast, token, report };
 
 extend Checker {
     func check_expr_is_mut(+self, expr: +mut ast.Expr, from_assign: bool := false) {
-        match expr {
+        match expr.+ {
             .Paren(paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(self_lit) -> self_lit.obj.is_changed = true,
             .Ident(ident) -> if ident.is_comptime {
@@ -116,12 +116,12 @@ extend Checker {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos
             ),
-            ast.Var(var_info) -> {
+            ast.Var(mut var_info) -> {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {
                     err := if var_info.level == .Argument {
-                        mut err_b := report.error_builder(
+                        err_b := report.error_builder(
                             "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
                         );
                         err_b.add_help(
@@ -129,7 +129,7 @@ extend Checker {
                         );
                         err_b
                     } else {
-                        mut err_b := report.error_builder(
+                        err_b := report.error_builder(
                             "cannot use variable `{}` as mutable value".fmt(sym.name), pos
                         );
                         err_b.add_help(

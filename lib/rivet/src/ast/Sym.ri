@@ -68,7 +68,7 @@ pub trait Sym {
     is_root: bool;
     mut is_generated: bool;
 
-    func module(&mut self) -> ?+mut Module {
+    func module(+mut self) -> ?+mut Module {
         mut p := self;
         while {
             if p is Module(mut mod) {

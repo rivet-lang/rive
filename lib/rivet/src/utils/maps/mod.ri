@@ -13,7 +13,7 @@ pub struct MapStringUint {
     mut pairs: []mut StringUint;
 
     pub func set(mut self, key: string, value: uint) {
-        for pair in self.pairs {
+        for &mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -24,7 +24,7 @@ pub struct MapStringUint {
     }
 
     pub func get(&self, key: string) -> ?uint {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -33,7 +33,7 @@ pub struct MapStringUint {
     }
 
     pub func delete(mut self, key: string) {
-        for i, pair in self.pairs {
+        for i, &pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
                 break;
@@ -81,7 +81,7 @@ pub struct MapStringArrayOfStrings {
     }
 
     pub func set(mut self, key: string, value: []string) {
-        for pair in self.pairs {
+        for &mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -92,7 +92,7 @@ pub struct MapStringArrayOfStrings {
     }
 
     pub func get(&self, key: string) -> ?[]string {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -101,7 +101,7 @@ pub struct MapStringArrayOfStrings {
     }
 
     pub func delete(mut self, key: string) {
-        for i, pair in self.pairs {
+        for i, &pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
                 break;
@@ -129,7 +129,7 @@ pub struct MapStringBool {
     mut pairs: []mut StringBool;
 
     pub func set(mut self, key: string, value: bool) {
-        for pair in self.pairs {
+        for &mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
                 return; // found
@@ -140,7 +140,7 @@ pub struct MapStringBool {
     }
 
     pub func get(&self, key: string) -> ?bool {
-        for pair in self.pairs {
+        for &pair in self.pairs {
             if pair.key == key {
                 return pair.value;
             }
@@ -149,7 +149,7 @@ pub struct MapStringBool {
     }
 
     pub func delete(mut self, key: string) {
-        for i, pair in self.pairs {
+        for i, &pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
                 break;

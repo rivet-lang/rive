@@ -145,7 +145,7 @@ extend Checker {
             }
         }
 
-        match expected_sym.info {
+        match expected_sym.info.+ {
             .Trait(trait_info) -> {
                 got_sym2 := self.env.comptime_number_to_type(got).symbol()?;
                 if got_sym2 in trait_info.implements {

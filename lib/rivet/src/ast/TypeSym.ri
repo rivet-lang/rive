@@ -91,13 +91,13 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func find_func(+self, name: string) -> ?+Func {
-        return if sym := self.scope.find(name); sym is Func(func_) {
+    pub func find_func(+self, name: string) -> ?+mut Func {
+        return if sym := self.scope.find(name); sym is Func(mut func_) {
             if self.info !is .Trait && !func_.has_body {
                 return none;
             }
             func_
-        } else if sym := self.find_in_base(name); sym is Func(func_) {
+        } else if sym := self.find_in_base(name); sym is Func(mut func_) {
             if self.info !is .Trait && !func_.has_body {
                 return none;
             }
@@ -108,7 +108,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func find_method(+self, name: string) -> ?+Func {
+    pub func find_method(+self, name: string) -> ?+mut Func {
         return if func_ := self.find_func(name); func_.is_method {
             func_
         } else {
