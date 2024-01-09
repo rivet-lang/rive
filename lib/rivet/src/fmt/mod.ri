@@ -37,7 +37,7 @@ pub struct Formatter {
     }
 
     #[inline]
-    func write_fmt(mut self, s: string, args: ...traits.Stringable) {
+    func write_fmt(mut self, s: string, args: ...+traits.Stringable) {
         self.write(s.fmt(args));
     }
 
@@ -51,7 +51,7 @@ pub struct Formatter {
     }
 
     #[inline]
-    func writeln_fmt(mut self, s: string, args: ...traits.Stringable) {
+    func writeln_fmt(mut self, s: string, args: ...+traits.Stringable) {
         self.writeln(s.fmt(args));
     }
 

@@ -17,7 +17,7 @@ var return_trace := ReturnTrace();
 pub trait Throwable < Stringable { }
 
 #[inline]
-func uncatched_error(err: Throwable) {
+func uncatched_error(err: +Throwable) {
     console_ewriteln("uncatched error: {}", err.to_string());
     return_trace.print();
     process_exit(102);

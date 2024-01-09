@@ -67,12 +67,12 @@ pub struct ReportBuilder {
     mut attributes: []Attribute;
 
     #[inline]
-    pub func add_note(mut self, msg: string, args: ...traits.Stringable) {
+    pub func add_note(mut self, msg: string, args: ...+traits.Stringable) {
         self.attributes.push(Attribute(.Note, msg.fmt(args)));
     }
 
     #[inline]
-    pub func add_help(mut self, msg: string, args: ...traits.Stringable) {
+    pub func add_help(mut self, msg: string, args: ...+traits.Stringable) {
         self.attributes.push(Attribute(.Help, msg.fmt(args)));
     }
 

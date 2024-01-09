@@ -39,6 +39,6 @@ pub struct GenericError < Throwable {
 }
 
 // TODO: Remove this function and use a more specific type.
-pub func error(msg: string, args: ...traits.Stringable) -> Throwable {
+pub func error(msg: string, args: ...+traits.Stringable) -> +Throwable {
     return +GenericError(msg.fmt(args));
 }

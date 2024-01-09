@@ -27,15 +27,15 @@ struct SomeStream < ReaderWriter {
     }
 }
 
-func writer(w: Writer) -> bool {
+func writer(w: +Writer) -> bool {
     return w.write('A');
 }
 
-func reader(r: Reader) -> uint8 {
+func reader(r: +Reader) -> uint8 {
     return r.read();
 }
 
-func reader_writer(rw: ReaderWriter) -> uint8 {
+func reader_writer(rw: +ReaderWriter) -> uint8 {
     return rw.write_and_read('A');
 }
 
@@ -49,21 +49,21 @@ test "traits: inheritance" {
 trait Eq {
     x: string;
 
-    func equal(+self, x: Self) -> bool;
+    func equal(+self, x: +Self) -> bool;
 
-    func nequal(+self, x: Self) -> bool {
+    func nequal(+self, x: +Self) -> bool {
         return !self.equal(x);
     }
 }
 
 #[boxed]
 struct Poketrait < Eq {
-    pub func equal(+self, x: Eq) -> bool {
+    pub func equal(+self, x: +Eq) -> bool {
         return self.x == x.x;
     }
 }
 
-func ship(a: Eq, b: Eq) -> bool {
+func ship(a: +Eq, b: +Eq) -> bool {
     return !a.nequal(b);
 }
 
@@ -79,7 +79,7 @@ struct IntegerValue {
 }
 
 struct IntegerStruct {
-    i: Integer;
+    i: +Integer;
 }
 
 test "traits with `default_value` attribute" {

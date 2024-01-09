@@ -172,7 +172,7 @@ pub struct string < Stringable, Hashable, Throwable {
     /// If the replacement positions exceed the number of passed arguments, a panic
     /// occurs.
     #[inline]
-    pub func fmt(&self, args: ...Stringable) -> Self {
+    pub func fmt(&self, args: ...+Stringable) -> Self {
         return if args.len == 0 {
             self.*
         } else {

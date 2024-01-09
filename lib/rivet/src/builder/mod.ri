@@ -368,7 +368,7 @@ pub struct Builder {
         return import_decl.info.full_name;
     }
 
-    func vlog(&self, msg: string, args: ...traits.Stringable) {
+    func vlog(&self, msg: string, args: ...+traits.Stringable) {
         if self.env.prefs.is_verbose {
             console.writeln(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
         }

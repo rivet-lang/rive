@@ -7,7 +7,7 @@ pub struct StringFormatter {
     mut i: uint;
     mut res: StringBuilder;
 
-    func fmt(&mut self, args: ...Stringable) -> string {
+    func fmt(&mut self, args: ...+Stringable) -> string {
         self.res = StringBuilder.new(self.buf.len);
         mut args_idx: uint := 0;
         while self.i < self.buf.len : self.i += 1 {
