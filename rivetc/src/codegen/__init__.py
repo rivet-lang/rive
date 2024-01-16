@@ -2947,7 +2947,7 @@ class Codegen:
                 typ_ = typ_.ptr(True)
             return typ_
         res = ir.Type(cg_utils.mangle_symbol(typ_sym))
-        if (isinstance(typ, type.Type) and typ.is_boxed) or typ_sym.kind == TypeKind.Trait:
+        if isinstance(typ, type.Type) and typ.is_boxed:
             return res.ptr(True)
         return res
 

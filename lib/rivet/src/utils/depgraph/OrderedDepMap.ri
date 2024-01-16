@@ -11,10 +11,6 @@ pub struct OrderedDepMap {
     mut keys: []string;
     mut data: maps.MapStringArrayOfStrings; // TODO: replace with map type
 
-    pub func new() -> +Self {
-        return +mut Self();
-    }
-
     pub func set(+mut self, name: string, deps: []string) {
         if !self.data.contains(name) {
             self.keys.push(name);

@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-// TODO: remove file, use std::collections::Map<K, V> instead
+// TODO: remove file
 
 struct StringUint {
     pub key: string;
