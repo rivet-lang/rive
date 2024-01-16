@@ -2061,15 +2061,21 @@ class Checker:
                         expr.pos
                     )
                 return
-            if isinstance(expr.left_typ, type.Ptr):
-                if not expr.left_typ.is_mut:
+            expr_typ = expr.typ
+            if not (
+                (isinstance(expr_typ, type.Type) and expr_typ.is_boxed)
+                or isinstance(expr_typ, type.Ptr)
+            ):
+                expr_typ = expr.left_typ
+            if isinstance(expr_typ, type.Ptr):
+                if not expr_typ.is_mut:
                     report.error(
                         "cannot use a immutable pointer as mutable value",
                         expr.pos
                     )
                 return
-            if isinstance(expr.left_typ, type.Type) and expr.left_typ.is_boxed:
-                if not expr.left_typ.is_mut:
+            if isinstance(expr_typ, type.Type) and expr_typ.is_boxed:
+                if not expr_typ.is_mut:
                     report.error(
                         "cannot use a immutable boxed value as mutable value",
                         expr.pos
@@ -2099,16 +2105,22 @@ class Checker:
         elif isinstance(expr, ast.Block) and expr.is_expr:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):
-            if isinstance(expr.left.typ, type.Ptr):
+            expr_typ = expr.typ
+            if not (
+                (isinstance(expr_typ, type.Type) and expr_typ.is_boxed)
+                or isinstance(expr_typ, type.Ptr)
+            ):
+                expr_typ = expr.left_typ
+            if isinstance(expr_typ, type.Ptr):
                 if not expr.left.typ.is_mut:
                     report.error(
                         "cannot modify elements of an immutable pointer",
                         expr.pos
                     )
             elif isinstance(
-                expr.left.typ, type.Type
-            ) and expr.left.typ.is_boxed:
-                if not expr.left.typ.is_mut:
+                expr_typ, type.Type
+            ) and expr_typ.is_boxed:
+                if not expr_typ.is_mut:
                     report.error(
                         "cannot use a immutable boxed value as mutable value",
                         expr.pos

@@ -18,7 +18,7 @@ extend Checker {
         +self, got: +mut ast.Type, expected: +mut ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
-        if expected_sym := expected.symbol(); expected_sym.info is .Trait(trait_info)
+        if expected_sym := expected.symbol(); expected_sym.info is .Trait(&mut trait_info)
             && expected != got {
             got_t := self.env.comptime_number_to_type(got);
             if got_t.symbol()? in trait_info.implements {
@@ -146,33 +146,33 @@ extend Checker {
         }
 
         match expected_sym.info.+ {
-            .Trait(trait_info) -> {
+            .Trait(&mut trait_info) -> {
                 got_sym2 := self.env.comptime_number_to_type(got).symbol()?;
                 if got_sym2 in trait_info.implements {
                     trait_info.mark_has_objects();
                     return true;
                 }
             },
-            .Slice(slice_lhs) if got_sym.info is .Slice(slice_rhs) -> {
+            .Slice(&slice_lhs) if got_sym.info is .Slice(&slice_rhs) -> {
                 if slice_lhs.is_mut && !slice_rhs.is_mut {
                     return false;
                 }
                 return slice_lhs.elem_type == slice_rhs.elem_type;
             },
-            .Array(array_info) if got_sym.info is .Array(array_info2) -> {
+            .Array(&array_info) if got_sym.info is .Array(&array_info2) -> {
                 if array_info.is_mut && !array_info2.is_mut {
                     return false;
                 }
                 return array_info.elem_type == array_info2.elem_type
                     && array_info.size == array_info2.size;
             },
-            .DynArray(dyn_array_lhs) if got_sym.info is .DynArray(dyn_array_rhs) -> {
+            .DynArray(&dyn_array_lhs) if got_sym.info is .DynArray(&dyn_array_rhs) -> {
                 if dyn_array_lhs.is_mut && !dyn_array_rhs.is_mut {
                     return false;
                 }
                 return dyn_array_lhs.elem_type == dyn_array_rhs.elem_type;
             },
-            .Tuple(tuple_lhs) if got_sym.info is .Tuple(tuple_rhs) -> {
+            .Tuple(&tuple_lhs) if got_sym.info is .Tuple(&tuple_rhs) -> {
                 if tuple_lhs.types.len != tuple_rhs.types.len {
                     return false;
                 }

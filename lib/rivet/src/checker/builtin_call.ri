@@ -132,7 +132,7 @@ extend Checker {
                         return;
                     }
                 },
-                .Enum(enum_info) -> {
+                .Enum(&enum_info) -> {
                     if enum_info.is_tagged && enum_info.get_variant_by_type(to_type) == none {
                         report.error(
                             "cannot cast type `{}` to `{}`".fmt(from_type, to_type),
@@ -160,7 +160,7 @@ extend Checker {
                         }
                     }
                     match to_ts.info.+ {
-                        .Enum(enum_info2) if !enum_info2.is_tagged -> {
+                        .Enum(&enum_info2) if !enum_info2.is_tagged -> {
                             if self.env.is_int(to_type) && !self.inside_unsafe() {
                                 report.warn(
                                     "casting numbers to enums should be done inside `unsafe` blocks",
