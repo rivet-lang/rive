@@ -164,7 +164,7 @@ pub struct Checker {
                         value_type := tuple_info.types[i];
                         if vd.has_type {
                             self.check_types(value_type, vd.type) catch |err| {
-                                mut errb := report.error_builder(
+                                errb := report.error_builder(
                                     err.to_string(), right.position()
                                 );
                                 errb.add_note("in element {} of tuple value", i);

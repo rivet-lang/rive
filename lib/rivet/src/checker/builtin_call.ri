@@ -35,7 +35,7 @@ extend Checker {
                     err.emit();
                 }
             } else {
-                for i, mut arg in builtin_call.args {
+                for i, &mut arg in builtin_call.args {
                     arg_info := b_func.args[i];
                     arg.type = self.check_expr(arg.expr);
                     if arg_info.is_mut {
@@ -43,7 +43,7 @@ extend Checker {
                     }
                     if !arg_info.is_any {
                         self.check_types(arg.type, arg_info.type) catch |err| {
-                            mut err2 := report.error_builder(err.to_string(), arg.pos);
+                            err2 := report.error_builder(err.to_string(), arg.pos);
                             err2.add_note(
                                 "in argument `{}` of builtin function `{}`", arg_info.name,
                                 b_func.name
@@ -60,7 +60,7 @@ extend Checker {
                         arg1 := builtin_call.args[at.arg1_idx];
                         arg2 := builtin_call.args[at.arg2_idx];
                         if arg2.type != arg1.type {
-                            mut err2 := report.error_builder(
+                            err2 := report.error_builder(
                                 "expected type `{}`, found `{}`".fmt(arg2.type, arg1.type),
                                 arg1.pos
                             );
@@ -99,12 +99,12 @@ extend Checker {
             }
             return_type
         } else {
-            .Void
+            +mut .Void
         };
         return builtin_call.type;
     }
 
-    func check_builtin_as(+mut self, builtin_call: +mut ast.Expr.BuiltinCall) {
+    func check_builtin_as(+mut self, builtin_call: &mut ast.Expr.BuiltinCall) {
         to_type := builtin_call.args[0].type;
         from_type := builtin_call.args[1].type;
         if to_type == from_type {
@@ -125,8 +125,8 @@ extend Checker {
                 );
             }
         } else if from_ts := from_type.symbol() {
-            match from_ts.info {
-                .Trait(trait_info) -> if to_ts := to_type.symbol() {
+            match from_ts.info.+ {
+                .Trait(&mut trait_info) -> if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {
                         trait_info.mark_has_objects();
                         return;
@@ -159,7 +159,7 @@ extend Checker {
                             return; // Valid inside `core` module
                         }
                     }
-                    match to_ts.info {
+                    match to_ts.info.+ {
                         .Enum(enum_info2) if !enum_info2.is_tagged -> {
                             if self.env.is_int(to_type) && !self.inside_unsafe() {
                                 report.warn(

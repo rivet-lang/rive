@@ -36,7 +36,7 @@ extend Checker {
             }
         } else {
             self.check_types(got, expected) catch |err| {
-                mut err2 := report.error_builder(err.to_string(), pos);
+                err2 := report.error_builder(err.to_string(), pos);
                 err2.add_note(
                     "in argument `{}` of {} `{}`".fmt(arg_name, func_kind, func_name)
                 );
