@@ -7,7 +7,7 @@ import std/{
 };
 
 import ../{
-    ast, prefs, token, parser, report, checker, codegen, resolver, utils/{self, depgraph}
+    ast, prefs, token, parser, report, checker, resolver, utils/{self, depgraph}
 };
 
 pub struct Builder {
@@ -15,15 +15,13 @@ pub struct Builder {
 
     mut resolver: +mut resolver.Resolver;
     mut checker: +mut checker.Checker;
-    mut codegen: +mut codegen.Codegen;
 
     pub func new(prefs_: +mut prefs.Prefs) -> Self {
         env := ast.Env.new(prefs_);
         return Self(
             env: env,
             resolver: +mut resolver.Resolver(env),
-            checker: +mut checker.Checker(env),
-            codegen: +mut codegen.Codegen(env)
+            checker: +mut checker.Checker(env)
         );
     }
 
@@ -51,6 +49,7 @@ pub struct Builder {
                 self.abort();
             }
 
+            /*
             if !self.env.prefs.check {
                 self.vlog("generating MIR from AST...");
                 self.codegen.generate_mirs(self.env.source_files);
@@ -58,6 +57,7 @@ pub struct Builder {
                     self.abort();
                 }
             }
+            */
         }
 
         total_warns := report.total_warns();
@@ -154,7 +154,7 @@ pub struct Builder {
         for decl in decls {
             if decl is .Import(&mut import_decl) {
                 self.import_module(sf, import_decl)!;
-            } else if decl is .ComptimeIf(comptime_if) {
+            } else if decl is .ComptimeIf(&mut comptime_if) {
                 ct_decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
                 );
@@ -183,7 +183,7 @@ pub struct Builder {
     func load_module(
         mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
-        mod := self.load_module_files(alias_name, path, file_path)!;
+        mut mod := self.load_module_files(alias_name, path, file_path)!;
         if mod.found {
              if mod.files.is_empty() {
                 self.vlog("        > module contains no rivet files", path);
@@ -350,7 +350,7 @@ pub struct Builder {
                 } else if dep := import_graph_mod(&import_decl, pf) {
                     deps.push(dep);
                 }
-            } else if d is .ComptimeIf(comptime_if) {
+            } else if d is .ComptimeIf(&mut comptime_if) {
                 ct_decls := ast.nodes_to_decls(self.env.evalue_comptime_if(comptime_if));
                 self.import_graph_decls(pf, deps, ct_decls);
             }

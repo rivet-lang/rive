@@ -5,7 +5,7 @@
 import ../ast;
 
 extend Formatter {
-    func format_stmts(mut self, stmts: []+mut ast.Stmt) {
+    func format_stmts(+mut self, stmts: []+mut ast.Stmt) {
         self.indent += 1;
         for stmt in stmts {
             self.format_stmt(stmt);
@@ -13,8 +13,8 @@ extend Formatter {
         self.indent -= 1;
     }
 
-    func format_stmt(mut self, stmt: +mut ast.Stmt) {
-        match stmt {
+    func format_stmt(+mut self, stmt: +mut ast.Stmt) {
+        match stmt.+ {
             .Comment(comment) -> self.format_comment(comment, has_nl: true),
             .Expr(expr) -> self.format_expr(expr),
             else -> {}

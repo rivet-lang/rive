@@ -114,7 +114,7 @@ extend Parser {
                         is_unresolved: true, is_boxed: is_boxed, is_mut: is_mut
                     );
                 }
-                expr := self.parse_ident();
+                mut expr := self.parse_ident();
                 if self.accept(.Dot) {
                     expr = self.parse_selector_expr(expr);
                     while self.accept(.Dot) {

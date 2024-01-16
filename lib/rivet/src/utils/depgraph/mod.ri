@@ -27,14 +27,14 @@ pub struct DepGraph {
     }
 
     pub func resolve(+self) -> +Self {
-        mut node_names := +mut OrderedDepMap();
-        mut node_deps := +mut OrderedDepMap();
+        node_names := +mut OrderedDepMap();
+        node_deps := +mut OrderedDepMap();
         for node in self.nodes {
             node_names.add(node.name, node.deps);
             node_deps.add(node.name, node.deps);
         }
         mut iterations := 0;
-        mut resolved := Self.new();
+        resolved := Self.new();
         while node_deps.size() != 0 {
             iterations += 1;
             mut ready_set := []string();
@@ -45,7 +45,7 @@ pub struct DepGraph {
                 }
             }
             if ready_set.is_empty() {
-                mut g := DepGraph.new();
+                g := DepGraph.new();
                 g.acyclic = false;
                 for name in node_deps.keys {
                     g.add(name, node_names.get(name));
@@ -80,7 +80,7 @@ pub struct DepGraph {
         for node in self.nodes {
             nn.names.set(node.name, node.deps);
         }
-        mut nn_names_it := nn.names.iterator();
+        nn_names_it := nn.names.iterator();
         while k := nn_names_it.next() {
             mut cycle_names := []string();
             if nn.is_cycle.contains(k.key) {

@@ -9,7 +9,7 @@ pub alias Version := semver.Version;
 pub struct Project {
     pub mut name: string;
     pub mut description: string;
-    pub mut version: Version;
+    pub mut version: +Version;
     pub mut license: string;
     pub mut authors: []string;
     pub mut dependencies: []Dependency;

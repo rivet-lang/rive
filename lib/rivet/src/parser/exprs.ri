@@ -11,7 +11,7 @@ extend Parser {
     }
 
     func parse_or_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_and_expr();
+        mut left := self.parse_and_expr();
         while self.accept(.LogicalOr) {
             right := self.parse_and_expr();
             left = +mut .Binary(
@@ -25,7 +25,7 @@ extend Parser {
     }
 
     func parse_and_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_equality_expr();
+        mut left := self.parse_equality_expr();
         while self.accept(.LogicalAnd) {
             right := self.parse_equality_expr();
             left = +mut .Binary(
@@ -39,7 +39,7 @@ extend Parser {
     }
 
     func parse_equality_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_relational_expr();
+        mut left := self.parse_relational_expr();
         while {
             if self.tok.kind in [.Eq, .Ne] {
                 op := self.tok.kind;
@@ -59,7 +59,7 @@ extend Parser {
     }
 
     func parse_relational_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_shift_expr();
+        mut left := self.parse_shift_expr();
         while {
             left = match self.tok.kind {
                 .Gt, .Lt, .Ge, .Le, .OrElse, .KwIn, .KwNotIn -> {
@@ -118,7 +118,7 @@ extend Parser {
     }
 
     func parse_shift_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_additive_expr();
+        mut left := self.parse_additive_expr();
         while {
             left = match self.tok.kind {
                 .Lt, .Gt -> {
@@ -154,7 +154,7 @@ extend Parser {
     }
 
     func parse_additive_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_multiplicative_expr();
+        mut left := self.parse_multiplicative_expr();
         while {
             match self.tok.kind {
                 .Plus, .Minus -> {
@@ -175,7 +175,7 @@ extend Parser {
     }
 
     func parse_multiplicative_expr(+mut self) -> +mut ast.Expr {
-        left := self.parse_unary_expr();
+        mut left := self.parse_unary_expr();
         while {
             match self.tok.kind {
                 .Mul, .Div, .Mod -> {
@@ -211,7 +211,7 @@ extend Parser {
     }
 
     func parse_primary_expr(+mut self) -> +mut ast.Expr {
-        expr: +mut ast.Expr := match {
+        mut expr: +mut ast.Expr := match {
             self.accept(.Dollar) -> match self.tok.kind {
                 .KwIf -> +mut .ComptimeIf(self.parse_comptime_if(.Expr)),
                 else -> {
@@ -435,7 +435,7 @@ extend Parser {
                         || expr is .SelfTy || expr is .EnumLiteral) -> {
                     self.next();
                     mut args := []mut ast.CallArg();
-                    spread_expr := +mut ast.Expr.Empty(self.tok.pos);
+                    mut spread_expr := +mut ast.Expr.Empty(self.tok.pos);
                     mut has_spread_expr := false;
                     if self.tok.kind != .Rparen {
                         mut expecting_named_arg := false;
@@ -474,7 +474,7 @@ extend Parser {
                     mut varname := "";
                     mut varname_pos := self.tok.pos;
                     mut has_varname := false;
-                    err_expr := +mut ast.Expr.Empty(self.tok.pos);
+                    mut err_expr := +mut ast.Expr.Empty(self.tok.pos);
                     mut has_err_expr := false;
                     if self.accept(.Bang) {
                         // check result value, if error propagate
@@ -635,7 +635,7 @@ extend Parser {
             mut patterns := []+mut ast.Expr();
             mut branch_var: ?+mut ast.ObjectData := none;
             mut has_cond := false;
-            cond := +mut ast.Expr.Empty(self.tok.pos);
+            mut cond := +mut ast.Expr.Empty(self.tok.pos);
             is_else := self.accept(.KwElse);
             if is_else {
                 has_else = true;
@@ -644,7 +644,7 @@ extend Parser {
                     if is_typematch {
                         patterns.push(+mut .Type(self.parse_type()));
                     } else {
-                        pattern_expr := if self.accept(.Dot) {
+                        mut pattern_expr := if self.accept(.Dot) {
                             name_pos := self.tok.pos;
                             +mut ast.Expr.EnumLiteral(
                                 self.parse_name(), pos: name_pos + self.prev_tok.pos,
@@ -718,7 +718,7 @@ extend Parser {
         self.expect(.Lbrace);
         mut stmts := []+mut ast.Stmt();
         mut has_expr := false;
-        expr := +mut ast.Expr.Empty(self.tok.pos);
+        mut expr := +mut ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
             if stmt is .Expr(stmt_expr) && self.prev_tok.kind != .Semicolon

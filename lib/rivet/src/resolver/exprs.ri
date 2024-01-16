@@ -323,7 +323,7 @@ extend Resolver {
         }
     }
 
-    func find_symbol(+mut self, sym: +mut ast.Sym, name: string, pos: token.Pos) -> ?ast.Sym {
+    func find_symbol(+mut self, sym: +mut ast.Sym, name: string, pos: token.Pos) -> ?+mut ast.Sym {
         mut sym_ := sym;
         if sym is ast.SymRef(mut sym_ref) {
             sym_ = self.clean_symbol_reference(sym_ref);
@@ -349,7 +349,7 @@ extend Resolver {
         return none;
     }
 
-    func find_prelude(+self, name: string) -> ?ast.Sym {
+    func find_prelude(+self, name: string) -> ?+mut ast.Sym {
         for &prelude in self.preludes {
             if prelude.name == name {
                 return prelude.sym;
@@ -358,7 +358,7 @@ extend Resolver {
         return none;
     }
 
-    func clean_symbol_reference(+mut self, sym_ref: +mut ast.SymRef) -> ast.Sym {
+    func clean_symbol_reference(+mut self, sym_ref: +mut ast.SymRef) -> +mut ast.Sym {
         if !sym_ref.ref_resolved {
             self.resolve_expr(sym_ref.ref_expr);
             if sym_ref.ref_expr is .Ident(ident) && ident.found && ident.is_sym {
@@ -376,7 +376,7 @@ extend Resolver {
         return sym_ref.ref;
     }
 
-    func check_symbol_abi(+mut self, sym: ast.Sym, pos: token.Pos) {
+    func check_symbol_abi(+mut self, sym: +mut ast.Sym, pos: token.Pos) {
         if sym.abi != .Rivet {
             if self.source_file_abi == sym.abi {
                 self.different_abi_usage_count += 1;

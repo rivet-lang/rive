@@ -16,7 +16,7 @@ pub enum Expr < traits.Stringable {
         mut type: +mut Type;
 
         pub func clean_paren(&self) -> +mut Expr {
-            res := self.expr;
+            mut res := self.expr;
             while res is .Paren(paren) {
                 res = paren.expr;
             }

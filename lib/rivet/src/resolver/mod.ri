@@ -8,7 +8,7 @@ import std/fs.Path;
 
 struct Prelude {
     name: string;
-    sym: ast.Sym;
+    sym: +mut ast.Sym;
 }
 
 #[boxed]

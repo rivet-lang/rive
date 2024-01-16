@@ -36,7 +36,7 @@ func main() {
         "build", "run", "test", "check" -> {
             // These commands are handled directly by the compiler.
             is_test := cmd == "test";
-            mut prefs_ := prefs.Prefs.from_args(
+            prefs_ := prefs.Prefs.from_args(
                 process.args[2:], is_test, is_test || cmd == "run", cmd == "check"
             )!;
             prefs_.load_module_info()!;

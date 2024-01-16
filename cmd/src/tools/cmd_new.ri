@@ -26,7 +26,7 @@ var available_templates := "Available templates:
 
 pub func cmd_new(args: [:]string, is_init: bool) -> ! {
     mut template := "";
-    mut fp := flag.FlagParser.new(args);
+    fp := flag.FlagParser.new(args);
     if is_init {
         fp.set_limit_free_args_to_exactly(0)!;
     } else {

@@ -331,7 +331,7 @@ pub struct Register {
                             import_decl.pos
                         );
                     }
-                } else if mut sym := import_decl.info.mod.scope.find(import_info.name) {
+                } else if sym := import_decl.info.mod.scope.find(import_info.name) {
                     self.check_vis(sym, import_info.pos);
                     if self.check_imported_symbol(sym.name, import_info.pos, true) {
                         if import_decl.is_public {
@@ -358,7 +358,7 @@ pub struct Register {
         }
     }
 
-    func add_sym(+mut self, sym: ast.Sym, pos: token.Pos) -> ast.Sym {
+    func add_sym(+mut self, sym: +mut ast.Sym, pos: token.Pos) -> +mut ast.Sym {
         if self.check_imported_symbol(sym.name, pos, false) {
             return self.sym.scope.add_or_get(sym) catch |err| {
                 report.error(err.to_string(), pos);

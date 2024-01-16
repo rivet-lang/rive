@@ -2021,13 +2021,13 @@ class Checker:
             elif expr.name == "_":
                 return
             elif expr.is_obj:
-                if isinstance(expr.typ, type.Ptr):
+                if isinstance(expr.typ, type.Ptr) and not from_assign:
                     if not expr.typ.is_mut:
                         report.error(
                             "cannot modify elements of an immutable pointer",
                             expr.pos
                         )
-                elif isinstance(expr.typ, type.Type) and expr.typ.is_boxed:
+                elif isinstance(expr.typ, type.Type) and expr.typ.is_boxed and not from_assign:
                     if not expr.typ.is_mut:
                         report.error(
                             "cannot use a immutable boxed value as mutable value",
