@@ -1132,8 +1132,8 @@ class Codegen:
                         expr.left.left.typ, expr.left.left
                     )
                     is_vtable_call = True
-                    if not isinstance(self_expr.typ, ir.Pointer):
-                        self_expr = ir.Inst(ir.InstKind.LoadPtr, [self_expr], self_expr.typ)
+                    if isinstance(self_expr.typ, ir.Pointer):
+                        self_expr = ir.Inst(ir.InstKind.LoadPtr, [self_expr], self_expr.typ.typ)
                     if left_sym.kind == TypeKind.Trait:
                         if left2_sym.kind == TypeKind.Trait and left_sym != left2_sym:
                             id_value = ir.Inst(
@@ -1470,13 +1470,13 @@ class Codegen:
             old_inside_selector_expr = self.inside_selector_expr
             self.inside_selector_expr = True
             left_sym = expr.left_typ.symbol()
-            left = self.gen_expr(expr.left)
             self.inside_selector_expr = old_inside_selector_expr
             ir_left_typ = self.ir_type(expr.left_typ)
             ir_typ = self.ir_type(expr.typ)
-            if expr.is_indirect or expr.is_boxed_indirect:
-                return ir.Inst(ir.InstKind.LoadPtr, [left], ir_left_typ.typ)
-            elif expr.is_option_check:
+            if (expr.is_indirect or expr.is_boxed_indirect) or expr.is_option_check:
+                left = self.gen_expr(expr.left)
+                if expr.is_indirect or expr.is_boxed_indirect:
+                    return ir.Inst(ir.InstKind.LoadPtr, [left], ir_left_typ.typ)
                 panic_l = self.cur_func.local_name()
                 exit_l = self.cur_func.local_name()
                 if expr.left_typ.is_pointer():
@@ -1484,7 +1484,7 @@ class Codegen:
                         ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
-                             ir.NoneLit(ir.RAWPTR_T)]
+                            ir.NoneLit(ir.RAWPTR_T)]
                         ), panic_l, exit_l
                     )
                     value = left
@@ -1498,7 +1498,8 @@ class Codegen:
                 self.runtime_error(f"attempt to use none value (`{expr.left}`)")
                 self.cur_func.add_label(exit_l)
                 return value
-            elif isinstance(left, ir.StringLit):
+            left = self.gen_expr(expr.left)
+            if isinstance(left, ir.StringLit):
                 if expr.field_name == "ptr":
                     return ir.StringLit(left.lit, left.len)
                 elif expr.field_name == "len":

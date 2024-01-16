@@ -140,7 +140,7 @@ class Resolver:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ptr:
                         self_typ = type.Ptr(self_typ, decl.self_is_mut)
-                    elif decl.self_is_boxed and self.self_sym.kind != sym.TypeKind.Trait:
+                    elif decl.self_is_boxed:
                         self_typ.is_boxed = True
                         self_typ.is_mut = decl.self_is_mut
                     try:
