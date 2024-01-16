@@ -101,7 +101,7 @@ pub enum Decl {
         mut right: +mut Expr;
         pos: token.Pos;
         mut sym: +mut Sym;
-        mut scope: +Scope;
+        scope: +mut Scope;
     },
     Func {
         docs: []Comment;
@@ -129,16 +129,16 @@ pub enum Decl {
         pos: token.Pos;
         self_pos: token.Pos;
         mut sym: +mut Sym;
-        mut defer_stmts: []+mut Stmt.Defer;
+        mut defer_stmts: []mut Stmt.Defer;
     },
     Test {
         docs: []Comment;
         attributes: Attributes;
         name: string;
         mut stmts: []+mut Stmt;
-        scope: +Scope;
+        scope: +mut Scope;
         pos: token.Pos;
-        mut defer_stmts: []+mut Stmt.Defer;
+        mut defer_stmts: []mut Stmt.Defer;
     };
 
     pub func position(+self) -> token.Pos {
@@ -161,7 +161,7 @@ pub enum Decl {
         };
     }
 
-    pub func decls(+self) -> ?[]+Self {
+    pub func decls(+self) -> ?[]+mut Self {
         return match self.+ {
             .ComptimeIf(comptime_if) -> if branch_idx := comptime_if.branch_idx {
                 nodes_to_decls(

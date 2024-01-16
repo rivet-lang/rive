@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_global_vars(+mut self, mut decls: []+mut ast.Decl) {
+    func check_global_vars(+mut self, decls: []+mut ast.Decl) {
         for decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
@@ -17,7 +17,7 @@ extend Checker {
         }
     }
 
-    func check_decls(+mut self, mut decls: []+mut ast.Decl) {
+    func check_decls(+mut self, decls: []+mut ast.Decl) {
         for decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
@@ -25,17 +25,17 @@ extend Checker {
         }
     }
 
-    func check_decl(+mut self, mut decl: +mut ast.Decl) {
+    func check_decl(+mut self, decl: +mut ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
         match decl.+ {
-            .ComptimeIf(comptime_if) -> {
-                mut decls := ast.nodes_to_decls(
+            .ComptimeIf(&mut comptime_if) -> {
+                decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
                 );
                 self.check_decls(decls);
             },
-            .Import(import_decl) -> if import_decl.import_list.is_empty() && !import_decl.glob {
+            .Import(&import_decl) -> if import_decl.import_list.is_empty() && !import_decl.glob {
                 if import_decl.has_custom_alias {
                     self.check_name_case(
                         .Snake, "import alias", import_decl.alias_name, import_decl.pos
@@ -51,7 +51,7 @@ extend Checker {
                     );
                 }
             },
-            .Alias(alias_decl) -> {
+            .Alias(&alias_decl) -> {
                 alias_sym := if alias_decl.sym is ast.SymRef(sym_ref) { sym_ref.ref } else { alias_decl.sym };
                 self.check_name_case(match {
                         alias_decl.is_typealias || alias_sym is ast.TypeSym -> .Pascal,
@@ -60,19 +60,19 @@ extend Checker {
                     }, "alias", alias_decl.name, alias_decl.pos
                 );
             },
-            .Extern(extern_decl) -> {
+            .Extern(&extern_decl) -> {
                 self.inside_extern = true;
                 self.check_decls(extern_decl.decls);
                 self.inside_extern = false;
             },
-            .Var(var_decl) -> {
+            .Var(&mut var_decl) -> {
                 self.inside_var_decl = true;
                 self.check_var_decl(
                     var_decl.lefts, var_decl.right, var_decl.scope, var_decl.pos
                 );
                 self.inside_var_decl = false;
             },
-            .Const(const_decl) -> {
+            .Const(&const_decl) -> {
                 self.check_name_case(.Upper, "constant", const_decl.name, const_decl.pos);
                 if const_decl.has_type {
                     old_expected_type := self.expected_type;
@@ -100,11 +100,11 @@ extend Checker {
                     }
                 }
             },
-            .Trait(trait_decl) -> {
+            .Trait(&trait_decl) -> {
                 self.check_name_case(.Pascal, "trait", trait_decl.name, trait_decl.pos);
                 self.check_decls(trait_decl.decls);
             },
-            .Enum(enum_decl) -> {
+            .Enum(&enum_decl) -> {
                 self.check_name_case(.Pascal, "enum", enum_decl.name, enum_decl.pos);
                 for base in enum_decl.bases {
                     if sym := base.symbol() {
@@ -121,7 +121,7 @@ extend Checker {
                 }
                 self.check_decls(enum_decl.decls);
             },
-            .Struct(struct_decl) -> {
+            .Struct(&struct_decl) -> {
                 self.check_name_case(.Pascal, "struct", struct_decl.name, struct_decl.pos);
                 for base in struct_decl.bases {
                     if sym := base.symbol() {
@@ -134,7 +134,7 @@ extend Checker {
                 }
                 self.check_decls(struct_decl.decls);
             },
-            .Field(field_decl) -> {
+            .Field(&field_decl) -> {
                 self.check_name_case(.Snake, "field", field_decl.name, field_decl.pos);
                 if field_decl.has_def_expr {
                     old_expected_type := self.expected_type;
@@ -146,7 +146,7 @@ extend Checker {
                     };
                 }
             },
-            .Extend(extend_decl) -> {
+            .Extend(&extend_decl) -> {
                 type_sym := extend_decl.type.symbol()?;
                 for base in extend_decl.bases {
                     if sym := base.symbol() {
@@ -157,10 +157,10 @@ extend Checker {
                 }
                 self.check_decls(extend_decl.decls);
             },
-            .Func(func_decl) -> self.check_func(func_decl),
-            .Test(test_decl) -> {
+            .Func(&mut func_decl) -> self.check_func(func_decl),
+            .Test(&test_decl) -> {
                 old_cur_func := self.cur_func;
-                self.cur_func = ast.Func(ret_type: .Void);
+                self.cur_func = +mut ast.Func(ret_type: +mut .Void);
                 self.inside_test = true;
                 self.check_stmts(test_decl.stmts);
                 self.inside_test = false;
@@ -171,7 +171,7 @@ extend Checker {
         }
     }
 
-    func check_func(+mut self, mut func_decl: +mut ast.Decl.Func) {
+    func check_func(+mut self, func_decl: &mut ast.Decl.Func) {
         if !func_decl.is_operator {
             name := if func_decl.is_method && func_decl.is_special_method {
                 func_decl.name.substr(2, func_decl.name.len - 2) // skip `__`
@@ -249,7 +249,7 @@ extend Checker {
         self.check_scope_vars(func_decl.scope);
         if func_decl.ret_type is .Never && !self.inside_extern {
             if func_decl.stmts.len > 0 {
-                match func_decl.stmts[func_decl.stmts.len - 1] {
+                match func_decl.stmts[func_decl.stmts.len - 1].+ {
                     .While(while_stmt) if while_stmt.is_inf
                         && while_stmt.stmt is .Expr(expr) && expr is .Block(block) -> {
                         if !block.stmts.is_empty() {

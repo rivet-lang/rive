@@ -112,7 +112,7 @@ extend Checker {
             return false;
         }
 
-        mut expected_sym := expected.symbol() ?? return false;
+        expected_sym := expected.symbol() ?? return false;
         got_sym := got.symbol() ?? return false;
 
         if expected is .Variadic {

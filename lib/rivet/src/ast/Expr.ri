@@ -262,7 +262,7 @@ pub enum Expr < traits.Stringable {
         scope: +mut Scope;
         pos: token.Pos;
         mut type: +mut Type;
-        mut defer_stmts: []+mut Stmt.Defer;
+        mut defer_stmts: []mut Stmt.Defer;
     },
     ComptimeIf(ComptimeIf),
     If {
