@@ -45,7 +45,7 @@ extend Checker {
                     }
                 }
             },
-            .Selector(selector) -> if selector.is_path {
+            .Selector(&mut selector) -> if selector.is_path {
                 match selector.sym is {
                     ast.TypeSym(mut s_type_sym) if s_type_sym.info is .Trait
                         || s_type_sym.info is .Struct || s_type_sym.info is .String
@@ -290,7 +290,7 @@ extend Checker {
                         return;
                     }
                 }
-                for i, arg in call_expr.args {
+                for i, &mut arg in call_expr.args {
                     mut field := ast.Field();
                     if arg.is_named {
                         if t_field := type_sym.lookup_field(arg.name) {
@@ -460,7 +460,7 @@ extend Checker {
         }
 
         old_expected_type := self.expected_type;
-        for i, arg in call_expr.args {
+        for i, &mut arg in call_expr.args {
             arg_fn := if func_.is_variadic && i >= func_.args.len - 1 {
                 func_.args[func_.args.len - 1]
             } else {

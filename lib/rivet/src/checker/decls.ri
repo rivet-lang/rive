@@ -72,7 +72,7 @@ extend Checker {
                 );
                 self.inside_var_decl = false;
             },
-            .Const(&const_decl) -> {
+            .Const(&mut const_decl) -> {
                 self.check_name_case(.Upper, "constant", const_decl.name, const_decl.pos);
                 if const_decl.has_type {
                     old_expected_type := self.expected_type;

@@ -2063,8 +2063,8 @@ class Checker:
                 return
             expr_typ = expr.left_typ
             if (
-                (isinstance(expr_typ, type.Type) and expr_typ.is_boxed)
-                or isinstance(expr_typ, type.Ptr)
+                (isinstance(expr.typ, type.Type) and expr.typ.is_boxed)
+                or isinstance(expr.typ, type.Ptr)
             ) and not from_assign:
                 expr_typ = expr.typ
             if isinstance(expr_typ, type.Ptr):
@@ -2107,8 +2107,8 @@ class Checker:
         elif isinstance(expr, ast.IndexExpr):
             expr_typ = expr.left_typ
             if (
-                (isinstance(expr_typ, type.Type) and expr_typ.is_boxed)
-                or isinstance(expr_typ, type.Ptr)
+                (isinstance(expr.typ, type.Type) and expr.typ.is_boxed)
+                or isinstance(expr.typ, type.Ptr)
             ) and not from_assign:
                 expr_typ = expr.typ
             if isinstance(expr_typ, type.Ptr):
