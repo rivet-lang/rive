@@ -1127,11 +1127,7 @@ class Checker:
             return expr.typ
         elif isinstance(expr, ast.BuiltinCallExpr):
             expr.typ = self.comp.void_t
-            if expr.name == "set_enum_ref_value":
-                _ = self.check_expr(expr.args[0])
-                self.check_expr_is_mut(expr.args[0])
-                _ = self.check_expr(expr.args[1])
-            elif expr.name == "ignore_not_mutated_warn":
+            if expr.name == "ignore_not_mutated_warn":
                 _ = self.check_expr(expr.args[0])
                 self.check_expr_is_mut(expr.args[0])
             elif expr.name == "as":

@@ -117,14 +117,6 @@ extend Env {
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Func("set_enum_ref_value", +[
-                BuiltinArg("enum_value", is_any: true, is_mut: true),
-                BuiltinArg("new_value", is_any: true)
-            ], is_unsafe: true, checks: +[
-                .ArgumentTypeShouldBe(0, .Enum),
-                .ArgumentTypeEqualToArgumentType(1, 0)
-            ]),
-
             // TODO: rename to `ignore_warn`: `@ignore_warn("not_mutated", expr)`.
             .Func("ignore_not_mutated_warn", +[
                 BuiltinArg("expr", is_any: true, is_mut: true)

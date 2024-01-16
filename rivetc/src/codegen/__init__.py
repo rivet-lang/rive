@@ -761,13 +761,7 @@ class Codegen:
             # runtime object
             return ir.Ident(self.ir_type(expr.typ), expr.obj.ir_name)
         elif isinstance(expr, ast.BuiltinCallExpr):
-            if expr.name == "set_enum_ref_value":
-                arg0 = self.gen_expr(expr.args[0])
-                arg1 = self.gen_expr(expr.args[1])
-                self.cur_func.store_ptr(
-                    arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
-                )
-            elif expr.name == "as":
+            if expr.name == "as":
                 arg1 = expr.args[1]
                 arg1_is_voidptr = isinstance(
                     arg1.typ, type.Ptr

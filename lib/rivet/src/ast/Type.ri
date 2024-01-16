@@ -171,9 +171,7 @@ pub enum Type < traits.Stringable {
 
     pub func unalias_in_place(+mut self) {
         if unaliased_type := self.unalias() {
-            unsafe {
-                @set_enum_ref_value(self, unaliased_type);
-            }
+            self.+ = unaliased_type;
         }
     }
 
