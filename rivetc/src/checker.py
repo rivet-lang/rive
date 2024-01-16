@@ -2061,12 +2061,12 @@ class Checker:
                         expr.pos
                     )
                 return
-            expr_typ = expr.typ
-            if not (
+            expr_typ = expr.left_typ
+            if (
                 (isinstance(expr_typ, type.Type) and expr_typ.is_boxed)
                 or isinstance(expr_typ, type.Ptr)
-            ):
-                expr_typ = expr.left_typ
+            ) and not from_assign:
+                expr_typ = expr.typ
             if isinstance(expr_typ, type.Ptr):
                 if not expr_typ.is_mut:
                     report.error(
@@ -2105,12 +2105,12 @@ class Checker:
         elif isinstance(expr, ast.Block) and expr.is_expr:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):
-            expr_typ = expr.typ
-            if not (
+            expr_typ = expr.left_typ
+            if (
                 (isinstance(expr_typ, type.Type) and expr_typ.is_boxed)
                 or isinstance(expr_typ, type.Ptr)
-            ):
-                expr_typ = expr.left_typ
+            ) and not from_assign:
+                expr_typ = expr.typ
             if isinstance(expr_typ, type.Ptr):
                 if not expr.left.typ.is_mut:
                     report.error(
@@ -2127,11 +2127,14 @@ class Checker:
                     )
             else:
                 expr_sym = expr.left.typ.symbol()
-                if not expr_sym.info.is_mut:
-                    report.error(
-                        f"cannot modify elements of an immutable {expr_sym.kind}",
-                        expr.pos
-                    )
+                if isinstance(expr_sym.info, (sym.ArrayInfo, sym.DynArrayInfo)):
+                    if not expr_sym.info.is_mut:
+                        report.error(
+                            f"cannot modify elements of an immutable {expr_sym.kind}",
+                            expr.pos
+                        )
+                else:
+                    assert False, (expr.pos, expr_sym.qualname())
         elif isinstance(expr, ast.UnaryExpr):
             self.check_expr_is_mut(expr.right)
         elif isinstance(expr, ast.BinaryExpr):

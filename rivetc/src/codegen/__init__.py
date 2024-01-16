@@ -47,7 +47,11 @@ class Codegen:
         self.loop_scope = None
         self.while_continue_expr = None
 
+        self.throwable_t = None
+
     def gen_source_files(self, source_files):
+        self.throwable_t = self.ir_type(self.comp.throwable_t)
+
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
                 self.gen_mod_attributes(mod.name, mod.attributes)
@@ -1345,7 +1349,7 @@ class Codegen:
                             self.cur_func.add_call(
                                 "_R4core15uncatched_errorF", [
                                     ir.Selector(
-                                        self.ir_type(self.comp.throwable_t).ptr(True),
+                                        self.throwable_t,
                                         res_value, ir.Name("err")
                                     )
                                 ]
@@ -1355,7 +1359,7 @@ class Codegen:
                             self.cur_func.add_call(
                                 "_R4core18test_error_throwedF", [
                                     ir.Selector(
-                                        self.ir_type(self.comp.throwable_t).ptr(True),
+                                        self.throwable_t,
                                         res_value, ir.Name("err")
                                     ),
                                     self.gen_string_literal(pos),
@@ -1373,11 +1377,11 @@ class Codegen:
                             )
                             self.cur_func.store(
                                 ir.Selector(
-                                    self.ir_type(self.comp.throwable_t).ptr(True), tmp2,
+                                    self.throwable_t, tmp2,
                                     ir.Name("err")
                                 ),
                                 ir.Selector(
-                                    self.ir_type(self.comp.throwable_t).ptr(True),
+                                    self.throwable_t,
                                     res_value, ir.Name("err")
                                 )
                             )
@@ -1399,10 +1403,10 @@ class Codegen:
                                 expr.err_handler.varname, err_ir_name
                             )
                             self.cur_func.inline_alloca(
-                                self.ir_type(self.comp.throwable_t).ptr(True),
+                                self.throwable_t,
                                 err_ir_name,
                                 ir.Selector(
-                                    self.ir_type(self.comp.throwable_t).ptr(True),
+                                    self.throwable_t,
                                     res_value, ir.Name("err")
                                 )
                             )
@@ -2469,7 +2473,7 @@ class Codegen:
         )
         self.cur_func.store(
             ir.Selector(
-                self.ir_type(self.comp.throwable_t).ptr(True), tmp, ir.Name("err")
+                self.throwable_t, tmp, ir.Name("err")
             ), self.trait_value(expr, expr_t, self.comp.throwable_t)
         )
         return tmp
@@ -2868,7 +2872,7 @@ class Codegen:
                             ),
                             ir.Field("is_err", ir.BOOL_T),
                             ir.Field(
-                                "err", self.ir_type(self.comp.throwable_t).ptr(True)
+                                "err", self.throwable_t
                             )
                         ]
                     )
