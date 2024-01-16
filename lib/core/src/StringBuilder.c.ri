@@ -43,7 +43,7 @@ pub struct StringBuilder < Stringable {
     pub func write_raw_with_len(&mut self, s: [&]uint8, len: uint) {
         self.inner.reserve(self.inner.len + len);
         mem.copy(
-            unsafe { @ptr_add(self.inner.ptr, self.inner.elem_size * self.inner.len) },
+            unsafe { @ptr_add(@as(rawptr, self.inner.ptr), self.inner.elem_size * self.inner.len) },
             s, len
         );
         self.inner.len += len;
@@ -183,7 +183,7 @@ pub struct StringBuilder < Stringable {
     func spart(&self, start_pos: uint, n: uint) -> string {
         return unsafe {
             string.from_raw_with_len(
-                @as([&]uint8, @ptr_add(self.inner.ptr, start_pos)), n
+                @as([&]uint8, @ptr_add(@as(rawptr, self.inner.ptr), start_pos)), n
             ).clone()
         };
     }

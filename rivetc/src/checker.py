@@ -1933,6 +1933,12 @@ class Checker:
 
         if isinstance(expected, type.Ptr) and isinstance(got, type.Ptr):
             return self.check_pointer(expected, got)
+        elif (
+            isinstance(expected, type.Ptr) and isinstance(got, type.Boxedptr)
+        ) or (
+            isinstance(expected, type.Boxedptr) and isinstance(got, type.Ptr)
+        ):
+            return True
         elif (isinstance(expected, type.Ptr)
               and not isinstance(got, type.Ptr)) or (
                   not isinstance(expected, type.Ptr)
