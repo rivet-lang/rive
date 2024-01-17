@@ -2514,6 +2514,8 @@ class Codegen:
         )
 
     def default_value(self, typ, custom_tmp = None):
+        if isinstance(typ, type.Type) and typ.is_boxed:
+            return ir.NoneLit(ir.RAWPTR_T)
         if isinstance(typ, (type.Ptr, type.Func, type.Boxedptr)):
             return ir.NoneLit(ir.RAWPTR_T)
         if isinstance(typ, type.Option):
@@ -2561,9 +2563,6 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Struct:
             if custom_tmp:
                 tmp = custom_tmp
-            elif typ_sym.info.is_boxed:
-                size, _ = self.comp.type_size(typ, True)
-                tmp = self.boxed_instance(self.ir_type(typ), size)
             else:
                 tmp = self.stacked_instance(self.ir_type(typ))
             for f in typ_sym.full_fields():
