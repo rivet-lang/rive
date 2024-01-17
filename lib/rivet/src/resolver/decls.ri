@@ -176,11 +176,11 @@ extend Resolver {
                 },
                 .Func(&mut func_decl) -> {
                     if func_decl.is_method {
-                        mut self_type := +mut ast.Type.Basic(
-                            self.self_sym, is_boxed: func_decl.self_is_boxed, is_mut: func_decl.self_is_boxed
-                        );
+                        mut self_type := +mut ast.Type.Basic(self.self_sym);
                         if func_decl.self_is_ptr {
-                            self_type = +mut .Pointer(self_type, func_decl.self_is_ptr);
+                            self_type = +mut .Pointer(self_type, func_decl.self_is_mut);
+                        } else if func_decl.self_is_boxed {
+                            self_type = +mut .Boxed(self_type, func_decl.self_is_mut);
                         }
                         is_used := self.self_sym.info is .Trait && !func_decl.has_body;
                         func_decl.scope.add_local(+mut ast.Var(

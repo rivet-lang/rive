@@ -588,9 +588,7 @@ extend Checker {
                     unary.pos
                 );
             },
-            .Plus -> if unary.type is .Basic(basic_t) {
-                unary.type = +mut .Basic(basic_t.sym, is_boxed: true, is_mut: unary.is_mut_ptr, pos: basic_t.pos);
-            },
+            .Plus -> unary.type = +mut .Boxed(unary.type, unary.is_mut_ptr, unary.type.position()),
             .Amp -> {
                 mut expected_pointer := false;
                 mut indexable_pointer := false;
