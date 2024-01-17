@@ -54,7 +54,6 @@ pub enum ABI as uint8 < traits.Stringable {
     }
 }
 
-#[default_value(InvalidSym())]
 pub trait Sym {
     id: uint := new_sym_id();
     abi: ABI;

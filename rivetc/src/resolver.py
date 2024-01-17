@@ -86,10 +86,6 @@ class Resolver:
                     self.self_sym = decl.sym
                     self.resolve_decls(decl.decls)
             elif isinstance(decl, ast.TraitDecl):
-                for attribute in decl.attributes.attributes:
-                    if attribute.name == "default_value":
-                        decl.sym.default_value = attribute.args[0].expr
-                        self.resolve_expr(decl.sym.default_value)
                 for base in decl.bases:
                     self.inside_extend_type = True
                     if self.resolve_type(base):
