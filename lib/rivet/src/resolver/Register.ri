@@ -33,7 +33,7 @@ pub struct Register {
         for decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;
-            self.sym.scope.owner = self.sym;
+            self.sym.scope = ^mut ast.Scope(owner: self.sym);
             self.walk_decl(decl);
             self.abi = old_abi;
             self.sym = old_sym;
