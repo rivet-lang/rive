@@ -1645,6 +1645,7 @@ class Checker:
                     f"expected 1 argument, found {len(expr.args)}", expr.pos
                 )
         else:
+            initted_fields = []
             type_fields = info.full_fields()
             if not expr.has_named_args():
                 expr_args_len = len(expr.args)
@@ -1677,6 +1678,7 @@ class Checker:
                 else:
                     field = type_fields[i]
                     field_typ = field.typ
+                initted_fields.append(field.name)
                 arg.typ = field_typ
                 old_expected_type = self.expected_type
                 self.expected_type = field_typ
@@ -1695,6 +1697,13 @@ class Checker:
                         expr.pos
                     )
                     report.note("in spread expression of constructor")
+            else:
+                for f in type_fields:
+                    if isinstance(f.typ, type.Option) or f.has_def_expr:
+                        continue
+                    if f.name not in initted_fields:
+                        if (isinstance(f.typ, type.Type) and f.typ.is_boxed) or isinstance(f.typ, type.Ptr):
+                            report.warn(f"field `{f.name}` of type `{info.name}` must be initialized", expr.pos)
 
     def check_call(self, info, expr):
         kind = info.kind()

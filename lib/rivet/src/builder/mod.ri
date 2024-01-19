@@ -130,7 +130,11 @@ pub struct Builder {
                 self.vlog("   > {}", file);
             }
         }
-        root_sym := ^mut ast.Module(name: self.env.prefs.mod_name, is_root: true);
+        root_sym := ^mut ast.Module(
+            name: self.env.prefs.mod_name,
+            scope: ^mut ast.Scope(),
+            is_root: true
+        );
         self.env.universe.scope.add(root_sym) catch |err| utils.error(
             "Builder.load_root_module: {}", err
         );

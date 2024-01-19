@@ -9,6 +9,6 @@ pub struct SourceFile {
     pub path: string;
     pub decls: []^mut Decl;
     pub mut mod: ^mut Module;
-    pub imported_symbols: ^mut ImportedSymbols;
+    pub mut imported_symbols: ImportedSymbols;
     pub pos: token.Pos;
 }
