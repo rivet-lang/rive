@@ -80,7 +80,7 @@ pub struct DepGraph {
         for node in self.nodes {
             nn.names.set(node.name, node.deps);
         }
-        nn_names_it := nn.names.iterator();
+        mut nn_names_it := nn.names.iterator();
         while k := nn_names_it.next() {
             mut cycle_names := []string();
             if nn.is_cycle.contains(k.key) {
@@ -100,7 +100,7 @@ struct NodeNames {
     mut is_cycle: maps.MapStringBool;
     mut names: maps.MapStringArrayOfStrings;
 
-    func is_part_of_cycle(mut self, name: string, already_seen: []string) -> (bool, []string) {
+    func is_part_of_cycle(&mut self, name: string, already_seen: []string) -> (bool, []string) {
         mut seen := false;
         mut new_already_seen := already_seen.clone();
         if val := self.is_cycle.get(name) {

@@ -74,7 +74,7 @@ extend Checker {
                 // call methods
                 selector.left_type = self.check_expr(selector.left);
                 if selector.left_type is .Option {
-                    err := report.error_builder(
+                    mut err := report.error_builder(
                         "option value cannot be called directly", selector.left.position()
                     );
                     err.add_help("use the option-check syntax: `foo?.method()` or use `??`: `(foo ?? 5).method()`");
@@ -95,7 +95,7 @@ extend Checker {
                                 selector.field_type = field.type;
                                 self.check_func_call(f_func.symbol(), call_expr);
                             } else {
-                                err := report.error_builder(
+                                mut err := report.error_builder(
                                     "type `{}` has no method `{}`".fmt(
                                         left_sym.name, selector.field_name
                                     ), selector.field_pos
@@ -143,7 +143,7 @@ extend Checker {
                 if call_expr.err_handler.is_propagate {
                     if !(self.cur_func.is_main || self.inside_test || self.inside_var_decl
                         || self.cur_func.ret_type is .Result) {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "cannot propagate the result value", call_expr.err_handler.pos
                         );
                         err.add_note(
@@ -175,7 +175,7 @@ extend Checker {
                 );
             }
         } else if call_expr.type is .Result && !self.inside_guard_expr {
-            err := report.error_builder(
+            mut err := report.error_builder(
                 "{} `{}` returns a result".fmt(
                     call_expr.func_.type_of(), call_expr.func_.name
                 ), call_expr.pos
@@ -277,7 +277,7 @@ extend Checker {
                 if !call_expr.has_named_args() {
                     expr_args_len := call_expr.args.len;
                     if expr_args_len > type_fields.len {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "too many arguments to {} `{}`".fmt(
                                 type_sym.type_of(), type_sym.name
                             ), call_expr.pos
@@ -318,7 +318,7 @@ extend Checker {
                 if call_expr.has_spread_expr {
                     spread_expr_t := self.check_expr(call_expr.spread_expr);
                     if spread_expr_t != call_expr.type {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "expected type `{}`, found `{}`".fmt(
                                 call_expr.type, spread_expr_t
                             ), call_expr.spread_expr.position()
@@ -445,13 +445,13 @@ extend Checker {
         if expr_args_len != func_args_len {
             expr_msg := "expected {} argument(s), found {}".fmt(func_args_len, expr_args_len);
             if expr_args_len < func_args_len {
-                err := report.error_builder(
+                mut err := report.error_builder(
                     "too few arguments to {} `{}`".fmt(kind, func_.name), call_expr.pos
                 );
                 err.add_note(expr_msg);
                 err.emit();
             } else if !func_.is_variadic {
-                err := report.error_builder(
+                mut err := report.error_builder(
                     "too many arguments to {} `{}`".fmt(kind, func_.name), call_expr.pos
                 );
                 err.add_note(expr_msg);

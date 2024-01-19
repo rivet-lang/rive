@@ -48,7 +48,7 @@ extend Checker {
         } else {
             if match_expr.is_typematch && !(expr_sym.info is .Enum
                 || expr_sym.info is .Trait) {
-                err := report.error_builder(
+                mut err := report.error_builder(
                     "invalid type for type-match", match_expr.expr.position()
                 );
                 err.add_note("expected trait value, found `{}`", expr_type);
@@ -203,7 +203,7 @@ extend Checker {
             return match_expr.expected_type;
         }
 
-        err := report.error_builder("`match` must be exhaustive", match_expr.pos);
+        mut err := report.error_builder("`match` must be exhaustive", match_expr.pos);
         if unhandled.len > 0 {
             mut err_details := "add `match` branches for: ";
             if unhandled.len < MATCH_EXHAUSTIVE_CUTOFF_LIMIT {

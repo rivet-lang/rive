@@ -259,7 +259,7 @@ extend Resolver {
             }
         } else if sym := self.env.universe.scope.find(ident.name) {
             if sym is ast.Module {
-                err := report.error_builder(
+                mut err := report.error_builder(
                     "use of non-imported module `{}`".fmt(ident.name), ident.pos
                 );
                 err.add_help("add an `import` with the path to the module");
@@ -381,7 +381,7 @@ extend Resolver {
             if self.source_file_abi == sym.abi {
                 self.different_abi_usage_count += 1;
             } else {
-                warn := report.warn_builder(
+                mut warn := report.warn_builder(
                     "using a symbol whose ABI is different from that of the current file", pos
                 );
                 warn.add_note("`{}` is declared as `extern ({})`", sym.name, sym.abi);

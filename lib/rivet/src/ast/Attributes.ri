@@ -37,7 +37,7 @@ pub struct Attribute {
 pub struct Attributes {
     pub mut attributes: []Attribute;
 
-    pub func add(mut self, attribute: Attribute) -> ! {
+    pub func add(&mut self, attribute: Attribute) -> ! {
         if self.has(attribute.name) {
             throw AttributeDuplicatedError(attribute.name);
         }

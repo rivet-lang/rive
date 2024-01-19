@@ -149,7 +149,7 @@ pub struct Builder {
     }
 
     func import_modules_from_decls(
-        mut self, sf: ^mut ast.SourceFile, decls: []^mut ast.Decl
+        &mut self, sf: ^mut ast.SourceFile, decls: []^mut ast.Decl
     ) -> ! {
         for decl in decls {
             if decl is .Import(&mut import_decl) {
@@ -181,7 +181,7 @@ pub struct Builder {
     }
 
     func load_module(
-        mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
+        &mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
         mut mod := self.load_module_files(alias_name, path, file_path)!;
         if mod.found {

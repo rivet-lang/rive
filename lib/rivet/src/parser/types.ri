@@ -45,7 +45,7 @@ extend Parser {
                 // pointers
                 is_mut := self.accept(.KwMut);
                 if self.tok.kind == .Mul {
-                    err := report.error_builder("cannot declare pointer to pointer", pos + self.tok.pos);
+                    mut err := report.error_builder("cannot declare pointer to pointer", pos + self.tok.pos);
                     err.add_help("use an indexable pointer instead (`[&]T`)");
                     err.emit();
                 }
@@ -89,7 +89,7 @@ extend Parser {
                     }
                 }
                 if inners.len > 8 {
-                    err := report.error_builder("tuples can have a maximum of 8 types", pos + self.tok.pos);
+                    mut err := report.error_builder("tuples can have a maximum of 8 types", pos + self.tok.pos);
                     err.add_help("you can use a struct instead");
                     err.emit();
                 }

@@ -41,7 +41,7 @@ extend Tokenizer {
                 // decimals with 0 prefix = error
                 if ch == '0' && nextc.is_digit() {
                     self.pos -= 1;
-                    err := self.error_builder(
+                    mut err := self.error_builder(
                         "leading zeros in decimal integer literals are not permitted"
                     );
                     err.add_help("use an `0o` prefix for octal integers");
@@ -524,7 +524,7 @@ extend Tokenizer {
                 } else {
                     // 6.
                     self.pos -= 1;
-                    err := self.error_builder(
+                    mut err := self.error_builder(
                         "float literals should have a digit after the decimal point"
                     );
                     err.add_help(
@@ -641,18 +641,18 @@ extend Tokenizer {
             u := ch.as_runes();
             if u.len != 1 {
                 if escaped_hex || escaped_unicode {
-                    err := self.error_builder(
+                    mut err := self.error_builder(
                         "invalid character literal (`{}` -> `{}`)".fmt(orig, ch),
                         pos
                     );
                     err.add_note("escape sequence did not refer to a singular rune");
                     err.emit();
                 } else if u.len == 0 {
-                    err := self.error_builder("empty character literal", pos);
+                    mut err := self.error_builder("empty character literal", pos);
                     err.add_help("if you meant to write a string literal, use double quotes");
                     err.emit();
                 } else {
-                    err := self.error_builder(
+                    mut err := self.error_builder(
                         "character literal may only contain one codepoint", pos
                     );
                     err.add_help("if you meant to write a string literal, use double quotes");

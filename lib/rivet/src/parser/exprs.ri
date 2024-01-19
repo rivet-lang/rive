@@ -660,7 +660,7 @@ extend Parser {
                         };
                         if self.accept(.DotDot) || self.accept(.Ellipsis) {
                             if self.prev_tok.kind == .DotDot {
-                                err := report.error_builder(
+                                mut err := report.error_builder(
                                     "`match` only supports inclusive ranges, not exclusive",
                                     self.prev_tok.pos
                                 );

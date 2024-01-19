@@ -120,8 +120,8 @@ extend Checker {
                 if var_info.is_mut {
                     var_info.is_changed = true;
                 } else {
-                    err := if var_info.level == .Argument {
-                        err_b := report.error_builder(
+                    mut err := if var_info.level == .Argument {
+                        mut err_b := report.error_builder(
                             "cannot use variable `{}` as mutable argument".fmt(sym.name), pos
                         );
                         err_b.add_help(
@@ -129,7 +129,7 @@ extend Checker {
                         );
                         err_b
                     } else {
-                        err_b := report.error_builder(
+                        mut err_b := report.error_builder(
                             "cannot use variable `{}` as mutable value".fmt(sym.name), pos
                         );
                         err_b.add_help(

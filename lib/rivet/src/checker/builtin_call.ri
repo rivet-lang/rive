@@ -20,14 +20,14 @@ extend Checker {
                     b_func_args_len, builtin_call.args.len
                 );
                 if builtin_call.args.len < b_func_args_len {
-                    err := report.error_builder(
+                    mut err := report.error_builder(
                         "too few arguments to builtin function `{}`".fmt(builtin_call.name),
                         builtin_call.pos
                     );
                     err.add_note(expr_msg);
                     err.emit();
                 } else if builtin_call.args.len > b_func.args.len {
-                    err := report.error_builder(
+                    mut err := report.error_builder(
                         "too many arguments to builtin function `{}`".fmt(builtin_call.name),
                         builtin_call.pos
                     );

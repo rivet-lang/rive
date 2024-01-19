@@ -598,14 +598,14 @@ class Parser:
         sc = self.scope
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
-            # receiver (`self`|`mut self`|`&self`|`&mut self`|`^self`|`^mut self`)
+            # receiver (`self`|`&self`|`&mut self`|`^self`|`^mut self`)
             if self.tok.kind == Kind.KwSelf or (
-                self.tok.kind in (Kind.Amp, Kind.Xor, Kind.KwMut)
+                self.tok.kind in (Kind.Amp, Kind.Xor)
                 and self.peek_tok.kind in (Kind.KwMut, Kind.KwSelf)
             ):
                 is_method = True
                 self_is_ptr = self.accept(Kind.Amp)
-                self_is_boxed = not self_is_boxed and self.accept(Kind.Xor)
+                self_is_boxed = not self_is_ptr and self.accept(Kind.Xor)
                 self_is_mut = self.accept(Kind.KwMut)
                 self.expect(Kind.KwSelf)
                 if self.tok.kind != Kind.Rparen:

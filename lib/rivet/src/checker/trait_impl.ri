@@ -44,7 +44,7 @@ extend Checker {
                         ));
                     }
                     if errors.len > 0 {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "type `{}` incorrectly implements method `{}` of trait `{}`".fmt(
                                 impltor.qualname(), impl.name, trait_sym.qualname()
                             ), impl.pos
@@ -73,7 +73,7 @@ extend Checker {
             }
         }
         if impl_does_not_implemented.len > 0 {
-            err := report.error_builder(
+            mut err := report.error_builder(
                 "type `{}` does not implement trait `{}`".fmt(
                     impltor.qualname(), trait_sym.qualname()
                 ), pos

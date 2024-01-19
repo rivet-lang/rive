@@ -88,7 +88,7 @@ extend Checker {
                         if enum_info.is_tagged && !enum_lit.from_is_cmp
                             && !enum_lit.is_instance {
                             if variant.has_type {
-                                err := report.error_builder(
+                                mut err := report.error_builder(
                                     "variant `{}` cannot be initialized without arguments".fmt(
                                         enum_lit.value
                                     ),
@@ -176,7 +176,7 @@ extend Checker {
                         ast.Var(var_sym) -> var_sym.type,
                         ast.Func(mut func_sym) -> {
                             if func_sym.abi != .Rivet {
-                                err := report.error_builder(
+                                mut err := report.error_builder(
                                     "cannot use an extern function as a value", ident.pos
                                 );
                                 err.add_help("wrap the extern function with a function");
@@ -200,7 +200,7 @@ extend Checker {
                 	indirect.is_mut = indirect.left_type.is_pointer();
                     indirect.left_type.ptr_inner()
                 } else {
-                    err := report.error_builder(
+                    mut err := report.error_builder(
                         "invalid indirect for `{}`".fmt(indirect.left_type), indirect.pos
                     );
                     if indirect.left_type is .Rawptr {
@@ -396,7 +396,7 @@ extend Checker {
             if selector.left_sym is ast.TypeSym(mut type_sym) {
                 if type_sym.info is .Enum(enum_info) {
                     if variant := enum_info.get_variant(selector.field_name); variant.has_type {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "variant `{}` cannot be initialized without arguments".fmt(
                                 selector.field_name
                             ),
@@ -426,7 +426,7 @@ extend Checker {
                     ast.Const(const_sym) -> const_sym.type,
                     ast.Var(var_sym) -> var_sym.type,
                     else -> {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "unexpected bug for selector expression", selector.pos
                         );
                         err.add_note("please report this bug, thanks =D");
@@ -445,7 +445,7 @@ extend Checker {
                 } else if sym := left_sym.scope.find(selector.field_name) {
                     if sym is ast.Func(mut func_sym) {
                         if func_sym.is_method {
-                            err := report.error_builder(
+                            mut err := report.error_builder(
                                 "cannot take value of method `{}`".fmt(selector.field_name),
                                 selector.field_pos
                             );
@@ -453,7 +453,7 @@ extend Checker {
                             err.emit();
                             ^mut .Void
                         } else {
-                            err := report.error_builder(
+                            mut err := report.error_builder(
                                 "cannot take value of associated function `{}`".fmt(
                                     selector.field_name
                                 ), selector.field_pos
@@ -473,7 +473,7 @@ extend Checker {
                         ^mut .Void
                     }
                 } else {
-                    err := report.error_builder(
+                    mut err := report.error_builder(
                         "type `{}` has no field `{}`".fmt(
                             left_sym.name, selector.field_name
                         ), selector.field_pos
@@ -529,7 +529,7 @@ extend Checker {
             },
             else -> {
                 if !(index.left_type is .Pointer || index.left_type == self.env.string_t) {
-                    err := report.error_builder(
+                    mut err := report.error_builder(
                         "type `{}` does not support indexing".fmt(index.left_type),
                         index.pos
                     );
@@ -549,7 +549,7 @@ extend Checker {
                 }
                 if index.left_type == self.env.string_t {
                     if index.index is .Range {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "`string` does not support slicing syntax", index.pos
                         );
                         err.add_help("use `.substr()` instead");
@@ -574,7 +574,7 @@ extend Checker {
                 "operator `~` can only be used with numeric values", unary.pos
             ),
             .Minus -> if self.env.is_unsigned_int(unary.type) {
-                err := report.error_builder(
+                mut err := report.error_builder(
                     "cannot apply unary operator `-` to type `{expr.typ}`".fmt(
                         unary.type
                     ), unary.pos
@@ -635,7 +635,7 @@ extend Checker {
 
         if binary.op in [.Plus, .Minus, .Mul, .Div, .Mod, .Xor, .Amp, .Pipe] {
             if left_type.is_pointer() {
-                err := report.error_builder(
+                mut err := report.error_builder(
                     "pointer arithmetic is not allowed", binary.pos
                 );
                 if binary.op == .Plus {
@@ -690,7 +690,7 @@ extend Checker {
                     if left_type is .Option(opt) {
                         if !self.check_compatible_types(right_type, opt.inner)
                             && right_type !is .Never {
-                            err := report.error_builder(
+                            mut err := report.error_builder(
                                 "expected type `{}`, found `{}`".fmt(opt.inner, right_type),
                                 binary.right.position()
                             );
@@ -719,7 +719,7 @@ extend Checker {
                                 || !(left_sym.info is .Enum(enum_info)
                                 && enum_info.is_tagged))
                                 && !left_sym.has_method(op_method) {
-                                err := report.error_builder(
+                                mut err := report.error_builder(
                                     "cannot use operator `{}` with type `{}`".fmt(
                                         binary.op, left_sym.name
                                     ), binary.pos
@@ -820,7 +820,7 @@ extend Checker {
                     } else if binary.left is .Binary(bin_left) {
                         if bin_left.op != binary.op && bin_left.op in [.LogicalAnd, .LogicalOr] {
                             // use `(a && b) || c` instead of `a && b || c`
-                            err := report.error_builder(
+                            mut err := report.error_builder(
                                 "ambiguous boolean expression", binary.pos
                             );
                             err.add_help(
@@ -928,7 +928,7 @@ extend Checker {
                 expr_type := self.check_expr(return_expr.expr);
                 self.expected_type = old_expected_type;
                 self.check_types(expr_type, self.cur_func.ret_type) catch |err| {
-                    err_b := report.error_builder(
+                    mut err_b := report.error_builder(
                         err.to_string(), return_expr.expr.position()
                     );
                     err_b.add_note(
@@ -942,7 +942,7 @@ extend Checker {
             self.cur_func.ret_type is .Void
             || (self.cur_func.ret_type is .Result(res_t) && res_t.inner is .Void)
         ) {
-            err := report.error_builder(
+            mut err := report.error_builder(
                 "expected `{}` value in return argument".fmt(self.cur_func.ret_type),
                 return_expr.pos
             );
@@ -966,7 +966,7 @@ extend Checker {
             if !(expr_sym == self.env.throwable_sym
                 || expr_sym.implement_trait(self.env.throwable_sym)
             ) {
-                err_b := report.error_builder(
+                mut err_b := report.error_builder(
                     "using an invalid value as an error to throw",
                     throw_expr.expr.position()
                 );
@@ -980,7 +980,7 @@ extend Checker {
                 err_b.emit();
             }
         } else {
-            err_b := report.error_builder(
+            mut err_b := report.error_builder(
                 "{} `{}` cannot throws errors".fmt(
                     self.cur_func.kind(), self.cur_func.name
                 ), throw_expr.expr.position()

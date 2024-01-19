@@ -35,7 +35,7 @@ extend Resolver {
             .Array(&mut arr) -> if self.resolve_type(arr.inner) {
                 if arr_size := self.eval_size(arr.size) {
                     if arr_size <= 0 {
-                        err := report.error_builder(
+                        mut err := report.error_builder(
                             "array size cannot be zero or negative", arr.size.position()
                         );
                         err.add_note("array size {}", arr_size);

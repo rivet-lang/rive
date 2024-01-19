@@ -105,7 +105,7 @@ class Type(TBase):
             if self.is_mut:
                 res = f"^mut {res}"
             else:
-                res = f"+{res}"
+                res = f"^{res}"
         return res
 
 class Boxedptr(TBase):
