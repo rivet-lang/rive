@@ -8,14 +8,14 @@ import ../{ ast, token, report };
 struct IncompatibleTypesError < Throwable {
     msg: string;
 
-    pub func to_string(+self) -> string {
+    pub func to_string(^self) -> string {
         return self.msg;
     }
 }
 
 extend Checker {
     func check_argument_type(
-        +self, got: +mut ast.Type, expected: +mut ast.Type, pos: token.Pos, arg_name: string,
+        ^self, got: ^mut ast.Type, expected: ^mut ast.Type, pos: token.Pos, arg_name: string,
         func_kind: string, func_name: string
     ) {
         if expected_sym := expected.symbol(); expected_sym.info is .Trait(&mut trait_info)
@@ -45,7 +45,7 @@ extend Checker {
         }
     }
 
-    func check_types(+self, got: +mut ast.Type, expected: +mut ast.Type) -> ! {
+    func check_types(^self, got: ^mut ast.Type, expected: ^mut ast.Type) -> ! {
         if !self.check_compatible_types(got, expected) {
             got_str := if got is .None {
                 if expected is .Option {
@@ -72,7 +72,7 @@ extend Checker {
         }
     }
 
-    func check_compatible_types(+self, got: +mut ast.Type, expected: +mut ast.Type) -> bool {
+    func check_compatible_types(^self, got: ^mut ast.Type, expected: ^mut ast.Type) -> bool {
         if got is .Never {
             return true;
         } else if (expected is .Never && got is .Void)
@@ -145,7 +145,7 @@ extend Checker {
             }
         }
 
-        match expected_sym.info.+ {
+        match expected_sym.info.^ {
             .Trait(&mut trait_info) -> {
                 got_sym2 := self.env.comptime_number_to_type(got).symbol()?;
                 if got_sym2 in trait_info.implements {
@@ -195,7 +195,7 @@ extend Checker {
         return expected == got;
     }
 
-    func check_pointer(expected: +mut ast.Type, got: +mut ast.Type) -> bool {
+    func check_pointer(expected: ^mut ast.Type, got: ^mut ast.Type) -> bool {
         if expected is .Rawptr {
             // rawptr == &T, is valid
             return got is .Rawptr || got is .Pointer || got is .Boxedptr;

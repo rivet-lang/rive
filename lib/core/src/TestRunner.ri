@@ -50,7 +50,7 @@ $if _TESTS_ {
         }
     }
 
-    func test_error_throwed(err: +Throwable, pos: string, test_: &mut Test) {
+    func test_error_throwed(err: ^Throwable, pos: string, test_: &mut Test) {
         test_.result = .ErrorThrowed;
         test_.err = err;
         test_.err_pos = pos;
@@ -71,7 +71,7 @@ $if _TESTS_ {
         mut early_return: bool;
         mut err_pos: string;
         mut err_msg: string;
-        mut err: +Throwable;
+        mut err: ^Throwable;
     }
 
     struct TestRunner {
@@ -127,7 +127,7 @@ $if _TESTS_ {
             self.fail_tests += 1;
         }
 
-        func print_error_throwed(&mut self, pos: string, err: +Throwable) {
+        func print_error_throwed(&mut self, pos: string, err: ^Throwable) {
             console_ewriteln(failed_status);
             console_ewriteln("     at {}: error throwed: {}", bold(pos), err);
             self.fail_tests += 1;

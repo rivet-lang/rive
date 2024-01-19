@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_global_vars(+mut self, decls: []+mut ast.Decl) {
+    func check_global_vars(^mut self, decls: []^mut ast.Decl) {
         for decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
@@ -17,7 +17,7 @@ extend Checker {
         }
     }
 
-    func check_decls(+mut self, decls: []+mut ast.Decl) {
+    func check_decls(^mut self, decls: []^mut ast.Decl) {
         for decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
@@ -25,10 +25,10 @@ extend Checker {
         }
     }
 
-    func check_decl(+mut self, decl: +mut ast.Decl) {
+    func check_decl(^mut self, decl: ^mut ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
-        match decl.+ {
+        match decl.^ {
             .ComptimeIf(&mut comptime_if) -> {
                 decls := ast.nodes_to_decls(
                     self.env.evalue_comptime_if(comptime_if)
@@ -84,7 +84,7 @@ extend Checker {
                     };
                 } else {
                     const_decl.type = self.check_expr(const_decl.expr);
-                    @as(+mut ast.Const, const_decl.sym).type = const_decl.type;
+                    @as(^mut ast.Const, const_decl.sym).type = const_decl.type;
                 }
                 if const_decl.type is .Option || const_decl.type is .None {
                     report.error(
@@ -110,7 +110,7 @@ extend Checker {
                     if sym := base.symbol() {
                         if sym.info is .Trait {
                             self.check_trait_impl(
-                                @as(+mut ast.TypeSym, enum_decl.sym), sym, enum_decl.pos
+                                @as(^mut ast.TypeSym, enum_decl.sym), sym, enum_decl.pos
                             );
                         }
                     }
@@ -127,7 +127,7 @@ extend Checker {
                     if sym := base.symbol() {
                         if sym.info is .Trait {
                             self.check_trait_impl(
-                                @as(+mut ast.TypeSym, struct_decl.sym), sym, struct_decl.pos
+                                @as(^mut ast.TypeSym, struct_decl.sym), sym, struct_decl.pos
                             );
                         }
                     }
@@ -160,7 +160,7 @@ extend Checker {
             .Func(&mut func_decl) -> self.check_func(func_decl),
             .Test(&test_decl) -> {
                 old_cur_func := self.cur_func;
-                self.cur_func = +mut ast.Func(ret_type: +mut .Void);
+                self.cur_func = ^mut ast.Func(ret_type: ^mut .Void);
                 self.inside_test = true;
                 self.check_stmts(test_decl.stmts);
                 self.inside_test = false;
@@ -171,7 +171,7 @@ extend Checker {
         }
     }
 
-    func check_func(+mut self, func_decl: &mut ast.Decl.Func) {
+    func check_func(^mut self, func_decl: &mut ast.Decl.Func) {
         if !func_decl.is_operator {
             name := if func_decl.is_method && func_decl.is_special_method {
                 func_decl.name.substr(2, func_decl.name.len - 2) // skip `__`
@@ -242,14 +242,14 @@ extend Checker {
             err.add_note("this is because Rivet cannot ensure that the function does not always return a null pointer");
             err.emit();
         }
-        self.cur_func = @as(+mut ast.Func, func_decl.sym);
+        self.cur_func = @as(^mut ast.Func, func_decl.sym);
         self.check_stmts(func_decl.stmts);
         func_decl.defer_stmts = self.defer_stmts;
-        self.defer_stmts = +[];
+        self.defer_stmts = ^[];
         self.check_scope_vars(func_decl.scope);
         if func_decl.ret_type is .Never && !self.inside_extern {
             if func_decl.stmts.len > 0 {
-                match func_decl.stmts[func_decl.stmts.len - 1].+ {
+                match func_decl.stmts[func_decl.stmts.len - 1].^ {
                     .While(while_stmt) if while_stmt.is_inf
                         && while_stmt.stmt is .Expr(expr) && expr is .Block(block) -> {
                         if !block.stmts.is_empty() {

@@ -5,8 +5,8 @@
 import ../{ ast, report, utils/maps };
 
 extend Checker {
-    func check_call(+mut self, call_expr: &mut ast.Expr.Call) -> +mut ast.Type {
-        call_expr.type = +mut .Void;
+    func check_call(^mut self, call_expr: &mut ast.Expr.Call) -> ^mut ast.Type {
+        call_expr.type = ^mut .Void;
 
         mut left := call_expr.left;
         inside_parens := if left is .Paren(paren)
@@ -17,7 +17,7 @@ extend Checker {
             false
         };
 
-        match left.+ {
+        match left.^ {
             .SelfTy(self_ty) -> self.check_ctor_call(self_ty.sym, call_expr),
             .Ident(ident) if (ident.is_sym || ident.is_obj) -> match ident.sym is {
                 ast.TypeSym(mut type_sym) if type_sym.info is .Trait
@@ -79,7 +79,7 @@ extend Checker {
                     );
                     err.add_help("use the option-check syntax: `foo?.method()` or use `??`: `(foo ?? 5).method()`");
                     err.emit();
-                    return +mut .Void;
+                    return ^mut .Void;
                 }
                 if left_sym := selector.left_type.symbol() {
                     if method := left_sym.find_method(selector.field_name) {
@@ -191,19 +191,19 @@ extend Checker {
         return call_expr.type;
     }
 
-    func check_ctor_call(+mut self, type_sym: +mut ast.TypeSym, call_expr: &mut ast.Expr.Call) {
+    func check_ctor_call(^mut self, type_sym: ^mut ast.TypeSym, call_expr: &mut ast.Expr.Call) {
         call_expr.is_constructor = true;
         call_expr.type = if type_sym.info is .Struct(struct_info) && struct_info.is_enum_variant {
             call_expr.is_enum_variant = true;
             call_expr.enum_variant_sym = type_sym;
-            +mut .Basic(struct_info.parent)
+            ^mut .Basic(struct_info.parent)
         } else {
-            +mut .Basic(type_sym, pos: call_expr.pos)
+            ^mut .Basic(type_sym, pos: call_expr.pos)
         };
-        match type_sym.info.+ {
+        match type_sym.info.^ {
             .Enum(&enum_info) -> {
                 variant := if call_expr.left is .Selector(selector) {
-                    @as(ast.TypeInfo.Enum, @as(+mut ast.TypeSym, selector.left_sym).info)
+                    @as(ast.TypeInfo.Enum, @as(^mut ast.TypeSym, selector.left_sym).info)
                         .get_variant(selector.field_name)?
                 } else {
                     enum_info.get_variant(@as(ast.Expr.EnumLiteral, call_expr.left).value)?
@@ -340,7 +340,7 @@ extend Checker {
                         );
                         continue;
                     }
-                    match field.type.+ {
+                    match field.type.^ {
                         .Pointer, .Rawptr if !was_initted -> report.warn(
                             "field `{}` of type `{}` must be initialized".fmt(
                                 field.name, type_sym.name
@@ -348,7 +348,7 @@ extend Checker {
                         ),
                         else -> if f_type_sym := field.type.symbol();
                             f_type_sym.default_value == none {
-                            match f_type_sym.info.+ {
+                            match f_type_sym.info.^ {
                                 .Trait if !was_initted -> report.warn(
                                     "field `{}` of type `{}` must be initialized".fmt(
                                         field.name, type_sym.name
@@ -369,7 +369,7 @@ extend Checker {
         }
     }
 
-    func check_func_call(+mut self, func_: +mut ast.Func, call_expr: &mut ast.Expr.Call) {
+    func check_func_call(^mut self, func_: ^mut ast.Func, call_expr: &mut ast.Expr.Call) {
         call_expr.type = func_.ret_type;
         kind := func_.kind();
 
@@ -491,7 +491,7 @@ extend Checker {
             if spread_expr_sym.info is .DynArray || spread_expr_sym.info is .Array
                 || spread_expr_sym.info is .Slice {
                 last_arg_type := func_.args[func_.args.len - 1].type;
-                spread_t := +mut ast.Type.Variadic(spread_expr_sym.info.elem_type()?);
+                spread_t := ^mut ast.Type.Variadic(spread_expr_sym.info.elem_type()?);
                 self.check_types(spread_t, last_arg_type) catch |err| {
                     report.error(err.to_string(), call_expr.spread_expr.position());
                 };

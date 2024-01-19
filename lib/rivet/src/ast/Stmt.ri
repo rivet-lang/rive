@@ -9,30 +9,30 @@ pub enum Stmt {
     Empty(token.Pos),
     Comment(Comment),
     ComptimeIf(ComptimeIf),
-    Expr(+mut Expr),
+    Expr(^mut Expr),
     VarDecl {
-        lefts: []+mut ObjectData;
-        right: +mut Expr;
-        scope: +mut Scope;
+        lefts: []^mut ObjectData;
+        right: ^mut Expr;
+        scope: ^mut Scope;
         pos: token.Pos;
     },
     While {
-        mut cond: +mut Expr;
-        mut continue_expr: +mut Expr;
+        mut cond: ^mut Expr;
+        mut continue_expr: ^mut Expr;
         has_continue_expr: bool;
-        mut stmt: +mut Stmt;
-        mut else_stmt: +mut Stmt;
+        mut stmt: ^mut Stmt;
+        mut else_stmt: ^mut Stmt;
         has_else_stmt: bool;
         is_inf: bool;
         pos: token.Pos;
     },
     For {
-        index: +mut ObjectData;
+        index: ^mut ObjectData;
         has_index: bool;
-        values: []+mut ObjectData;
-        iterable: +mut Expr;
-        stmt: +mut Stmt;
-        scope: +mut Scope;
+        values: []^mut ObjectData;
+        iterable: ^mut Expr;
+        stmt: ^mut Stmt;
+        scope: ^mut Scope;
         pos: token.Pos;
     },
     Defer {
@@ -42,13 +42,13 @@ pub enum Stmt {
             Success
         }
 
-        expr: +mut Expr;
+        expr: ^mut Expr;
         mode: Mode;
         pos: token.Pos;
     };
 
-    pub func position(+self) -> token.Pos {
-        return match self.+ {
+    pub func position(^self) -> token.Pos {
+        return match self.^ {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
             .ComptimeIf(comptime_if) -> comptime_if.pos,

@@ -79,11 +79,11 @@ pub struct StringBuilder < Stringable {
     }
 
     #[inline]
-    pub func write_fmt(&mut self, s: string, args: ...+Stringable) {
+    pub func write_fmt(&mut self, s: string, args: ...^Stringable) {
         self.write(s.fmt(args));
     }
 
-    pub func writeln_fmt(&mut self, s: string, args: ...+Stringable) {
+    pub func writeln_fmt(&mut self, s: string, args: ...^Stringable) {
         self.write(s.fmt(args));
         self.write_byte('\n');
     }

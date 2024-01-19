@@ -5,8 +5,8 @@
 import ../{ ast, report };
 
 extend Resolver {
-    func resolve_type(+mut self, type: +mut ast.Type) -> bool {
-        return match type.+ {
+    func resolve_type(^mut self, type: ^mut ast.Type) -> bool {
+        return match type.^ {
             .Void, .Never, .Rawptr, .Boxedptr -> true,
             .Option(opt) -> self.resolve_type(opt.inner),
             .Result(res) -> self.resolve_type(res.inner),
@@ -79,7 +79,7 @@ extend Resolver {
                 res1
             },
             .Basic(&mut basic) -> if basic.is_unresolved {
-                match basic.expr.+ {
+                match basic.expr.^ {
                     .SelfTy -> if self.self_sym_is_set {
                         basic.is_unresolved = false;
                         basic.sym = self.self_sym;

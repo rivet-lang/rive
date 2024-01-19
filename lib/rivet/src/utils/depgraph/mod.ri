@@ -14,21 +14,21 @@ struct DepGraphNode {
 #[boxed]
 pub struct DepGraph {
     pub mut acyclic: bool;
-    pub mut nodes: []+mut DepGraphNode;
+    pub mut nodes: []^mut DepGraphNode;
 
     #[inline]
-    pub func new() -> +mut Self {
-        return +mut Self(true, []+mut DepGraphNode(cap: 1024));
+    pub func new() -> ^mut Self {
+        return ^mut Self(true, []^mut DepGraphNode(cap: 1024));
     }
 
     #[inline]
-    pub func add(+mut self, mod: string, deps: []string) {
-        self.nodes.push(+mut DepGraphNode(mod, deps));
+    pub func add(^mut self, mod: string, deps: []string) {
+        self.nodes.push(^mut DepGraphNode(mod, deps));
     }
 
-    pub func resolve(+self) -> +Self {
-        node_names := +mut OrderedDepMap();
-        node_deps := +mut OrderedDepMap();
+    pub func resolve(^self) -> ^Self {
+        node_names := ^mut OrderedDepMap();
+        node_deps := ^mut OrderedDepMap();
         for node in self.nodes {
             node_names.add(node.name, node.deps);
             node_deps.add(node.name, node.deps);
@@ -63,7 +63,7 @@ pub struct DepGraph {
         return resolved;
     }
 
-    pub func display(+self) -> string {
+    pub func display(^self) -> string {
         mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
@@ -73,7 +73,7 @@ pub struct DepGraph {
         return out.to_string();
     }
 
-    pub func display_cycles(+self) -> string {
+    pub func display_cycles(^self) -> string {
         mut out := strings.Builder.new();
         mut seen := false;
         mut nn := NodeNames();

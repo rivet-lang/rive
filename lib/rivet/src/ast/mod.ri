@@ -27,36 +27,36 @@ pub struct ObjectData {
     pub is_mut: bool;
     pub is_ref: bool;
     pub has_type: bool;
-    pub mut type: +mut Type;
+    pub mut type: ^mut Type;
     pub level: VarLevel;
     pub pos: token.Pos;
-    pub mut sym: +mut Var;
+    pub mut sym: ^mut Var;
     pub is_extern: bool;
     pub is_global: bool;
 }
 
-pub func universe() -> +mut Module {
-    return +mut Module(
+pub func universe() -> ^mut Module {
+    return ^mut Module(
         name: "universe",
-        scope: +mut Scope(
-            syms: +[
-                +mut TypeSym(name: "bool", info: +mut .Bool),
-                +mut TypeSym(name: "rune", info: +mut .Rune),
-                +mut TypeSym(name: "int8", info: +mut .SizedInt(8)),
-                +mut TypeSym(name: "int16", info: +mut .SizedInt(16)),
-                +mut TypeSym(name: "int32", info: +mut .SizedInt(32)),
-                +mut TypeSym(name: "int64", info: +mut .SizedInt(64)),
-                +mut TypeSym(name: "int", info: +mut .Int),
-                +mut TypeSym(name: "uint8", info: +mut .SizedUint(8)),
-                +mut TypeSym(name: "uint16", info: +mut .SizedUint(16)),
-                +mut TypeSym(name: "uint32", info: +mut .SizedUint(32)),
-                +mut TypeSym(name: "uint64", info: +mut .SizedUint(64)),
-                +mut TypeSym(name: "uint", info: +mut .Uint),
-                +mut TypeSym(name: "comptime_int", info: +mut .ComptimeInt),
-                +mut TypeSym(name: "comptime_float", info: +mut .ComptimeFloat),
-                +mut TypeSym(name: "float32", info: +mut .Float(32)),
-                +mut TypeSym(name: "float64", info: +mut .Float(64)),
-                +mut TypeSym(name: "string", info: +mut .Struct())
+        scope: ^mut Scope(
+            syms: ^[
+                ^mut TypeSym(name: "bool", info: ^mut .Bool),
+                ^mut TypeSym(name: "rune", info: ^mut .Rune),
+                ^mut TypeSym(name: "int8", info: ^mut .SizedInt(8)),
+                ^mut TypeSym(name: "int16", info: ^mut .SizedInt(16)),
+                ^mut TypeSym(name: "int32", info: ^mut .SizedInt(32)),
+                ^mut TypeSym(name: "int64", info: ^mut .SizedInt(64)),
+                ^mut TypeSym(name: "int", info: ^mut .Int),
+                ^mut TypeSym(name: "uint8", info: ^mut .SizedUint(8)),
+                ^mut TypeSym(name: "uint16", info: ^mut .SizedUint(16)),
+                ^mut TypeSym(name: "uint32", info: ^mut .SizedUint(32)),
+                ^mut TypeSym(name: "uint64", info: ^mut .SizedUint(64)),
+                ^mut TypeSym(name: "uint", info: ^mut .Uint),
+                ^mut TypeSym(name: "comptime_int", info: ^mut .ComptimeInt),
+                ^mut TypeSym(name: "comptime_float", info: ^mut .ComptimeFloat),
+                ^mut TypeSym(name: "float32", info: ^mut .Float(32)),
+                ^mut TypeSym(name: "float64", info: ^mut .Float(64)),
+                ^mut TypeSym(name: "string", info: ^mut .Struct())
             ]
         )
     );

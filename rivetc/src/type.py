@@ -103,7 +103,7 @@ class Type(TBase):
             res = str(self.sym.name)
         if self.is_boxed:
             if self.is_mut:
-                res = f"+mut {res}"
+                res = f"^mut {res}"
             else:
                 res = f"+{res}"
         return res

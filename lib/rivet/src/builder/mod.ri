@@ -11,17 +11,17 @@ import ../{
 };
 
 pub struct Builder {
-    mut env: +mut ast.Env;
+    mut env: ^mut ast.Env;
 
-    mut resolver: +mut resolver.Resolver;
-    mut checker: +mut checker.Checker;
+    mut resolver: ^mut resolver.Resolver;
+    mut checker: ^mut checker.Checker;
 
-    pub func new(prefs_: +mut prefs.Prefs) -> Self {
+    pub func new(prefs_: ^mut prefs.Prefs) -> Self {
         env := ast.Env.new(prefs_);
         return Self(
             env: env,
-            resolver: +mut resolver.Resolver(env),
-            checker: +mut checker.Checker(env)
+            resolver: ^mut resolver.Resolver(env),
+            checker: ^mut checker.Checker(env)
         );
     }
 
@@ -87,8 +87,8 @@ pub struct Builder {
         }
     }
 
-    func parse_files(&mut self, mod_sym: +mut ast.Module, files: []string) {
-        parser_ := +mut parser.Parser(env: self.env);
+    func parse_files(&mut self, mod_sym: ^mut ast.Module, files: []string) {
+        parser_ := ^mut parser.Parser(env: self.env);
         for sf in parser_.parse_module(mod_sym, files) {
             self.env.source_files.push(sf);
         }
@@ -120,7 +120,7 @@ pub struct Builder {
             }
             filtered_files
         } else {
-            +[self.env.prefs.input]
+            ^[self.env.prefs.input]
         };
         if files.is_empty() {
             utils.error("no input received");
@@ -130,7 +130,7 @@ pub struct Builder {
                 self.vlog("   > {}", file);
             }
         }
-        root_sym := +mut ast.Module(name: self.env.prefs.mod_name, is_root: true);
+        root_sym := ^mut ast.Module(name: self.env.prefs.mod_name, is_root: true);
         self.env.universe.scope.add(root_sym) catch |err| utils.error(
             "Builder.load_root_module: {}", err
         );
@@ -149,7 +149,7 @@ pub struct Builder {
     }
 
     func import_modules_from_decls(
-        mut self, sf: +mut ast.SourceFile, decls: []+mut ast.Decl
+        mut self, sf: ^mut ast.SourceFile, decls: []^mut ast.Decl
     ) -> ! {
         for decl in decls {
             if decl is .Import(&mut import_decl) {
@@ -163,7 +163,7 @@ pub struct Builder {
         }
     }
 
-    func import_module(&mut self, sf: +mut ast.SourceFile, import_decl: &mut ast.ImportDecl) -> ! {
+    func import_module(&mut self, sf: ^mut ast.SourceFile, import_decl: &mut ast.ImportDecl) -> ! {
         if !import_decl.subimports.is_empty() {
             for &mut subimport in import_decl.subimports {
                 self.import_module(sf, subimport)!;
@@ -191,9 +191,9 @@ pub struct Builder {
             } else {
                 self.vlog("    module `{}` loaded", path);
                 mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
-                    @as(+mut ast.Module, mod_mod_)
+                    @as(^mut ast.Module, mod_mod_)
                 } else {
-                    mod_sym := +mut ast.Module(name: mod.full_name);
+                    mod_sym := ^mut ast.Module(name: mod.full_name);
                     self.env.universe.scope.add(mod_sym) catch |err| {
                         report.error(err.to_string(), pos)
                     };
@@ -314,7 +314,7 @@ pub struct Builder {
         }
         self.vlog("-----------------------------------------");
         source_files := self.env.source_files;
-        self.env.source_files = []+mut ast.SourceFile(cap: source_files.len);
+        self.env.source_files = []^mut ast.SourceFile(cap: source_files.len);
         for node in g_resolved.nodes {
             for pf in source_files {
                 if pf.mod.name == node.name {
@@ -325,7 +325,7 @@ pub struct Builder {
         self.vlog("module dependencies resolved...");
     }
 
-    func import_graph(&mut self) -> +depgraph.DepGraph {
+    func import_graph(&mut self) -> ^depgraph.DepGraph {
         g := depgraph.DepGraph.new();
         for pf in self.env.source_files {
             mut deps := []string();
@@ -338,7 +338,7 @@ pub struct Builder {
         return g;
     }
 
-    func import_graph_decls(&mut self, pf: +mut ast.SourceFile, mut deps: []string, decls: []+mut ast.Decl) {
+    func import_graph_decls(&mut self, pf: ^mut ast.SourceFile, mut deps: []string, decls: []^mut ast.Decl) {
         for d in decls {
             if d is .Import(import_decl) {
                 if import_decl.subimports.len > 0 {
@@ -357,7 +357,7 @@ pub struct Builder {
         }
     }
 
-    func import_graph_mod(import_decl: &ast.ImportDecl, pf: +mut ast.SourceFile) -> ?string {
+    func import_graph_mod(import_decl: &ast.ImportDecl, pf: ^mut ast.SourceFile) -> ?string {
         if !import_decl.info.found {
             return none; // module not found
         }
@@ -368,7 +368,7 @@ pub struct Builder {
         return import_decl.info.full_name;
     }
 
-    func vlog(&self, msg: string, args: ...+traits.Stringable) {
+    func vlog(&self, msg: string, args: ...^traits.Stringable) {
         if self.env.prefs.is_verbose {
             console.writeln(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
         }

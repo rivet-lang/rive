@@ -24,7 +24,7 @@ pub struct ImportedMod {
     pub alias_name: string;
     pub found: bool;
     pub files: []string;
-    pub mut mod: +mut Module;
+    pub mut mod: ^mut Module;
 }
 
 pub struct ImportListInfo {
@@ -37,20 +37,20 @@ pub struct ImportListInfo {
 #[boxed]
 pub struct ImportedSymbol {
     pub name: string;
-    pub sym: +mut Sym;
+    pub sym: ^mut Sym;
     pub pos: token.Pos;
     pub mut is_used: bool;
 }
 
 pub struct ImportedSymbols {
-    pub mut syms: []+mut ImportedSymbol;
+    pub mut syms: []^mut ImportedSymbol;
 
     #[inline]
-    pub func add(&mut self, name: string, sym: +mut Sym, pos: token.Pos, is_used: bool := false) {
-        self.syms.push(+mut ImportedSymbol(name, sym, pos, is_used));
+    pub func add(&mut self, name: string, sym: ^mut Sym, pos: token.Pos, is_used: bool := false) {
+        self.syms.push(^mut ImportedSymbol(name, sym, pos, is_used));
     }
 
-    pub func find(&self, name: string) -> ?+mut ImportedSymbol {
+    pub func find(&self, name: string) -> ?^mut ImportedSymbol {
         for imported_sym in self.syms {
             if name == imported_sym.name {
                 return imported_sym;

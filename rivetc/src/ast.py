@@ -612,7 +612,7 @@ class ArrayLiteral:
     def __repr__(self):
         if len(self.elems) == 0:
             if self.is_dyn:
-                return "+[]"
+                return "^[]"
             return "[]"
         res = ""
         if self.is_dyn:

@@ -5,8 +5,8 @@
 import ../ast;
 
 extend Formatter {
-    func format_expr(+mut self, expr: +mut ast.Expr) {
-        match expr.+ {
+    func format_expr(^mut self, expr: ^mut ast.Expr) {
+        match expr.^ {
             .Empty -> {},
             .NoneLiteral -> self.write("none"),
             .Paren(paren) -> self.write_fmt("({})", paren.clean_paren()),

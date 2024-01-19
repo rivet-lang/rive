@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_builtin_call(+mut self, builtin_call: &mut ast.Expr.BuiltinCall) -> +mut ast.Type {
+    func check_builtin_call(^mut self, builtin_call: &mut ast.Expr.BuiltinCall) -> ^mut ast.Type {
         builtin_call.type = if builtin_call.builtin is .Func(b_func) {
             if b_func.is_unsafe && !self.inside_unsafe() {
                 report.warn(
@@ -99,12 +99,12 @@ extend Checker {
             }
             return_type
         } else {
-            +mut .Void
+            ^mut .Void
         };
         return builtin_call.type;
     }
 
-    func check_builtin_as(+mut self, builtin_call: &mut ast.Expr.BuiltinCall) {
+    func check_builtin_as(^mut self, builtin_call: &mut ast.Expr.BuiltinCall) {
         to_type := builtin_call.args[0].type;
         from_type := builtin_call.args[1].type;
         if to_type == from_type {
@@ -125,7 +125,7 @@ extend Checker {
                 );
             }
         } else if from_ts := from_type.symbol() {
-            match from_ts.info.+ {
+            match from_ts.info.^ {
                 .Trait(&mut trait_info) -> if to_ts := to_type.symbol() {
                     if to_ts in trait_info.implements {
                         trait_info.mark_has_objects();
@@ -159,7 +159,7 @@ extend Checker {
                             return; // Valid inside `core` module
                         }
                     }
-                    match to_ts.info.+ {
+                    match to_ts.info.^ {
                         .Enum(&enum_info2) if !enum_info2.is_tagged -> {
                             if self.env.is_int(to_type) && !self.inside_unsafe() {
                                 report.warn(

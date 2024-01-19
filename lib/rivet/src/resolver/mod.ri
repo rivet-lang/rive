@@ -8,30 +8,30 @@ import std/fs.Path;
 
 struct Prelude {
     name: string;
-    sym: +mut ast.Sym;
+    sym: ^mut ast.Sym;
 }
 
 #[boxed]
 pub struct Resolver {
-    mut env: +mut ast.Env;
+    mut env: ^mut ast.Env;
 
-    sym: +mut ast.Sym := ast.InvalidSym();
-    mut self_sym: +mut ast.TypeSym;
+    sym: ^mut ast.Sym := ast.InvalidSym();
+    mut self_sym: ^mut ast.TypeSym;
     mut preludes: []Prelude;
 
     mut self_sym_is_set: bool;
 
-    mut source_file: +mut ast.SourceFile;
+    mut source_file: ^mut ast.SourceFile;
     mut source_file_abi: ast.ABI;
     mut different_abi_usage_count: uint;
 
-    pub func resolve_files(+mut self, source_files: []+mut ast.SourceFile) {
-        register := +mut Register(self.env);
+    pub func resolve_files(^mut self, source_files: []^mut ast.SourceFile) {
+        register := ^mut Register(self.env);
         register.walk_files(source_files);
         if report.total_errors() > 0 {
             return;
         }
-        self.preludes = +[
+        self.preludes = ^[
             Prelude("Throwable", self.env.throwable_sym)
         ];
         for sf in source_files {
@@ -46,7 +46,7 @@ pub struct Resolver {
         }
     }
 
-    func detect_source_file_abi(+mut self) {
+    func detect_source_file_abi(^mut self) {
         filename := Path.file_name(self.source_file.path);
         if filename.ends_with(".c.ri") {
             self.source_file_abi = .C;
@@ -55,14 +55,14 @@ pub struct Resolver {
         }
     }
 
-    func check_vis(+self, sym: +mut ast.Sym, pos: token.Pos) {
+    func check_vis(^self, sym: ^mut ast.Sym, pos: token.Pos) {
         if !sym.is_public && !self.source_file.mod.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }
     }
 
-    func eval_size(+mut self, expr: +mut ast.Expr) -> ?int {
-        return match expr.+ {
+    func eval_size(^mut self, expr: ^mut ast.Expr) -> ?int {
+        return match expr.^ {
             .ComptimeIf(&mut comptime_if) -> {
                 ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];
                 self.eval_size(ct_expr)
@@ -123,7 +123,7 @@ pub struct Resolver {
         };
     }
 
-    func eval_sym(+mut self, sym: +mut ast.Sym, pos: token.Pos) -> ?int {
+    func eval_sym(^mut self, sym: ^mut ast.Sym, pos: token.Pos) -> ?int {
         if sym is ast.Const(mut const_) {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;
@@ -134,7 +134,7 @@ pub struct Resolver {
         return none;
     }
 
-    func check_variable_shadowing(+self, name: string, pos: token.Pos) {
+    func check_variable_shadowing(^self, name: string, pos: token.Pos) {
         if self.source_file.imported_symbols.exists(name) {
             report.error(
                 "name `{}` hide an imported symbol".fmt(name), pos

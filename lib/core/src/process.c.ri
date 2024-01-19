@@ -45,7 +45,7 @@ pub func process_id() -> uint32 {
 
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
-pub func process_panic(s: string := "", args: ...+Stringable) -> never {
+pub func process_panic(s: string := "", args: ...^Stringable) -> never {
     console_ewriteln("panic: {}", s.fmt(args));
     bt_print(2);
     process_exit(101);

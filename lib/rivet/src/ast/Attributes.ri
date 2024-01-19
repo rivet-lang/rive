@@ -8,14 +8,14 @@ import ../token;
 pub struct AttributeDuplicatedError < Throwable {
     name: string;
 
-    pub func to_string(+self) -> string {
+    pub func to_string(^self) -> string {
         return "duplicated attribute `{}`".fmt(self.name);
     }
 }
 
 pub struct AttributeArgument {
     pub name: string;
-    pub expr: +mut Expr;
+    pub expr: ^mut Expr;
     pub is_named: bool;
 }
 

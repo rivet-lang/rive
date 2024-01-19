@@ -6,7 +6,7 @@ import std/{ traits, strings, console };
 
 import ../{ prefs, token, utils };
 
-pub var report_table := +mut ReportTable();
+pub var report_table := ^mut ReportTable();
 
 #[inline]
 pub func error(msg: string, pos: token.Pos) {
@@ -40,7 +40,7 @@ pub func total_warns() -> uint {
 
 #[boxed]
 struct ReportTable {
-    pub prefs: +mut prefs.Prefs;
+    pub prefs: ^mut prefs.Prefs;
     pub mut errors: uint;
     pub mut warns: uint;
 
@@ -67,12 +67,12 @@ pub struct ReportBuilder {
     mut attributes: []Attribute;
 
     #[inline]
-    pub func add_note(mut self, msg: string, args: ...+traits.Stringable) {
+    pub func add_note(mut self, msg: string, args: ...^traits.Stringable) {
         self.attributes.push(Attribute(.Note, msg.fmt(args)));
     }
 
     #[inline]
-    pub func add_help(mut self, msg: string, args: ...+traits.Stringable) {
+    pub func add_help(mut self, msg: string, args: ...^traits.Stringable) {
         self.attributes.push(Attribute(.Help, msg.fmt(args)));
     }
 

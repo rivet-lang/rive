@@ -5,7 +5,7 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_stmts(+mut self, stmts: []+mut ast.Stmt) {
+    func check_stmts(^mut self, stmts: []^mut ast.Stmt) {
         mut unreachable_pos := token.no_pos;
         for stmt in stmts {
             if self.scope_returns && unreachable_pos.pos == 0 {
@@ -19,8 +19,8 @@ extend Checker {
         self.scope_returns = false;
     }
 
-    func check_stmt(+mut self, stmt: +mut ast.Stmt) {
-        match stmt.+ {
+    func check_stmt(^mut self, stmt: ^mut ast.Stmt) {
+        match stmt.^ {
             .ComptimeIf(&mut comptime_if) -> {
                 stmts := ast.nodes_to_stmts(self.env.evalue_comptime_if(comptime_if));
                 self.check_stmts(stmts);
@@ -38,7 +38,7 @@ extend Checker {
         }
     }
 
-    func check_for(+mut self, for_stmt: &mut ast.Stmt.For) {
+    func check_for(^mut self, for_stmt: &mut ast.Stmt.For) {
         prev_loop_control_tracker := self.loop_control_tracker;
         self.loop_control_tracker = .AnyLoop;
         defer self.loop_control_tracker = prev_loop_control_tracker;
@@ -66,7 +66,7 @@ extend Checker {
                     if elem_sym.is_boxed() {
                         report.error("cannot take the address of a boxed value", value0.pos);
                     }
-                    elem_type = +mut .Pointer(elem_type);
+                    elem_type = ^mut .Pointer(elem_type);
                 }
             }
             if for_stmt.has_index {
@@ -102,7 +102,7 @@ extend Checker {
         }
     }
 
-    func check_while(+mut self, while_stmt: &mut ast.Stmt.While)  {
+    func check_while(^mut self, while_stmt: &mut ast.Stmt.While)  {
         prev_loop_control_tracker := self.loop_control_tracker;
         self.loop_control_tracker = .AnyLoop;
         defer self.loop_control_tracker = prev_loop_control_tracker;
@@ -126,7 +126,7 @@ extend Checker {
         }
     }
 
-    func check_defer(+mut self, defer_stmt: &mut ast.Stmt.Defer) {
+    func check_defer(^mut self, defer_stmt: &mut ast.Stmt.Defer) {
         prev_return_tracker := self.return_tracker;
         self.return_tracker = .Defer;
         defer self.return_tracker = prev_return_tracker;

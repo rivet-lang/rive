@@ -7,9 +7,9 @@ import ../{ ast, utils, report, utils/maps };
 extend Checker {
     const MATCH_EXHAUSTIVE_CUTOFF_LIMIT := 12;
 
-    func check_match(+mut self, match_expr: &mut ast.Expr.Match) -> +mut ast.Type {
+    func check_match(^mut self, match_expr: &mut ast.Expr.Match) -> ^mut ast.Type {
         old_expected_type := self.expected_type;
-        match_expr.type = +mut .Void;
+        match_expr.type = ^mut .Void;
         if match_expr.branches.len == 1 && match_expr.has_else {
             report.error(
                 "`match` must have at least one non `else` branch",
@@ -29,21 +29,21 @@ extend Checker {
                     "invalid type `{}` used as `match` condition".fmt(expr_type),
                     match_expr.expr.position()
                 );
-                return +mut .Void;
+                return ^mut .Void;
             }
-            +mut ast.TypeSym()
+            ^mut ast.TypeSym()
         };
         if match_expr.expr is .Guard(guard_expr) {
             if guard_expr.vars.len == 1 {
                 expr_type = guard_expr.vars[0].type;
                 expr_sym = expr_type.symbol()?;
             } else {
-                mut types := []+mut ast.Type();
+                mut types := []^mut ast.Type();
                 for var_ in guard_expr.vars {
                     types.push(var_.type);
                 }
                 expr_sym = self.env.universe.add_or_get_tuple(types);
-                expr_type = +mut .Tuple(types, expr_sym);
+                expr_type = ^mut .Tuple(types, expr_sym);
             }
         } else {
             if match_expr.is_typematch && !(expr_sym.info is .Enum
@@ -109,7 +109,7 @@ extend Checker {
                                     } else if branch_var.type.is_boxed() {
                                         report.error("cannot take the address of a boxed value", branch_var.pos);
                                     }
-                                    branch_var.type = +mut .Pointer(branch_var.type, branch_var.is_mut);
+                                    branch_var.type = ^mut .Pointer(branch_var.type, branch_var.is_mut);
                                 } else {
                                     branch.scope.update_is_hidden_ref(
                                         branch_var.name, branch_var.is_mut
@@ -137,7 +137,7 @@ extend Checker {
                 }
                 self.expected_type = old_expected_type;
             }
-            mut branch_t := +mut ast.Type.Void;
+            mut branch_t := ^mut ast.Type.Void;
             if ib == 0 {
                 branch_t = self.check_expr(branch.expr);
                 if match_expr.expected_type is .Void {

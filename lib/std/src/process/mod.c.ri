@@ -22,7 +22,7 @@ pub var executable_dir := Path.dir_name(executable() catch wd_at_startup);
 pub struct NotADirectoryError < Throwable {
     msg: string;
 
-    pub func to_string(+self) -> string {
+    pub func to_string(^self) -> string {
         return self.msg;
     }
 }
@@ -43,7 +43,7 @@ struct Result {
 struct ExecutionFailedError < Throwable {
     cmd: string;
 
-    pub func to_string(+self) -> string {
+    pub func to_string(^self) -> string {
         return "execution failed for `{}`".fmt(self.cmd);
     }
 }

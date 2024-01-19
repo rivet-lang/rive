@@ -598,14 +598,14 @@ class Parser:
         sc = self.scope
         self.expect(Kind.Lparen)
         if self.tok.kind != Kind.Rparen:
-            # receiver (`self`|`mut self`|`&self`|`&mut self`|`+self`|`+mut self`)
+            # receiver (`self`|`mut self`|`&self`|`&mut self`|`^self`|`^mut self`)
             if self.tok.kind == Kind.KwSelf or (
-                self.tok.kind in (Kind.Amp, Kind.Plus, Kind.KwMut)
+                self.tok.kind in (Kind.Amp, Kind.Xor, Kind.KwMut)
                 and self.peek_tok.kind in (Kind.KwMut, Kind.KwSelf)
             ):
                 is_method = True
                 self_is_ptr = self.accept(Kind.Amp)
-                self_is_boxed = not self_is_boxed and self.accept(Kind.Plus)
+                self_is_boxed = not self_is_boxed and self.accept(Kind.Xor)
                 self_is_mut = self.accept(Kind.KwMut)
                 self.expect(Kind.KwSelf)
                 if self.tok.kind != Kind.Rparen:
@@ -707,12 +707,12 @@ class Parser:
                     cond = self.parse_expr()
                 if self.accept(Kind.Colon):
                     continue_expr = self.parse_expr()
-            stmt = self.parse_stmt()
+            stmt = self.parse_block_stmt()
             if isinstance(cond, ast.GuardExpr):
                 self.close_scope()
             else_stmt = None
             if self.accept(Kind.KwElse):
-                else_stmt = self.parse_stmt()
+                else_stmt = self.parse_block_stmt()
             return ast.WhileStmt(
                 self.scope, cond, continue_expr, stmt, else_stmt, is_inf, pos
             )
@@ -736,7 +736,7 @@ class Parser:
                 )
             self.expect(Kind.KwIn)
             iterable = self.parse_expr()
-            stmt = self.parse_stmt()
+            stmt = self.parse_block_stmt()
             self.close_scope()
             return ast.ForStmt(sc, index, value, iterable, stmt, pos)
         elif self.accept(Kind.KwDefer):
@@ -755,7 +755,10 @@ class Parser:
                         defer_mode_name_pos
                     )
             pos = self.prev_tok.pos
-            expr = self.parse_expr()
+            if self.tok.kind == Kind.Lbrace:
+                expr = self.parse_block_expr()
+            else:
+                expr = self.parse_expr()
             if expr.__class__ not in (ast.IfExpr, ast.MatchExpr, ast.Block):
                 self.expect(Kind.Semicolon)
             return ast.DeferStmt(expr, defer_mode, pos, self.scope)
@@ -802,6 +805,10 @@ class Parser:
         return ast.ObjDecl(
             is_mut, is_ref, name, has_typ, typ, sym.ObjLevel.Local, pos
         )
+    
+    def parse_block_stmt(self):
+        expr = self.parse_block_expr(False)
+        return ast.ExprStmt(expr, expr.pos)
 
     # ---- expressions -------------------------
     def parse_expr(self):
@@ -882,6 +889,8 @@ class Parser:
                     break
             elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
                 op = self.tok.kind
+                if op in (Kind.Amp, Kind.Xor) and self.prev_tok.pos.line < self.tok.pos.line:
+                    break
                 self.next()
                 right = self.parse_additive_expr()
                 left = ast.BinaryExpr(left, op, right, left.pos)
@@ -893,8 +902,6 @@ class Parser:
         left = self.parse_multiplicative_expr()
         while True:
             if self.tok.kind in [Kind.Plus, Kind.Minus]:
-                if self.tok.kind == Kind.Plus and self.prev_tok.pos.line != self.tok.pos.line:
-                    break
                 op = self.tok.kind
                 self.next()
                 right = self.parse_multiplicative_expr()
@@ -924,6 +931,12 @@ class Parser:
             is_mut_ptr = op == Kind.Amp and self.accept(Kind.KwMut)
             right = self.parse_unary_expr()
             expr = ast.UnaryExpr(right, op, is_mut_ptr, pos)
+        elif self.tok.kind == Kind.Xor and self.peek_tok.kind != Kind.Lbracket:
+            pos = self.tok.pos
+            self.next()
+            is_mut_ptr = self.accept(Kind.KwMut)
+            right = self.parse_unary_expr()
+            expr = ast.UnaryExpr(right, Kind.Xor, is_mut_ptr, pos)
         else:
             expr = self.parse_primary_expr()
         return expr
@@ -1013,12 +1026,9 @@ class Parser:
                 expr = ast.ParExpr(e, e.pos)
         elif self.tok.kind in (Kind.KwUnsafe, Kind.Lbrace):
             expr = self.parse_block_expr()
-        elif self.tok.kind in (Kind.Lbracket, Kind.Plus):
+        elif self.tok.kind in (Kind.Lbracket, Kind.Xor):
             pos = self.tok.pos
-            is_dyn = self.accept(Kind.Plus)
-            if self.tok.kind != Kind.Lbracket:
-                is_mut = self.accept(Kind.KwMut)
-                return ast.UnaryExpr(self.parse_expr(), Kind.Plus, is_mut, pos)
+            is_dyn = self.accept(Kind.Xor)
             elems = []
             self.next()
             if self.tok.kind != Kind.Rbracket:
@@ -1219,7 +1229,7 @@ class Parser:
             ):
                 break
             elif self.accept(Kind.Dot):
-                if self.accept(Kind.Plus):
+                if self.accept(Kind.Xor):
                     expr = ast.SelectorExpr(
                         expr, "", expr.pos, self.prev_tok.pos,
                         is_boxed_indirect = True
@@ -1241,7 +1251,7 @@ class Parser:
                 break
         return expr
 
-    def parse_block_expr(self):
+    def parse_block_expr(self, accept_expr = True):
         # block expression
         pos = self.tok.pos
         is_unsafe = self.accept(Kind.KwUnsafe)
@@ -1255,13 +1265,14 @@ class Parser:
         expr = None
         while not self.accept(Kind.Rbrace):
             stmt = self.parse_stmt()
-            has_expr = isinstance(
-                stmt, ast.ExprStmt
-            ) and self.prev_tok.kind != Kind.Semicolon and self.tok.kind == Kind.Rbrace
-            if has_expr:
-                expr = stmt.expr
-            else:
-                stmts.append(stmt)
+            if accept_expr:
+                has_expr = isinstance(
+                    stmt, ast.ExprStmt
+                ) and self.prev_tok.kind != Kind.Semicolon and self.tok.kind == Kind.Rbrace
+                if has_expr:
+                    expr = stmt.expr
+                else:
+                    stmts.append(stmt)
         self.close_scope()
         self.inside_block = prev_inside_block
         return ast.Block(sc, is_unsafe, stmts, expr, has_expr, pos)
@@ -1552,9 +1563,9 @@ class Parser:
             )
         elif self.accept(Kind.KwNone):
             return self.comp.none_t
-        elif self.tok.kind in (Kind.Plus, Kind.Name):
+        elif self.tok.kind in (Kind.Xor, Kind.Name):
             prev_tok_kind = self.prev_tok.kind
-            is_boxed = self.accept(Kind.Plus)
+            is_boxed = self.accept(Kind.Xor)
             is_mut = is_boxed and self.accept(Kind.KwMut)
             if self.accept(Kind.KwSelfTy):
                 return type.Type.unresolved(

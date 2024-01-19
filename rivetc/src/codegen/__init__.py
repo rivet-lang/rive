@@ -1704,7 +1704,7 @@ class Codegen:
             self.cur_func.inline_alloca(expr_typ_ir, tmp, value)
             return ir.Ident(expr_typ_ir, tmp)
         elif isinstance(expr, ast.UnaryExpr):
-            if expr.op == Kind.Plus:
+            if expr.op == Kind.Xor:
                 right = self.gen_expr(expr.right)
                 if isinstance(right.typ, ir.Pointer):
                     return right

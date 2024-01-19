@@ -184,7 +184,7 @@ class Checker:
                         decl.name_pos
                     )
                     report.note(
-                        f"type `{self_sym.name}` is boxed, should use `+self` or `+mut self` instead"
+                        f"type `{self_sym.name}` is boxed, should use `+self` or `^mut self` instead"
                     )
             for arg in decl.args:
                 if arg.has_def_expr:
@@ -629,7 +629,7 @@ class Checker:
                         "operator `-` can only be used with signed values",
                         expr.pos
                     )
-            elif expr.op == Kind.Plus:
+            elif expr.op == Kind.Xor:
                 if isinstance(expr.typ, type.Type):
                     expr.typ = type.Type(expr.typ.sym, True, expr.is_mut_ptr)
             elif expr.op == Kind.Amp:

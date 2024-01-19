@@ -14,7 +14,7 @@ pub enum Decl {
         docs: []Comment;
         attributes: Attributes;
         abi: ABI;
-        mut decls: []+mut Decl;
+        mut decls: []^mut Decl;
         pos: token.Pos;
     },
     Alias {
@@ -22,45 +22,45 @@ pub enum Decl {
         attributes: Attributes;
         is_public: bool;
         name: string;
-        parent: +mut Expr;
+        parent: ^mut Expr;
         is_typealias: bool;
-        mut parent_type: +mut Type;
+        mut parent_type: ^mut Type;
         pos: token.Pos;
-        mut sym: +mut Sym;
+        mut sym: ^mut Sym;
     },
     Trait {
         docs: []Comment;
         attributes: Attributes;
         is_public: bool;
         name: string;
-        mut bases: []+mut Type;
-        mut decls: []+mut Decl;
+        mut bases: []^mut Type;
+        mut decls: []^mut Decl;
         pos: token.Pos;
-        mut sym: +mut Sym;
+        mut sym: ^mut Sym;
     },
     Enum {
         docs: []Comment;
         attributes: Attributes;
         is_public: bool;
         name: string;
-        mut underlying_type: +mut Type;
-        mut bases: []+mut Type;
+        mut underlying_type: ^mut Type;
+        mut bases: []^mut Type;
         mut variants: []mut EnumVariantDecl;
         is_tagged: bool;
-        mut decls: []+mut Decl;
+        mut decls: []^mut Decl;
         pos: token.Pos;
-        mut sym: +mut Sym;
+        mut sym: ^mut Sym;
     },
     Struct {
         docs: []Comment;
         attributes: Attributes;
         is_public: bool;
         name: string;
-        mut bases: []+mut Type;
-        mut decls: []+mut Decl;
+        mut bases: []^mut Type;
+        mut decls: []^mut Decl;
         is_opaque: bool;
         pos: token.Pos;
-        mut sym: +mut Sym;
+        mut sym: ^mut Sym;
     },
     Field {
         docs: []Comment;
@@ -68,16 +68,16 @@ pub enum Decl {
         is_public: bool;
         is_mut: bool;
         name: string;
-        mut type: +mut Type;
-        mut def_expr: +mut Expr;
+        mut type: ^mut Type;
+        mut def_expr: ^mut Expr;
         has_def_expr: bool;
         pos: token.Pos;
     },
     Extend {
         attributes: Attributes;
-        mut type: +mut Type;
-        mut bases: []+mut Type;
-        mut decls: []+mut Decl;
+        mut type: ^mut Type;
+        mut bases: []^mut Type;
+        mut decls: []^mut Decl;
         pos: token.Pos;
     },
     Const {
@@ -86,10 +86,10 @@ pub enum Decl {
         is_public: bool;
         name: string;
         has_type: bool;
-        mut type: +mut Type;
-        mut expr: +mut Expr;
+        mut type: ^mut Type;
+        mut expr: ^mut Expr;
         pos: token.Pos;
-        mut sym: +mut Sym;
+        mut sym: ^mut Sym;
     },
     Var {
         docs: []Comment;
@@ -97,11 +97,11 @@ pub enum Decl {
         is_public: bool;
         is_extern: bool;
         abi: ABI;
-        mut lefts: []+mut ObjectData;
-        mut right: +mut Expr;
+        mut lefts: []^mut ObjectData;
+        mut right: ^mut Expr;
         pos: token.Pos;
-        mut sym: +mut Sym;
-        scope: +mut Scope;
+        mut sym: ^mut Sym;
+        scope: ^mut Scope;
     },
     Func {
         docs: []Comment;
@@ -116,33 +116,33 @@ pub enum Decl {
         is_operator: bool;
         abi: ABI;
         name: string;
-        args: []+mut Arg;
+        args: []^mut Arg;
         has_named_args: bool;
-        ret_type: +mut Type;
-        stmts: []+mut Stmt;
-        scope: +mut Scope;
+        ret_type: ^mut Type;
+        stmts: []^mut Stmt;
+        scope: ^mut Scope;
         has_body: bool;
         self_is_ptr: bool;
         self_is_boxed: bool;
         self_is_mut: bool;
-        mut self_type: +mut Type;
+        mut self_type: ^mut Type;
         pos: token.Pos;
         self_pos: token.Pos;
-        mut sym: +mut Sym;
+        mut sym: ^mut Sym;
         mut defer_stmts: []mut Stmt.Defer;
     },
     Test {
         docs: []Comment;
         attributes: Attributes;
         name: string;
-        mut stmts: []+mut Stmt;
-        scope: +mut Scope;
+        mut stmts: []^mut Stmt;
+        scope: ^mut Scope;
         pos: token.Pos;
         mut defer_stmts: []mut Stmt.Defer;
     };
 
-    pub func position(+self) -> token.Pos {
-        return match self.+ {
+    pub func position(^self) -> token.Pos {
+        return match self.^ {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
             .ComptimeIf(comptime_if) -> comptime_if.pos,
@@ -161,8 +161,8 @@ pub enum Decl {
         };
     }
 
-    pub func decls(+self) -> ?[]+mut Self {
-        return match self.+ {
+    pub func decls(^self) -> ?[]^mut Self {
+        return match self.^ {
             .ComptimeIf(comptime_if) -> if branch_idx := comptime_if.branch_idx {
                 nodes_to_decls(
                     comptime_if.branches[branch_idx].nodes
@@ -182,16 +182,16 @@ pub enum Decl {
 
 pub struct EnumVariantDecl {
     pub name: string;
-    pub mut type: +mut Type;
+    pub mut type: ^mut Type;
     pub has_type: bool;
     pub has_value: bool;
-    pub value: +mut Expr;
-    pub mut decls: []+mut Decl;
+    pub value: ^mut Expr;
+    pub mut decls: []^mut Decl;
     pub pos: token.Pos;
 }
 
-pub func filter_field_decl(decls: []+mut Decl) -> []+mut Decl {
-    mut fields := []+mut Decl();
+pub func filter_field_decl(decls: []^mut Decl) -> []^mut Decl {
+    mut fields := []^mut Decl();
     for decl in decls {
         if decl is .Field {
             fields.push(decl);

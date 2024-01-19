@@ -8,12 +8,12 @@ pub enum Builtin {
     Invalid,
     Const {
         name: string;
-        type: +mut Type;
+        type: ^mut Type;
     },
     Func {
         name: string;
         args: []BuiltinArg;
-        type: +mut Type;
+        type: ^mut Type;
         is_unsafe: bool;
         checks: []BuiltinFuncCheck;
 
@@ -29,11 +29,11 @@ pub enum Builtin {
         }
     };
 
-    pub func type(self) -> +mut Type {
+    pub func type(self) -> ^mut Type {
         return match self {
             .Const(b_const) -> b_const.type,
             .Func(b_func) -> b_func.type,
-            else -> +mut .Void
+            else -> ^mut .Void
         };
     }
 }
@@ -42,7 +42,7 @@ struct BuiltinArg {
     pub name: string;
     pub is_mut: bool;
     pub is_any: bool; // any type
-    pub type: +mut Type;
+    pub type: ^mut Type;
     pub is_optional: bool;
 }
 
@@ -65,8 +65,8 @@ enum BuiltinFuncCheck {
 }
 
 extend Env {
-    func setup_builtins(+mut self) {
-        self.builtins = +[
+    func setup_builtins(^mut self) {
+        self.builtins = ^[
             // variables
             .Const("_FILE_", self.string_t),
             .Const("_LINE_", self.uint_t),
@@ -76,55 +76,55 @@ extend Env {
             .Const("_RIVET_COMMIT_", self.string_t),
 
             // functions
-            .Func("size_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
-            .Func("align_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("size_of", ^[BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("align_of", ^[BuiltinArg("value", is_any: true)], self.uint_t),
 
-            .Func("ptr_add", +[
+            .Func("ptr_add", ^[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], is_unsafe: true, checks: +[
+            ], is_unsafe: true, checks: ^[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
-            .Func("ptr_sub", +[
+            .Func("ptr_sub", ^[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], self.uint_t, is_unsafe: true, checks: +[
+            ], self.uint_t, is_unsafe: true, checks: ^[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
-            .Func("ptr_diff", +[
+            .Func("ptr_diff", ^[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("pointer2", is_any: true)
-            ], self.uint_t, is_unsafe: true, checks: +[
+            ], self.uint_t, is_unsafe: true, checks: ^[
                 .ArgumentTypeShouldBe(0, .Pointer),
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
 
-            .Func("as", +[
+            .Func("as", ^[
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("value", is_any: true)
-            ], checks: +[
+            ], checks: ^[
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Func("unreachable", +[], +mut .Never(token.no_pos)),
-            .Func("breakpoint", +[]),
-            .Func("assert", +[
+            .Func("unreachable", ^[], ^mut .Never(token.no_pos)),
+            .Func("breakpoint", ^[]),
+            .Func("assert", ^[
                 BuiltinArg("cond", type: self.bool_t),
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
             // TODO: rename to `ignore_warn`: `@ignore_warn("not_mutated", expr)`.
-            .Func("ignore_not_mutated_warn", +[
+            .Func("ignore_not_mutated_warn", ^[
                 BuiltinArg("expr", is_any: true, is_mut: true)
             ])
         ];
     }
 
-    pub func find_builtin(+self, name: string) -> ?Builtin {
+    pub func find_builtin(^self, name: string) -> ?Builtin {
         for builtin in self.builtins {
             is_equal := match builtin {
                 .Const(b_var) -> b_var.name == name,
@@ -138,7 +138,7 @@ extend Env {
         return none;
     }
 
-    pub func exist_builtin(+self, name: string) -> bool {
+    pub func exist_builtin(^self, name: string) -> bool {
         return self.find_builtin(name) != none;
     }
 }

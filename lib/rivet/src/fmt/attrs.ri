@@ -5,7 +5,7 @@
 import ../ast;
 
 extend Formatter {
-    func format_attributes(+mut self, attrs: ast.Attributes) {
+    func format_attributes(^mut self, attrs: ast.Attributes) {
         if attrs.is_empty() {
             return;
         }

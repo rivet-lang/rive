@@ -5,8 +5,8 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    func check_expr_is_mut(+self, expr: +mut ast.Expr, from_assign: bool := false) {
-        match expr.+ {
+    func check_expr_is_mut(^self, expr: ^mut ast.Expr, from_assign: bool := false) {
+        match expr.^ {
             .Paren(paren) -> self.check_expr_is_mut(paren.expr),
             .SelfLiteral(self_lit) -> self_lit.obj.is_changed = true,
             .Ident(ident) -> if ident.is_comptime {
@@ -111,7 +111,7 @@ extend Checker {
         }
     }
 
-    func check_sym_is_mut(sym: +mut ast.Sym, pos: token.Pos) {
+    func check_sym_is_mut(sym: ^mut ast.Sym, pos: token.Pos) {
         match sym is {
             ast.Const -> report.error(
                 "cannot use constant `{}` as mutable value".fmt(sym.name), pos

@@ -4,7 +4,7 @@
 
 import rivet/{ prefs, token, tokenizer, ast.Env };
 
-var prefs_ := +mut prefs.Prefs();
+var prefs_ := ^mut prefs.Prefs();
 
 func tokenize(text: string) -> []token.Token {
     tokenizer_ := tokenizer.Tokenizer.new(text, Env.new(prefs_));
