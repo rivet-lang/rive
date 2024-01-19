@@ -126,7 +126,7 @@ struct DynArray {
                 @ptr_add(@as(rawptr, old_ptr), (i + size) * self.elem_size),
                 (self.len - i - size) * self.elem_size
             );
-            mem.boxed_release(old_ptr);
+            // FIXME: mem.boxed_release(old_ptr);
         }
         self.len = new_size;
         self.cap = new_cap;

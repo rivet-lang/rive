@@ -76,6 +76,7 @@ pub struct MapStringArrayOfStringsIterator {
 pub struct MapStringArrayOfStrings {
     mut pairs: []mut StringArrayOfStrings;
 
+    #[inline]
     pub func iterator(&self) -> MapStringArrayOfStringsIterator {
         return MapStringArrayOfStringsIterator(self);
     }
