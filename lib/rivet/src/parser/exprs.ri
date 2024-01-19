@@ -712,7 +712,7 @@ extend Parser {
         );
     }
 
-    func parse_block_expr(^mut self) -> ^mut ast.Expr {
+    func parse_block_expr(^mut self, accept_expr: bool := true) -> ^mut ast.Expr {
         // block expression
         self.open_scope();
         sc := self.scope;
@@ -726,7 +726,7 @@ extend Parser {
         mut expr := ^mut ast.Expr.Empty(self.tok.pos);
         while !self.accept(.Rbrace) {
             stmt := self.parse_stmt();
-            if stmt is .Expr(stmt_expr) && self.prev_tok.kind != .Semicolon
+            if accept_expr && stmt is .Expr(stmt_expr) && self.prev_tok.kind != .Semicolon
                 && self.tok.kind == .Rbrace {
                 expr = stmt_expr;
                 has_expr = true;

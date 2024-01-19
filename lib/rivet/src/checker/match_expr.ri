@@ -60,7 +60,7 @@ extend Checker {
             }
         }
 
-        branch_exprs := maps.MapStringUint();
+        mut branch_exprs := maps.MapStringUint();
         match_expr.expected_type = self.expected_type;
         for ib, &mut branch in match_expr.branches {
             if !branch.is_else {

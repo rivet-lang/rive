@@ -44,7 +44,7 @@ extend Parser {
                 mut has_else_stmt := false;
                 else_stmt := if self.accept(.KwElse) {
                     has_else_stmt = true;
-                    self.parse_stmt()
+                    self.parse_block_stmt()
                 } else {
                     ^mut .Empty(self.tok.pos)
                 };
@@ -81,7 +81,7 @@ extend Parser {
                 }
                 self.expect(.KwIn);
                 iterable := self.parse_expr();
-                stmt := self.parse_stmt();
+                stmt := self.parse_block_stmt();
                 self.close_scope();
                 ^mut .For(
                     index: index, has_index: has_index, values: values,
@@ -108,7 +108,11 @@ extend Parser {
                     self.expect(.Rparen);
                 }
                 pos := self.prev_tok.pos;
-                expr := self.parse_expr();
+                expr := if self.tok.kind == .Lbrace {
+                    self.parse_block_expr(false)
+                } else {
+                    self.parse_expr() 
+                };
                 if !(expr is .If || expr is .Match || expr is .Block) {
                     self.expect(.Semicolon);
                 }
@@ -147,5 +151,10 @@ extend Parser {
                 ^mut .Expr(expr)
             }
         };
+    }
+
+    func parse_block_stmt(^mut self) -> ^mut ast.Stmt {
+        expr := self.parse_block_expr(false);
+        return ^mut .Expr(expr, expr.position());
     }
 }

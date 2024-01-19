@@ -164,7 +164,7 @@ pub struct Checker {
                         value_type := tuple_info.types[i];
                         if vd.has_type {
                             self.check_types(value_type, vd.type) catch |err| {
-                                errb := report.error_builder(
+                                mut errb := report.error_builder(
                                     err.to_string(), right.position()
                                 );
                                 errb.add_note("in element {} of tuple value", i);
@@ -201,7 +201,7 @@ pub struct Checker {
             for sym in scope.syms {
                 if sym is ast.Var(var_info) {
                     if !var_info.is_used && !var_info.name.starts_with("_") {
-                        warn_b := report.warn_builder(
+                        mut warn_b := report.warn_builder(
                             if var_info.level == .Receiver {
                                 "receiver `self` is not used"
                             } else {
@@ -219,7 +219,7 @@ pub struct Checker {
                         );
                         warn_b.emit();
                     } else if var_info.is_mut && !var_info.is_changed {
-                        warn_b := report.warn_builder(
+                        mut warn_b := report.warn_builder(
                             if var_info.level == .Receiver {
                                 "receiver `self` does not need to be mutable"
                             } else {

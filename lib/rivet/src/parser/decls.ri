@@ -14,7 +14,7 @@ extend Parser {
     }
 
     pub func parse_attributes(^mut self, parse_mod_attributes: bool := false) -> ast.Attributes {
-        attributes := ast.Attributes();
+        mut attributes := ast.Attributes();
         while self.accept(.Hash) {
             if parse_mod_attributes {
                 self.expect(.Bang);
@@ -477,9 +477,9 @@ extend Parser {
         sc.detached_from_parent = true;
         self.expect(.Lparen);
         if self.tok.kind != .Rparen {
-            // receiver (`self`|`mut self`|`&self`|`&mut self`|`^self`|`^mut self`)
+            // receiver (`self`|`&self`|`&mut self`|`^self`|`^mut self`)
             if self.tok.kind == .KwSelf || (
-                self.tok.kind in [.Amp, .KwMut, .Xor]
+                self.tok.kind in [.Amp, .Xor]
                 && self.peek_tok.kind in [.KwMut, .KwSelf]
             ) {
                 is_method = true;
@@ -488,7 +488,7 @@ extend Parser {
                 self_is_boxed = !self_is_ptr && self.accept(.Xor);
                 self_is_mut = self.accept(.KwMut);
                 self.expect(.KwSelf);
-                if self_is_mut || self_is_ptr || self_is_boxed {
+                if self_is_ptr || self_is_boxed {
                     self_pos += self.prev_tok.pos;
                 }
                 if self.tok.kind != .Rparen {

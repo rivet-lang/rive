@@ -756,7 +756,7 @@ class Parser:
                     )
             pos = self.prev_tok.pos
             if self.tok.kind == Kind.Lbrace:
-                expr = self.parse_block_expr()
+                expr = self.parse_block_expr(False)
             else:
                 expr = self.parse_expr()
             if expr.__class__ not in (ast.IfExpr, ast.MatchExpr, ast.Block):
@@ -1273,6 +1273,8 @@ class Parser:
                     expr = stmt.expr
                 else:
                     stmts.append(stmt)
+            else:
+                stmts.append(stmt)
         self.close_scope()
         self.inside_block = prev_inside_block
         return ast.Block(sc, is_unsafe, stmts, expr, has_expr, pos)

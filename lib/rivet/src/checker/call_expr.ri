@@ -272,7 +272,7 @@ extend Checker {
                 }
             },
             else -> {
-                initted_fields := maps.MapStringBool();
+                mut initted_fields := maps.MapStringBool();
                 type_fields := type_sym.full_fields();
                 if !call_expr.has_named_args() {
                     expr_args_len := call_expr.args.len;

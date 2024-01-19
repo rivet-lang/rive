@@ -361,7 +361,7 @@ extend Checker {
                 self.expected_type = value_type;
             } else {
                 self.check_types(type, value_type) catch |err| {
-                    err_b := report.error_builder(err.to_string(), value.position());
+                    mut err_b := report.error_builder(err.to_string(), value.position());
                     err_b.add_note(if array_lit.is_dyn {
                         "in element {} of dynamic array literal"
                     } else {

@@ -43,7 +43,7 @@ extend Checker {
                     }
                     if !arg_info.is_any {
                         self.check_types(arg.type, arg_info.type) catch |err| {
-                            err2 := report.error_builder(err.to_string(), arg.pos);
+                            mut err2 := report.error_builder(err.to_string(), arg.pos);
                             err2.add_note(
                                 "in argument `{}` of builtin function `{}`", arg_info.name,
                                 b_func.name
@@ -60,7 +60,7 @@ extend Checker {
                         arg1 := builtin_call.args[at.arg1_idx];
                         arg2 := builtin_call.args[at.arg2_idx];
                         if arg2.type != arg1.type {
-                            err2 := report.error_builder(
+                            mut err2 := report.error_builder(
                                 "expected type `{}`, found `{}`".fmt(arg2.type, arg1.type),
                                 arg1.pos
                             );
