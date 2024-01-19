@@ -137,6 +137,7 @@ pub enum Expr < traits.Stringable {
     	mut pos: token.Pos;
     	mut left_type: +mut Type;
     	mut type: +mut Type;
+        mut is_boxed: bool;
     	mut is_mut: bool;
     },
     OptionCheck {

@@ -158,6 +158,9 @@ extend Parser {
         while {
             match self.tok.kind {
                 .Plus, .Minus -> {
+                    if self.tok.kind == .Plus && self.prev_tok.pos.line != self.tok.pos.line {
+                        break;
+                    }
                     op := self.tok.kind;
                     self.next();
                     right := self.parse_multiplicative_expr();
@@ -547,9 +550,10 @@ extend Parser {
                 // avoid `expr` + `.EnumLiteral` concatenation
                 self.prev_tok.pos.line != self.tok.pos.line && self.tok.kind == .Dot
                 && self.peek_tok.kind == .Name && self.peek_tok.lit[0].is_upper() -> break,
-                self.accept(.Dot) -> if self.accept(.Mul) {
+                self.accept(.Dot) -> if self.accept(.Mul) || self.accept(.Plus) {
                     +mut .Indirect(
                         left: expr,
+                        is_boxed: self.prev_tok.kind == .Plus,
                         pos: expr.position() + self.prev_tok.pos
                     )
                 } else {
