@@ -47,11 +47,7 @@ class Codegen:
         self.loop_scope = None
         self.while_continue_expr = None
 
-        self.throwable_t = None
-
     def gen_source_files(self, source_files):
-        self.throwable_t = self.ir_type(self.comp.throwable_t)
-
         for mod in self.comp.universe.syms:
             if isinstance(mod, sym.Mod):
                 self.gen_mod_attributes(mod.name, mod.attributes)
@@ -303,7 +299,7 @@ class Codegen:
             if decl.is_method:
                 self_typ = self.ir_type(decl.self_typ)
                 if (decl.self_is_ptr or decl.self_is_boxed
-                    ) and not isinstance(self_typ, ir.Pointer):
+                    ) and not isinstance(self_typ, ir.Ptr):
                     self_typ = self_typ.ptr(decl.self_is_boxed)
                 args.append(ir.Ident(self_typ, "self"))
             for i, arg in enumerate(decl.args):
@@ -424,7 +420,7 @@ class Codegen:
             self.cur_func.add_label(body_label)
             value_t_ir = self.ir_type(iterable_sym.info.elem_typ)
             value_t_is_boxed = isinstance(
-                value_t_ir, ir.Pointer
+                value_t_ir, ir.Ptr
             ) and value_t_ir.is_managed
             if iterable_sym.kind == TypeKind.Array:
                 value = ir.Inst(
@@ -440,10 +436,10 @@ class Codegen:
                         ), idx
                     ]
                 )
-            if stmt.value.is_ref and not isinstance(value_t_ir, ir.Pointer):
-                value_t_ir = ir.Pointer(value_t_ir)
+            if stmt.value.is_ref and not isinstance(value_t_ir, ir.Ptr):
+                value_t_ir = ir.Ptr(value_t_ir)
             if not stmt.value.is_ref or (
-                isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed
+                isinstance(value_t_ir, ir.Ptr) and value_t_ir.is_managed
             ):
                 value = ir.Inst(ir.InstKind.LoadPtr, [value], value_t_ir)
             unique_ir_name = self.cur_func.unique_name(stmt.value.name)
@@ -585,8 +581,8 @@ class Codegen:
         ) and self.comp.is_number(expected_typ_) and expr.typ != expected_typ_:
             res_expr = ir.Inst(ir.InstKind.Cast, [res_expr, expected_typ])
 
-        if isinstance(res_expr.typ, ir.Pointer) and res_expr.typ != ir.RAWPTR_T:
-            if isinstance(expected_typ, ir.Pointer):
+        if isinstance(res_expr.typ, ir.Ptr) and res_expr.typ != ir.RAWPTR_T:
+            if isinstance(expected_typ, ir.Ptr):
                 nr_level_expected = expected_typ.nr_level()
                 nr_level = res_expr.typ.nr_level()
                 if nr_level > nr_level_expected and expected_typ != ir.RAWPTR_T:
@@ -605,11 +601,11 @@ class Codegen:
                 res_expr = ir.Inst(
                     ir.InstKind.LoadPtr, [res_expr], res_expr.typ.typ
                 )
-        elif isinstance(expected_typ, ir.Pointer
+        elif isinstance(expected_typ, ir.Ptr
                         ) and res_expr.typ not in (ir.VOID_T, ir.RAWPTR_T):
             nr_level_expected = expected_typ.nr_level()
             nr_level = res_expr.typ.nr_level(
-            ) if isinstance(res_expr.typ, ir.Pointer) else 0
+            ) if isinstance(res_expr.typ, ir.Ptr) else 0
             while nr_level < nr_level_expected:
                 res_expr = ir.Inst(
                     ir.InstKind.GetPtr, [res_expr], res_expr.typ.ptr()
@@ -829,7 +825,7 @@ class Codegen:
                         self.ir_type(expr.typ), obj_f,
                         ir.Name(f"v{variant_idx}")
                     )
-                    if isinstance(tmp_t, ir.Pointer):
+                    if isinstance(tmp_t, ir.Ptr):
                         value = ir.Inst(ir.InstKind.GetPtr, [value], tmp_t)
                     self.cur_func.inline_alloca(tmp_t, tmp, value)
                     return ir.Ident(tmp_t, tmp)
@@ -956,7 +952,7 @@ class Codegen:
                     ov_m = OVERLOADABLE_OPERATORS_STR[str(single_op)]
                     left_operand = left
                     right_operand = right
-                    if not isinstance(expr_left_typ_ir, ir.Pointer):
+                    if not isinstance(expr_left_typ_ir, ir.Ptr):
                         left_operand = ir.Inst(
                             ir.InstKind.GetPtr, [left_operand]
                         )
@@ -1126,7 +1122,7 @@ class Codegen:
                         expr.left.left.typ, expr.left.left
                     )
                     is_vtable_call = True
-                    if isinstance(self_expr.typ, ir.Pointer):
+                    if isinstance(self_expr.typ, ir.Ptr):
                         self_expr = ir.Inst(ir.InstKind.LoadPtr, [self_expr], self_expr.typ.typ)
                     if left_sym.kind == TypeKind.Trait:
                         if left2_sym.kind == TypeKind.Trait and left_sym != left2_sym:
@@ -1213,7 +1209,7 @@ class Codegen:
                     else:
                         self_expr = self.gen_expr(receiver)
                     if expr.sym.self_is_ptr and not isinstance(
-                        self_expr.typ, ir.Pointer
+                        self_expr.typ, ir.Ptr
                     ):
                         self_expr = ir.Inst(ir.InstKind.GetPtr, [self_expr])
                     elif isinstance(
@@ -1343,7 +1339,7 @@ class Codegen:
                             self.cur_func.add_call(
                                 "_R4core15uncatched_errorF", [
                                     ir.Selector(
-                                        self.throwable_t,
+                                        ir.THROWABLE_T,
                                         res_value, ir.Name("err")
                                     )
                                 ]
@@ -1353,7 +1349,7 @@ class Codegen:
                             self.cur_func.add_call(
                                 "_R4core18test_error_throwedF", [
                                     ir.Selector(
-                                        self.throwable_t,
+                                        ir.THROWABLE_T,
                                         res_value, ir.Name("err")
                                     ),
                                     self.gen_string_literal(pos),
@@ -1371,11 +1367,11 @@ class Codegen:
                             )
                             self.cur_func.store(
                                 ir.Selector(
-                                    self.throwable_t, tmp2,
+                                    ir.THROWABLE_T, tmp2,
                                     ir.Name("err")
                                 ),
                                 ir.Selector(
-                                    self.throwable_t,
+                                    ir.THROWABLE_T,
                                     res_value, ir.Name("err")
                                 )
                             )
@@ -1397,10 +1393,10 @@ class Codegen:
                                 expr.err_handler.varname, err_ir_name
                             )
                             self.cur_func.inline_alloca(
-                                self.throwable_t,
+                                ir.THROWABLE_T,
                                 err_ir_name,
                                 ir.Selector(
-                                    self.throwable_t,
+                                    ir.THROWABLE_T,
                                     res_value, ir.Name("err")
                                 )
                             )
@@ -1706,7 +1702,7 @@ class Codegen:
         elif isinstance(expr, ast.UnaryExpr):
             if expr.op == Kind.Xor:
                 right = self.gen_expr(expr.right)
-                if isinstance(right.typ, ir.Pointer):
+                if isinstance(right.typ, ir.Ptr):
                     return right
                 size, _ = self.comp.type_size(expr.right_typ, True)
                 res = self.boxed_instance(self.ir_type(expr.right_typ), size)
@@ -1858,7 +1854,7 @@ class Codegen:
                     )
                     var_t = self.ir_type(expr.var.typ)
                     var_t2 = var_t if isinstance(var_t,
-                                                 ir.Pointer) else var_t.ptr()
+                                                 ir.Ptr) else var_t.ptr()
                     if left_sym.kind == TypeKind.Enum:
                         union_name = f"{cg_utils.mangle_symbol(left_sym)}6_Union"
                         union_type = ir.Type(union_name)
@@ -1877,7 +1873,7 @@ class Codegen:
                             ]
                         )
                         if not ((
-                            isinstance(var_t2, ir.Pointer) and var_t2.is_managed
+                            isinstance(var_t2, ir.Ptr) and var_t2.is_managed
                         ) or expr.var.is_ref):
                             val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2.typ)
                     unique_name = self.cur_func.unique_name(expr.var.name)
@@ -2129,7 +2125,7 @@ class Codegen:
                         if b.has_var:
                             var_t = self.ir_type(b.var_typ)
                             var_t2 = var_t.ptr(
-                            ) if not isinstance(var_t, ir.Pointer) else var_t
+                            ) if not isinstance(var_t, ir.Ptr) else var_t
                             e_expr_typ_sym = expr.expr.typ.symbol()
                             if e_expr_typ_sym.kind == TypeKind.Enum:
                                 obj_f = ir.Selector(
@@ -2152,7 +2148,7 @@ class Codegen:
                                     ]
                                 )
                                 if not (
-                                    isinstance(var_t, ir.Pointer)
+                                    isinstance(var_t, ir.Ptr)
                                     and var_t.is_managed
                                 ):
                                     val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t.typ)
@@ -2191,12 +2187,12 @@ class Codegen:
                                 )
                             else:
                                 lhs = match_expr if isinstance(
-                                    match_expr.typ, ir.Pointer
+                                    match_expr.typ, ir.Ptr
                                 ) else ir.Inst(
                                     ir.InstKind.GetPtr, [match_expr]
                                 )
                                 rhs = p_conv if isinstance(
-                                    p_conv.typ, ir.Pointer
+                                    p_conv.typ, ir.Ptr
                                 ) else ir.Inst(ir.InstKind.GetPtr, [p_conv])
                                 inst = ir.Inst(
                                     ir.InstKind.Call, [
@@ -2356,7 +2352,7 @@ class Codegen:
                 TypeKind.DynArray, TypeKind.Slice
             ) and assign_op == Kind.Assign:
                 rec = self.gen_expr_with_cast(expr.left_typ, expr.left)
-                if not isinstance(left_ir_typ, ir.Pointer):
+                if not isinstance(left_ir_typ, ir.Ptr):
                     rec = ir.Inst(ir.InstKind.GetPtr, [rec])
                 expr_right = self.gen_expr_with_cast(right.typ, right)
                 val_sym = right.typ.symbol()
@@ -2370,10 +2366,10 @@ class Codegen:
                 )
                 self.inside_lhs_assign = old_inside_lhs_assign
                 return None, require_store_ptr
-            if isinstance(left_ir_typ, (ir.Pointer, ir.Array)):
+            if isinstance(left_ir_typ, (ir.Ptr, ir.Array)):
                 expr.is_ref = True
             left = self.gen_expr_with_cast(expr.typ, expr)
-            if isinstance(left.typ, ir.Pointer):
+            if isinstance(left.typ, ir.Ptr):
                 require_store_ptr = left.typ.nr_level() > 1
         self.inside_lhs_assign = old_inside_lhs_assign
         return left, require_store_ptr
@@ -2468,7 +2464,7 @@ class Codegen:
         )
         self.cur_func.store(
             ir.Selector(
-                self.throwable_t, tmp, ir.Name("err")
+                ir.THROWABLE_T, tmp, ir.Name("err")
             ), self.trait_value(expr, expr_t, self.comp.throwable_t)
         )
         return tmp
@@ -2643,7 +2639,7 @@ class Codegen:
 
     def boxed_instance(self, typ, size, custom_name = None):
         tmp = ir.Ident(
-            typ if isinstance(typ, ir.Pointer) else typ.ptr(True), custom_name
+            typ if isinstance(typ, ir.Ptr) else typ.ptr(True), custom_name
             or self.cur_func.local_name()
         )
         inst = ir.Inst(
@@ -2667,11 +2663,11 @@ class Codegen:
         size, _ = self.comp.type_size(value_typ)
         trait_size, _ = self.comp.type_symbol_size(trait_sym, True)
         tmp = self.boxed_instance(self.ir_type(trait_typ), str(trait_size))
-        is_ptr = isinstance(value.typ, ir.Pointer)
+        is_ptr = isinstance(value.typ, ir.Ptr)
         for f in trait_sym.fields:
             f_typ = self.ir_type(f.typ)
             value_f = ir.Selector(f_typ, value, ir.Name(f.name))
-            if not isinstance(f_typ, ir.Pointer):
+            if not isinstance(f_typ, ir.Ptr):
                 f_typ = f_typ.ptr(True)
                 value_f = ir.Inst(ir.InstKind.GetPtr, [value_f], f_typ)
             self.cur_func.store(
@@ -2866,7 +2862,7 @@ class Codegen:
                             ),
                             ir.Field("is_err", ir.BOOL_T),
                             ir.Field(
-                                "err", self.throwable_t
+                                "err", ir.THROWABLE_T
                             )
                         ]
                     )
@@ -2907,9 +2903,9 @@ class Codegen:
             return ir.DYN_ARRAY_T
         elif isinstance(typ, type.Ptr):
             inner_t = self.ir_type(typ.typ)
-            if isinstance(inner_t, ir.Pointer) and inner_t.is_managed:
+            if isinstance(inner_t, ir.Ptr) and inner_t.is_managed:
                 return inner_t
-            return ir.Pointer(inner_t)
+            return ir.Ptr(inner_t)
         elif isinstance(typ, type.Boxedptr):
             return ir.RAWPTR_T
         typ_sym = typ.symbol()
@@ -2994,7 +2990,7 @@ class Codegen:
                 ]
                 for f in ts.fields:
                     f_typ = self.ir_type(f.typ)
-                    if not isinstance(f_typ, ir.Pointer):
+                    if not isinstance(f_typ, ir.Ptr):
                         f_typ = f_typ.ptr()
                     fields.append(ir.Field(f.name, f_typ))
                 self.out_rir.types.append(ir.Struct(False, ts_name, fields))
@@ -3258,7 +3254,7 @@ class Codegen:
                 ir.InstKind.Cmp, [ir.Name("=="), cur_elem, elem_idx_]
             )
         else:
-            if not isinstance(elem_idx_.typ, ir.Pointer):
+            if not isinstance(elem_idx_.typ, ir.Ptr):
                 elem_idx_ = ir.Inst(ir.InstKind.GetPtr, [elem_idx_])
             cond = ir.Inst(
                 ir.InstKind.Call, [

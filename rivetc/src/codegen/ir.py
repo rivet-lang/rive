@@ -37,7 +37,7 @@ class Type:
         self.name = name
 
     def ptr(self, is_managed = False):
-        return Pointer(self, is_managed)
+        return Ptr(self, is_managed)
 
     def __repr__(self):
         return str(self)
@@ -48,18 +48,18 @@ class Type:
     def __eq__(self, other):
         return str(self) == str(other)
 
-class Pointer:
+class Ptr:
     def __init__(self, typ, is_managed = False):
         self.typ = typ
         self.is_managed = is_managed
 
     def ptr(self, is_managed = False):
-        return Pointer(self, is_managed)
+        return Ptr(self, is_managed)
 
     def nr_level(self):
         nr = 0
         ptr = self
-        while isinstance(ptr, Pointer):
+        while isinstance(ptr, Ptr):
             ptr = ptr.typ
             nr += 1
         return nr
@@ -69,7 +69,7 @@ class Pointer:
 
     def __str__(self):
         if self.is_managed:
-            return f"+{self.typ}"
+            return f"^{self.typ}"
         return f"*{self.typ}"
 
     def __eq__(self, other):
@@ -91,6 +91,7 @@ DYN_ARRAY_T = Type("_R4core8DynArray")
 STRING_T = Type("_R4core6string")
 TEST_T = Type("_R4core4Test")
 TEST_RUNNER_T = Type("_R4core10TestRunner")
+THROWABLE_T = Type("_R4core9Throwable").ptr(True)
 
 class Array:
     def __init__(self, typ, size):
@@ -98,7 +99,7 @@ class Array:
         self.size = size
 
     def ptr(self):
-        return Pointer(self)
+        return Ptr(self)
 
     def __repr__(self):
         return str(self)
@@ -115,13 +116,13 @@ class Function:
         self.ret_typ = ret_typ
 
     def ptr(self):
-        return Pointer(self)
+        return Ptr(self)
 
     def __repr__(self):
         return str(self)
 
     def __str__(self):
-        return f"*func({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
+        return f"func({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
 
     def __eq__(self, other):
         return str(self) == str(other)
