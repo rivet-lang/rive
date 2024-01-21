@@ -623,7 +623,7 @@ class Resolver:
                         typ.expr.pos
                     )
                     report.help(
-                        f"type `{tsym.name}` is boxed, you should use `+{typ.expr}` instead"
+                        f"type `{tsym.name}` is boxed, you should use `^{typ.expr}` instead"
                     )
             return result
         return False

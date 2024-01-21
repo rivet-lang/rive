@@ -68,5 +68,5 @@ func ship(a: ^Eq, b: ^Eq) -> bool {
 }
 
 test "traits: default method" {
-    @assert(ship( Poketrait("Shell"), Poketrait("Shell") ));
+    @assert(ship(^Poketrait("Shell"), ^Poketrait("Shell")));
 }

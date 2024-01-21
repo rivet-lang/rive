@@ -72,7 +72,7 @@ class Codegen:
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
-        # generate 'destroy_globals' function
+        # generate 'drop_globals' function
         g_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "_R4core15destroy_globalsF", [], False,
             ir.VOID_T, False
@@ -83,7 +83,7 @@ class Codegen:
             self.source_file = source_file
             self.gen_decls(source_file.decls)
 
-        # generate 'main' fn
+        # generate 'main' function
         argc = ir.Ident(ir.C_INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
         main_fn = ir.FuncDecl(
@@ -571,6 +571,12 @@ class Codegen:
         res_expr = self.gen_expr(expr, custom_tmp)
         assert res_expr != None
 
+        expr_typ = expr.expected_typ if hasattr(
+            expr, "expected_typ"
+        ) else expr.typ
+        if expected_typ == self.ir_type(expr_typ):
+            return res_expr
+
         if isinstance(res_expr, ir.IntLit) and self.comp.is_int(expected_typ_):
             res_expr.typ = expected_typ
         elif isinstance(res_expr,
@@ -611,10 +617,6 @@ class Codegen:
                     ir.InstKind.GetPtr, [res_expr], res_expr.typ.ptr()
                 )
                 nr_level += 1
-
-        expr_typ = expr.expected_typ if hasattr(
-            expr, "expected_typ"
-        ) else expr.typ
 
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
@@ -774,7 +776,7 @@ class Codegen:
                     )
                 else:
                     ir_typ = self.ir_type(expr.typ)
-                res = self.gen_expr_with_cast(arg1.typ, arg1)
+                res = self.gen_expr(arg1)
                 if isinstance(res, ir.IntLit):
                     if self.comp.is_int(ir_typ) or expr.typ == self.comp.bool_t:
                         res.typ = ir_typ
@@ -1709,25 +1711,22 @@ class Codegen:
                 self.cur_func.store_ptr(res, right)
                 return res
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
+            expr_typ = self.ir_type(expr.typ)
             if expr.op == Kind.Amp:
+                if isinstance(right.typ, ir.Ptr) and right.typ.nr_level() == expr_typ.nr_level():
+                    return right
                 tmp = self.cur_func.local_name()
-                if isinstance(
-                    right, ir.Inst
-                ) and right.kind == ir.InstKind.LoadPtr:
-                    right = right.args[0]
-                else:
-                    right = ir.Inst(ir.InstKind.GetPtr, [right])
-                self.cur_func.inline_alloca(self.ir_type(expr.typ), tmp, right)
-                return ir.Ident(self.ir_type(expr.typ), tmp)
-
-            # runtime calculation
+                self.cur_func.inline_alloca(
+                    expr_typ, tmp, ir.Inst(ir.InstKind.GetPtr, [right], expr_typ)
+                )
+                return ir.Ident(expr_typ, tmp)
             if expr.op == Kind.Bang:
                 kind = ir.InstKind.BooleanNot
             elif expr.op == Kind.BitNot:
                 kind = ir.InstKind.BitNot
             else:
                 kind = ir.InstKind.Neg
-            return ir.Inst(kind, [right], self.ir_type(expr.typ))
+            return ir.Inst(kind, [right], expr_typ)
         elif isinstance(expr, ast.BinaryExpr):
             expr_left_typ = expr.left.typ
             expr_right_typ = expr.right.typ
@@ -1912,7 +1911,6 @@ class Codegen:
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
             right = self.gen_expr_with_cast(expr_left_typ, expr.right)
 
-            # runtime calculation
             tmp = self.cur_func.local_name()
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and (
@@ -1938,10 +1936,8 @@ class Codegen:
                     )
                 else:
                     op_method = OVERLOADABLE_OPERATORS_STR[str(expr.op)]
-                    left_is_ptr = isinstance(left.typ,
-                                             type.Ptr) or typ_sym.is_boxed()
-                    right_is_ptr = isinstance(right.typ,
-                                              type.Ptr) or typ_sym.is_boxed()
+                    left_is_ptr = isinstance(left.typ, ir.Ptr)
+                    right_is_ptr = isinstance(right.typ, ir.Ptr)
                     self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
@@ -2370,7 +2366,7 @@ class Codegen:
                 expr.is_ref = True
             left = self.gen_expr_with_cast(expr.typ, expr)
             if isinstance(left.typ, ir.Ptr):
-                require_store_ptr = left.typ.nr_level() > 1
+                require_store_ptr = left.typ.nr_level() > 0
         self.inside_lhs_assign = old_inside_lhs_assign
         return left, require_store_ptr
 

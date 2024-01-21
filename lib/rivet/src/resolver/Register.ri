@@ -35,7 +35,7 @@ pub struct Register {
             old_sym := self.sym;
             self.walk_decl(decl);
             self.sym.scope = ^mut ast.Scope(owner: self.sym);
-            self.sym.scope.owner = self.sym;
+            //self.sym.scope.owner = self.sym;
             self.abi = old_abi;
             self.sym = old_sym;
         }

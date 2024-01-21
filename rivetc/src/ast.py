@@ -593,7 +593,7 @@ class ArrayCtor:
                     res += ", "
             if self.cap_value:
                 res += f"cap: {self.cap_value}"
-                if self.self.len_value:
+                if self.len_value:
                     res += ", "
             if self.len_value:
                 res += f"len: {self.len_value}"
