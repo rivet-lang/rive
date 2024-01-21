@@ -70,3 +70,17 @@ func ship(a: ^Eq, b: ^Eq) -> bool {
 test "traits: default method" {
     @assert(ship(^Poketrait("Shell"), ^Poketrait("Shell")));
 }
+
+trait Jexs {
+    name: string;
+}
+
+struct Impltor < Jexs { }
+
+func getter(name: string) -> string {
+    return name;
+}
+
+test "traits: fields" {
+    @assert(getter(Jexs(Impltor(name: "jexs99")).name) == "jexs99");
+}

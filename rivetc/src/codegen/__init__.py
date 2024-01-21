@@ -571,10 +571,7 @@ class Codegen:
         res_expr = self.gen_expr(expr, custom_tmp)
         assert res_expr != None
 
-        expr_typ = expr.expected_typ if hasattr(
-            expr, "expected_typ"
-        ) else expr.typ
-        if expected_typ == self.ir_type(expr_typ):
+        if expected_typ == res_expr.typ:
             return res_expr
 
         if isinstance(res_expr, ir.IntLit) and self.comp.is_int(expected_typ_):
@@ -620,6 +617,10 @@ class Codegen:
 
         expr_sym = expr.typ.symbol()
         expected_sym = expected_typ_.symbol()
+
+        expr_typ = expr.expected_typ if hasattr(
+            expr, "expected_typ"
+        ) else expr.typ
 
         if expected_sym.kind == TypeKind.Trait and expr_typ != expected_typ_ and expr_sym != expected_sym and expr.typ != self.comp.none_t:
             res_expr = self.trait_value(res_expr, expr_typ, expected_typ_)
@@ -761,14 +762,14 @@ class Codegen:
         elif isinstance(expr, ast.BuiltinCallExpr):
             if expr.name == "as":
                 arg1 = expr.args[1]
-                arg1_is_voidptr = isinstance(
+                arg1_is_rawptr = isinstance(
                     arg1.typ, type.Ptr
                 ) and arg1.typ.typ == self.comp.void_t
                 if (
                     isinstance(expr.typ, type.Ptr) and expr.typ.value_is_boxed()
-                    and (arg1.typ == expr.typ.typ or arg1_is_voidptr)
+                    and (arg1.typ == expr.typ.typ or arg1_is_rawptr)
                 ):
-                    if not arg1_is_voidptr:
+                    if not arg1_is_rawptr:
                         return self.gen_expr(arg1)
                     ir_typ = self.ir_type(expr.typ.typ)
                     return ir.Inst(
@@ -1708,7 +1709,7 @@ class Codegen:
         elif isinstance(expr, ast.UnaryExpr):
             if expr.op == Kind.Xor:
                 right = self.gen_expr(expr.right)
-                if isinstance(right.typ, ir.Ptr):
+                if isinstance(right.typ, ir.Ptr) and right.typ.is_managed:
                     return right
                 size, _ = self.comp.type_size(expr.right_typ, True)
                 res = self.boxed_instance(self.ir_type(expr.right_typ), size)
@@ -2343,13 +2344,13 @@ class Codegen:
                 self.inside_lhs_assign = old_inside_lhs_assign
                 return None, require_store_ptr
             else:
-                left = self.gen_expr_with_cast(expr.typ, expr)
+                left = self.gen_expr(expr)
         elif isinstance(expr, ast.SelectorExpr):
             if expr.is_indirect or expr.is_boxed_indirect:
                 left_ir = self.gen_expr(expr.left)
                 left = ir.Inst(ir.InstKind.LoadPtr, [left_ir], left_ir.typ.typ)
             else:
-                left = self.gen_expr_with_cast(expr.typ, expr)
+                left = self.gen_expr(expr)
         elif isinstance(expr, ast.IndexExpr):
             left_ir_typ = self.ir_type(expr.left_typ)
             left_sym = expr.left_typ.symbol()
