@@ -805,7 +805,7 @@ class Parser:
         return ast.ObjDecl(
             is_mut, is_ref, name, has_typ, typ, sym.ObjLevel.Local, pos
         )
-    
+
     def parse_block_stmt(self):
         expr = self.parse_block_expr(False)
         return ast.ExprStmt(expr, expr.pos)
@@ -889,7 +889,9 @@ class Parser:
                     break
             elif self.tok.kind in [Kind.Amp, Kind.Pipe, Kind.Xor]:
                 op = self.tok.kind
-                if op in (Kind.Amp, Kind.Xor) and self.prev_tok.pos.line < self.tok.pos.line:
+                if op in (
+                    Kind.Amp, Kind.Xor
+                ) and self.prev_tok.pos.line < self.tok.pos.line:
                     break
                 self.next()
                 right = self.parse_additive_expr()

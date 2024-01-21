@@ -1702,8 +1702,12 @@ class Checker:
                     if isinstance(f.typ, type.Option) or f.has_def_expr:
                         continue
                     if f.name not in initted_fields:
-                        if (isinstance(f.typ, type.Type) and f.typ.is_boxed) or isinstance(f.typ, type.Ptr):
-                            report.warn(f"field `{f.name}` of type `{info.name}` must be initialized", expr.pos)
+                        if (isinstance(f.typ, type.Type)
+                            and f.typ.is_boxed) or isinstance(f.typ, type.Ptr):
+                            report.warn(
+                                f"field `{f.name}` of type `{info.name}` must be initialized",
+                                expr.pos
+                            )
 
     def check_call(self, info, expr):
         kind = info.kind()
@@ -1785,9 +1789,9 @@ class Checker:
             arg.typ = self.check_expr(arg.expr)
             self.expected_type = oet
 
-            if arg_fn.is_mut and not isinstance(
-                arg_fn.typ, type.Ptr
-            ) and arg_fn.typ.symbol().kind == TypeKind.DynArray:
+            if arg_fn.is_mut and not isinstance(arg_fn.typ,
+                                                type.Ptr) and arg_fn.typ.symbol(
+                                                ).kind == TypeKind.DynArray:
                 self.check_expr_is_mut(arg.expr)
 
             if not (
@@ -2038,7 +2042,9 @@ class Checker:
                             "cannot modify elements of an immutable pointer",
                             expr.pos
                         )
-                elif isinstance(expr.typ, type.Type) and expr.typ.is_boxed and not from_assign:
+                elif isinstance(
+                    expr.typ, type.Type
+                ) and expr.typ.is_boxed and not from_assign:
                     if not expr.typ.is_mut:
                         report.error(
                             "cannot use a immutable boxed value as mutable value",
@@ -2073,10 +2079,8 @@ class Checker:
                     )
                 return
             expr_typ = expr.left_typ
-            if (
-                (isinstance(expr.typ, type.Type) and expr.typ.is_boxed)
-                or isinstance(expr.typ, type.Ptr)
-            ) and not from_assign:
+            if ((isinstance(expr.typ, type.Type) and expr.typ.is_boxed)
+                or isinstance(expr.typ, type.Ptr)) and not from_assign:
                 expr_typ = expr.typ
             if isinstance(expr_typ, type.Ptr):
                 if not expr_typ.is_mut:
@@ -2117,10 +2121,8 @@ class Checker:
             self.check_expr_is_mut(expr.expr)
         elif isinstance(expr, ast.IndexExpr):
             expr_typ = expr.left_typ
-            if (
-                (isinstance(expr.typ, type.Type) and expr.typ.is_boxed)
-                or isinstance(expr.typ, type.Ptr)
-            ) and not from_assign:
+            if ((isinstance(expr.typ, type.Type) and expr.typ.is_boxed)
+                or isinstance(expr.typ, type.Ptr)) and not from_assign:
                 expr_typ = expr.typ
             if isinstance(expr_typ, type.Ptr):
                 if not expr.left.typ.is_mut:
@@ -2128,9 +2130,7 @@ class Checker:
                         "cannot modify elements of an immutable pointer",
                         expr.pos
                     )
-            elif isinstance(
-                expr_typ, type.Type
-            ) and expr_typ.is_boxed:
+            elif isinstance(expr_typ, type.Type) and expr_typ.is_boxed:
                 if not expr_typ.is_mut:
                     report.error(
                         "cannot use a immutable boxed value as mutable value",

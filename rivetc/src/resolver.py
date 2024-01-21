@@ -142,8 +142,8 @@ class Resolver:
                     try:
                         decl.scope.add(
                             sym.Obj(
-                                False, "self", self_typ,
-                                sym.ObjLevel.Rec, decl.name_pos
+                                False, "self", self_typ, sym.ObjLevel.Rec,
+                                decl.name_pos
                             )
                         )
                     except utils.CompilerError as e:
@@ -615,9 +615,7 @@ class Resolver:
                 typ, type.Type
             ) and not typ.is_boxed and not self.inside_extend_type and not self.inside_typematch_type:
                 tsym = typ.symbol()
-                if isinstance(
-                    tsym, sym.Type
-                ) and tsym.is_boxed():
+                if isinstance(tsym, sym.Type) and tsym.is_boxed():
                     report.error(
                         f"cannot use type `{tsym.name}` as a simple value",
                         typ.expr.pos
