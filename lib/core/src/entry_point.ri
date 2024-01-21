@@ -7,7 +7,7 @@ extern (Rivet) {
 
     func init_string_lits();
     func init_globals();
-    func drop_globals();
+    func destroy_globals();
 }
 
 func init_args(_argc: uint, _argv: [&][&]uint8) {
@@ -32,7 +32,7 @@ $if _TESTS_ {
             test_runner.run();
         }
 
-        drop_globals();
+        destroy_globals();
     }
 } else {
     func main(_argc: int32, _argv: [&][&]uint8, mod_main: func()) {
@@ -45,6 +45,6 @@ $if _TESTS_ {
         runtime_is_started = true;
         mod_main();
 
-        drop_globals();
+        destroy_globals();
     }
 }

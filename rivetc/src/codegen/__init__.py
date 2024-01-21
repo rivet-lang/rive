@@ -58,23 +58,23 @@ class Codegen:
             ir.GlobalVar(False, False, ir.DYN_ARRAY_T, "_R4core4ARGS")
         )
 
-        # generate 'init_string_lits_fn' function
+        # generate 'init_string_lits' function
         self.init_string_lits_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "_R4core16init_string_litsF", [],
             False, ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_string_lits_fn)
 
-        # generate '_R4core12init_globalsF' function
+        # generate 'init_globals' function
         self.init_global_vars_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "_R4core12init_globalsF", [], False,
             ir.VOID_T, False
         )
         self.out_rir.decls.append(self.init_global_vars_fn)
 
-        # generate '_R12drop_globalsZ' function
+        # generate 'destroy_globals' function
         g_fn = ir.FuncDecl(
-            False, ast.Attributes(), False, "_R4core12drop_globalsF", [], False,
+            False, ast.Attributes(), False, "_R4core15destroy_globalsF", [], False,
             ir.VOID_T, False
         )
         self.out_rir.decls.append(g_fn)

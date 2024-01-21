@@ -61,7 +61,7 @@ pub func process_panic(s: string := "", args: ...^Stringable) -> never {
 /// which typically means that the shell prints "Aborted".
 pub func process_abort() -> never {
     unsafe {
-        drop_globals();
+        destroy_globals();
         libc.abort();
     }
 }
@@ -73,7 +73,7 @@ pub func process_abort() -> never {
 /// OS and will be available for consumption by another process.
 pub func process_exit(code: int32 := 0) -> never {
     unsafe {
-        drop_globals();
+        destroy_globals();
         libc.exit(code);
     }
 }
