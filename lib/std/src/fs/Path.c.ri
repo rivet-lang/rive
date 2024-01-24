@@ -15,36 +15,36 @@ pub struct Path {
 
     /// Returns `true` if the given byte is a valid path separator
     #[inline]
-    pub proc is_separator(byte: uint8) -> bool {
+    pub func is_separator(byte: uint8) -> bool {
         return byte == SEPARATOR;
     }
 
     /// Returns `true` if `path` (file or directory) exists.
     #[inline]
-    pub proc exists(path: string) -> bool {
+    pub func exists(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.O_RDONLY) == 0 };
     }
 
     /// Returns `true` if `path` is executable.
     #[inline]
-    pub proc is_executable(path: string) -> bool {
+    pub func is_executable(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.X_OK) == 0 };
     }
 
     /// Returns `true` if `path` is writable.
     #[inline]
-    pub proc is_writable(path: string) -> bool {
+    pub func is_writable(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.W_OK) == 0 };
     }
 
     /// Returns `true` if `path` is readable.
     #[inline]
-    pub proc is_readable(path: string) -> bool {
+    pub func is_readable(path: string) -> bool {
         return unsafe { libc.access(path.ptr, libc.R_OK) == 0 };
     }
 
     /// Returns `true` if `path` is a directory.
-    pub proc is_directory(path: string) -> bool {
+    pub func is_directory(path: string) -> bool {
         mut statbuf := libc.Stat();
         return if unsafe { libc.stat(path.ptr, &mut statbuf) == 0 } {
             @as(int32, statbuf.mode) & libc.S_IFMT == libc.S_IFDIR
@@ -55,18 +55,18 @@ pub struct Path {
 
     /// Returns `true` if `path` is a file.
     #[inline]
-    pub proc is_file(path: string) -> bool {
+    pub func is_file(path: string) -> bool {
         return exists(path) && !is_directory(path);
     }
 
     /// Returns `true` if `path` is absolute.
     #[inline]
-    pub proc is_absolute(path: string) -> bool {
+    pub func is_absolute(path: string) -> bool {
         return path.len > 0 && path[0] == SEPARATOR;
     }
 
     /// Returns a boolean indicating whether `path` is a link.
-    pub proc is_link(path: string) -> bool {
+    pub func is_link(path: string) -> bool {
         mut statbuf := libc.Stat();
         return if unsafe { libc.lstat(path.ptr, &mut statbuf) != 0 } {
             false
@@ -80,7 +80,7 @@ pub struct Path {
     /// If the path is a file in the current directory (no directory component)
     /// then returns `.`.
     /// If the path is the root directory, returns `/`.
-    pub proc dir_name(path: string) -> ?string {
+    pub func dir_name(path: string) -> ?string {
         if path.is_empty() {
             return none;
         }
@@ -110,7 +110,7 @@ pub struct Path {
     /// Returns the last element of path. Trailing path separators are removed before
     /// extracting the last element. If the path is empty, base returns ".". If the
     /// path consists entirely of separators, base returns a single separator.
-    pub proc base_name(path: string) -> string {
+    pub func base_name(path: string) -> string {
         if path.is_empty() {
             return "";
         }
@@ -132,16 +132,16 @@ pub struct Path {
 
     /// Return alls characters found after the last occurrence of `separator_str`.
     /// File extension is included.
-    pub proc file_name(path: string) -> string {
+    pub func file_name(path: string) -> string {
         return path.all_after_of_last(separator_str);
     }
 
     /// Returns the extension of the file name (if any).
-    /// This procedure will search for the file extension (separated by a `.`) and will
+    /// This function will search for the file extension (separated by a `.`) and will
     /// return the text after the `.`.
     /// Files that end with `.`, or that start with `.` and have no other `.` in their
     /// name, are considered to have no extension.
-    pub proc extension(path: string) -> string {
+    pub func extension(path: string) -> string {
         filename := file_name(path);
         index := filename.last_index_of_byte('.') ?? return "";
         return if index == 0 || index + 1 >= filename.len {
@@ -151,12 +151,12 @@ pub struct Path {
         };
     }
 
-    /// This procedure is like a series of `cd` statements executed one after another.
+    /// This function is like a series of `cd` statements executed one after another.
     /// It resolves "." and "..".
     /// The result does not have a trailing path separator.
     /// If all paths are relative it uses the current working directory as a starting
     /// point.
-    pub proc resolve(paths: ...string) -> !string {
+    pub func resolve(paths: ...string) -> !string {
         if paths.len == 0 {
             return core.process_get_cwd()!;
         }
@@ -233,7 +233,7 @@ pub struct Path {
     /// Returns the relative path from `from_` to `to`. If `from` and `to` each
     /// resolve to the same path (after calling `resolve` on each), a zero-length
     /// string is returned.
-    pub proc relative(from_: string, to: string) -> !string {
+    pub func relative(from_: string, to: string) -> !string {
         _ = resolve(from_)!;
         _ = resolve(to)!;
         mut from_it := from_.tokenize(SEPARATOR);
@@ -283,7 +283,7 @@ pub struct Path {
         return "";
     }
 
-    pub proc join(paths: ...string) -> !string {
+    pub func join(paths: ...string) -> !string {
         if paths.len == 0 {
             return "";
         }
@@ -364,7 +364,7 @@ pub struct Path {
 
     /// Joins the current working directory with the given `path` (if the `path` is relative)
     /// and returns the absolute path representation.
-    pub proc absolute(path: string) -> !string {
+    pub func absolute(path: string) -> !string {
         cwd := core.process_get_cwd()!;
         if path.is_empty() {
             return cwd;

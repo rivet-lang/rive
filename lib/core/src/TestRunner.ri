@@ -13,35 +13,35 @@ $if _TESTS_ {
         var testRunner: TestRunner;
     }
 
-    proc bold(msg: string) -> string {
+    func bold(msg: string) -> string {
         if !support_color {
             return msg;
         }
         return "\x1b[1m{}\x1b[22m".fmt(msg);
     }
 
-    proc green(msg: string) -> string {
+    func green(msg: string) -> string {
         if !support_color {
             return msg;
         }
         return "\x1b[32m{}\x1b[39m".fmt(msg);
     }
 
-    proc red(msg: string) -> string {
+    func red(msg: string) -> string {
         if !support_color {
             return msg;
         }
         return "\x1b[31m{}\x1b[39m".fmt(msg);
     }
 
-    proc yellow(msg: string) -> string {
+    func yellow(msg: string) -> string {
         if !support_color {
             return msg;
         }
         return "\x1b[33m{}\x1b[39m".fmt(msg);
     }
 
-    proc assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
+    func assert_test(cond: bool, msg: string, pos: string, mut test_: Test) {
         if !cond {
             test_.result = .Failed;
             test_.err_msg = "assertion failed: {}".fmt(msg);
@@ -50,7 +50,7 @@ $if _TESTS_ {
         }
     }
 
-    proc test_error_throwed(err: Throwable, pos: string, mut test_: Test) {
+    func test_error_throwed(err: Throwable, pos: string, mut test_: Test) {
         test_.result = .ErrorThrowed;
         test_.err = err;
         test_.err_pos = pos;
@@ -66,7 +66,7 @@ $if _TESTS_ {
 
     struct Test {
         name: string;
-        proc_: proc (mut Test);
+        fn: func (mut Test);
         mut result: TestResult;
         mut early_return: bool;
         mut err_pos: string;
@@ -80,10 +80,10 @@ $if _TESTS_ {
         mut fail_tests: uint64;
         mut skip_tests: uint64;
 
-        proc run(mut self) {
+        func run(mut self) {
             for i, mut test_ in self.tests {
                 console_ewrite(" [{}/{}] {} ", i + 1, self.tests.len, test_.name);
-                (test_.proc_)(test_);
+                (test_.fn)(test_);
                 match test_.result {
                     .Ok -> self.print_ok(),
                     .Skipped -> self.print_skip(),
@@ -97,7 +97,7 @@ $if _TESTS_ {
             }
         }
 
-        proc print_summary_tests(&self) {
+        func print_summary_tests(&self) {
             console_ewrite(bold("Summary for all tests: "));
             if self.ok_tests > 0 {
                 console_ewrite("{}, ", bold(green("{} passed".fmt(self.ok_tests))));
@@ -111,23 +111,23 @@ $if _TESTS_ {
             console_ewriteln(bold("{} total.".fmt(self.tests.len)));
         }
 
-        proc print_ok(mut self) {
+        func print_ok(mut self) {
             console_ewriteln(ok_status);
             self.ok_tests += 1;
         }
 
-        proc print_skip(mut self) {
+        func print_skip(mut self) {
             console_ewriteln(skip_status);
             self.skip_tests += 1;
         }
 
-        proc print_failed(mut self, pos: string, msg: string) {
+        func print_failed(mut self, pos: string, msg: string) {
             console_ewriteln(failed_status);
             console_ewriteln("     at {}: {}", bold(pos), msg);
             self.fail_tests += 1;
         }
 
-        proc print_error_throwed(mut self, pos: string, err: Throwable) {
+        func print_error_throwed(mut self, pos: string, err: Throwable) {
             console_ewriteln(failed_status);
             console_ewriteln("     at {}: error throwed: {}", bold(pos), err);
             self.fail_tests += 1;

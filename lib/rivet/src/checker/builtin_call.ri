@@ -5,30 +5,30 @@
 import ../{ ast, report };
 
 extend Checker {
-    proc check_builtin_call(mut self, mut builtin_call: ast.Expr.BuiltinCall) -> ast.Type {
-        builtin_call.type = if builtin_call.builtin is .Proc(b_proc) {
-            if b_proc.is_unsafe && !self.inside_unsafe() {
+    func check_builtin_call(mut self, mut builtin_call: ast.Expr.BuiltinCall) -> ast.Type {
+        builtin_call.type = if builtin_call.builtin is .Func(b_func) {
+            if b_func.is_unsafe && !self.inside_unsafe() {
                 report.warn(
-                    "builtin procedure `{}` should be called inside `unsafe` block".fmt(
-                        b_proc.name
+                    "builtin function `{}` should be called inside `unsafe` block".fmt(
+                        b_func.name
                     ), builtin_call.pos
                 );
             }
-            b_proc_args_len := b_proc.args_len();
-            if builtin_call.args.len != b_proc_args_len {
+            b_func_args_len := b_func.args_len();
+            if builtin_call.args.len != b_func_args_len {
                 expr_msg := "expected {} argument(s), found {}".fmt(
-                    b_proc_args_len, builtin_call.args.len
+                    b_func_args_len, builtin_call.args.len
                 );
-                if builtin_call.args.len < b_proc_args_len {
+                if builtin_call.args.len < b_func_args_len {
                     mut err := report.error_builder(
-                        "too few arguments to builtin procedure `{}`".fmt(builtin_call.name),
+                        "too few arguments to builtin function `{}`".fmt(builtin_call.name),
                         builtin_call.pos
                     );
                     err.add_note(expr_msg);
                     err.emit();
-                } else if builtin_call.args.len > b_proc.args.len {
+                } else if builtin_call.args.len > b_func.args.len {
                     mut err := report.error_builder(
-                        "too many arguments to builtin procedure `{}`".fmt(builtin_call.name),
+                        "too many arguments to builtin function `{}`".fmt(builtin_call.name),
                         builtin_call.pos
                     );
                     err.add_note(expr_msg);
@@ -36,7 +36,7 @@ extend Checker {
                 }
             } else {
                 for i, mut arg in builtin_call.args {
-                    arg_info := b_proc.args[i];
+                    arg_info := b_func.args[i];
                     arg.type = self.check_expr(arg.expr);
                     if arg_info.is_mut {
                         self.check_expr_is_mut(arg.expr);
@@ -45,16 +45,16 @@ extend Checker {
                         self.check_types(arg.type, arg_info.type) catch |err| {
                             mut err2 := report.error_builder(err.to_string(), arg.pos);
                             err2.add_note(
-                                "in argument `{}` of builtin procedure `{}`", arg_info.name,
-                                b_proc.name
+                                "in argument `{}` of builtin function `{}`", arg_info.name,
+                                b_func.name
                             );
                             err2.emit();
                         };
                     }
                 }
             }
-            mut return_type := b_proc.type;
-            for check in b_proc.checks {
+            mut return_type := b_func.type;
+            for check in b_func.checks {
                 match check {
                     .ArgumentTypeEqualToArgumentType(at) -> {
                         arg1 := builtin_call.args[at.arg1_idx];
@@ -65,8 +65,8 @@ extend Checker {
                                 arg1.pos
                             );
                             err2.add_note(
-                                "in argument `{}` of builtin procedure `{}`", arg2.name,
-                                b_proc.name
+                                "in argument `{}` of builtin function `{}`", arg2.name,
+                                b_func.name
                             );
                             err2.emit();
                         }
@@ -93,7 +93,7 @@ extend Checker {
                         return_type = builtin_call.args[arg_idx].type
                 }
             }
-            match b_proc.name {
+            match b_func.name {
                 "as" -> self.check_builtin_as(builtin_call),
                 else -> {}
             }
@@ -104,7 +104,7 @@ extend Checker {
         return builtin_call.type;
     }
 
-    proc check_builtin_as(mut self, builtin_call: ast.Expr.BuiltinCall) {
+    func check_builtin_as(mut self, builtin_call: ast.Expr.BuiltinCall) {
         to_type := builtin_call.args[0].type;
         from_type := builtin_call.args[1].type;
         if to_type == from_type {

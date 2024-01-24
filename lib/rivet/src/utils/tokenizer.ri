@@ -3,16 +3,16 @@
 // file.
 
 #[inline]
-pub proc is_name_char(ch: uint8) -> bool {
+pub func is_name_char(ch: uint8) -> bool {
     return ch.is_letter() || ch == '_';
 }
 
 #[inline]
-pub proc is_new_line(ch: uint8) -> bool {
+pub func is_new_line(ch: uint8) -> bool {
     return ch == LF || ch == CR;
 }
 
 #[inline]
-pub proc is_escape_sequence(ch: uint8) -> bool {
+pub func is_escape_sequence(ch: uint8) -> bool {
     return ch in ['x', 'u', 'e', 'n', 'r', 't', 'v', 'a', 'f', 'b', '\\', '\'', '"'];
 }

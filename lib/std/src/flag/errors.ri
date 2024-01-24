@@ -7,7 +7,7 @@ import ../traits;
 pub struct UnknownFlagError < Throwable {
     flag: string;
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return "unknown flag `{}`".fmt(self.flag);
     }
 }
@@ -16,7 +16,7 @@ pub struct ArgsCountError < Throwable {
     got: uint;
     want: uint;
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return if self.want == 0 {
             "expected no arguments, but got {}".fmt(self.got)
         } else if self.got > self.want {
@@ -31,12 +31,12 @@ pub struct ArgsCountError < Throwable {
 pub struct GenericError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
-// TODO: Remove this procedure and use a more specific type.
-pub proc error(msg: string, args: ...traits.Stringable) -> Throwable {
+// TODO: Remove this function and use a more specific type.
+pub func error(msg: string, args: ...traits.Stringable) -> Throwable {
     return GenericError(msg.fmt(args));
 }

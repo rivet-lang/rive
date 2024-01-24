@@ -19,7 +19,7 @@ pub const LN10: float64 := 2.302585092994045684017991454684364207601101488628772
 pub const LOG10_E: float64 := 1.0 / LN10;
 
 /// Returns the number of digits in the number passed.
-pub proc count_digits(number: int) -> int {
+pub func count_digits(number: int) -> int {
 	if number == 0 {
 		return 1;
 	}

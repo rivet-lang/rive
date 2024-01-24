@@ -13,7 +13,7 @@ extend Checker {
         Pascal,
         Upper;
 
-        pub proc to_string(&self) -> string {
+        pub func to_string(&self) -> string {
             return match self.* {
                 .Snake -> "snake",
                 .Camel -> "camel",
@@ -24,7 +24,7 @@ extend Checker {
     }
 
     #[inline]
-    proc check_name_case(self, case: NameCase, kind: string, name: string, pos: token.Pos) {
+    func check_name_case(self, case: NameCase, kind: string, name: string, pos: token.Pos) {
         if !(self.inside_extern || name == "_" || name == "string"
             || self.sym.module()?.name in ["c.libc", "c.ctypes"]) {
             is_valid := match case {

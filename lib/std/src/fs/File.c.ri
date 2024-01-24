@@ -10,7 +10,7 @@ import ../{ mem, traits.Stringable };
 pub struct OperationFailedError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -20,7 +20,7 @@ pub struct File {
     f: &mut libc.FILE;
     mut is_opened: bool;
 
-    pub proc open(path: string, mode: string := "r") -> !File {
+    pub func open(path: string, mode: string := "r") -> !File {
         unsafe {
             if f := libc.fopen(path.ptr, mode.ptr) {
                 return Self(f, true);
@@ -31,7 +31,7 @@ pub struct File {
 
     /// Writes the byte `b` into the file.
     #[inline]
-    pub proc write_byte(mut self, b: uint8) {
+    pub func write_byte(mut self, b: uint8) {
         @ignore_not_mutated_warn(self);
         unsafe {
             _ = libc.fputc(@as(int32, b), self.f);
@@ -40,7 +40,7 @@ pub struct File {
 
     /// Writes the string `s` into the file.
     #[inline]
-    pub proc write(mut self, s: string) {
+    pub func write(mut self, s: string) {
         @ignore_not_mutated_warn(self);
         unsafe {
             _ = libc.fputs(s.ptr, self.f);
@@ -48,23 +48,23 @@ pub struct File {
     }
 
     /// Writes the string `s` into the file and appends a '\n' character.
-    pub proc writeln(mut self, s: string) {
+    pub func writeln(mut self, s: string) {
         self.write(s);
         self.write_byte('\n');
     }
 
     #[inline]
-    pub proc write_string_fmt(mut self, s: string, args: ...Stringable) {
+    pub func write_string_fmt(mut self, s: string, args: ...Stringable) {
         self.write(s.fmt(args));
     }
 
-    pub proc writeln_fmt(mut self, s: string, args: ...Stringable) {
+    pub func writeln_fmt(mut self, s: string, args: ...Stringable) {
         self.write(s.fmt(args));
         self.write_byte('\n');
     }
 
     /// Returns the current file contents.
-    pub proc read_all(self) -> !string {
+    pub func read_all(self) -> !string {
         if !self.is_opened {
             return "";
         }
@@ -105,12 +105,12 @@ pub struct File {
 
     /// Returns true if the file is at end.
     #[inline]
-    pub proc is_eof(self) -> bool {
+    pub func is_eof(self) -> bool {
         return unsafe { libc.feof(self.f) != 0 };
     }
 
     /// Closes the current file.
-    pub proc close(mut self) {
+    pub func close(mut self) {
         if !self.is_opened {
             return;
         }

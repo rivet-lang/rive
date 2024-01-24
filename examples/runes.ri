@@ -1,6 +1,6 @@
 import std/console;
 
-proc main() {
+func main() {
     program := "+ + * 😃 - /";
     mut accumulator := 0;
 

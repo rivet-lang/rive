@@ -28,8 +28,8 @@ $if _AMD64_ {
 }
 
 extern (C) {
-    pub proc stat(__file: [&]uint8, __buf: &mut Stat) -> int32;
-    pub proc lstat(file: [&]uint8, buf: &mut Stat) -> int32;
+    pub func stat(__file: [&]uint8, __buf: &mut Stat) -> int32;
+    pub func lstat(file: [&]uint8, buf: &mut Stat) -> int32;
 
-    pub proc mkdir(path: [&]uint8, mode: uint) -> int32;
+    pub func mkdir(path: [&]uint8, mode: uint) -> int32;
 }

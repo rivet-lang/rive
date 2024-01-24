@@ -16,11 +16,11 @@ pub struct ImportedSymbols {
     pub mut syms: []ImportedSymbol;
 
     #[inline]
-    pub proc add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
+    pub func add(mut self, name: string, sym: Sym, pos: token.Pos, is_used: bool := false) {
         self.syms.push(ImportedSymbol(name, sym, pos, is_used));
     }
 
-    pub proc find(&self, name: string) -> ?ImportedSymbol {
+    pub func find(&self, name: string) -> ?ImportedSymbol {
         for imported_sym in self.syms {
             if name == imported_sym.name {
                 return imported_sym;
@@ -30,7 +30,7 @@ pub struct ImportedSymbols {
     }
 
     #[inline]
-    pub proc exists(&self, name: string) -> bool {
+    pub func exists(&self, name: string) -> bool {
         return self.find(name) != none;
     }
 }

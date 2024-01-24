@@ -5,7 +5,7 @@
 import c/libc;
 
 /// Returns the path name of the executable that started the current process.
-pub proc process_executable() -> !string {
+pub func process_executable() -> !string {
     res := [libc.MAX_PATH_LEN]uint8();
     count := unsafe {
         libc.readlink(c"/proc/self/exe", &res[0], libc.MAX_PATH_LEN)
@@ -19,14 +19,14 @@ pub proc process_executable() -> !string {
 }
 
 /// Sets the current working directory to the new directory in `path`.
-pub proc process_set_cwd(path: string) -> ! {
+pub func process_set_cwd(path: string) -> ! {
     if unsafe { libc.chdir(path.ptr) == -1 } {
         throw last_errno_error();
     }
 }
 
 /// Returns the absolute path of the current working directory.
-pub proc process_get_cwd() -> !string {
+pub func process_get_cwd() -> !string {
     unsafe {
         buf := [libc.MAX_PATH_LEN]mut uint8();
         if _ := libc.getcwd(&mut buf[0], libc.MAX_PATH_LEN) {
@@ -39,13 +39,13 @@ pub proc process_get_cwd() -> !string {
 /// Returns the OS-assigned process identifier associated with this
 /// process.
 #[inline]
-pub proc process_id() -> uint32 {
+pub func process_id() -> uint32 {
     return unsafe { libc.getpid() };
 }
 
 /// Terminates current thread execution immediately after displaying a
 /// message, followed by a backtrace.
-pub proc process_panic(s: string := "", args: ...Stringable) -> never {
+pub func process_panic(s: string := "", args: ...Stringable) -> never {
     console_ewriteln("panic: {}", s.fmt(args));
     bt_print(2);
     process_exit(101);
@@ -53,13 +53,13 @@ pub proc process_panic(s: string := "", args: ...Stringable) -> never {
 
 /// Terminates the process in an abnormal fashion.
 ///
-/// The procedure will never return and will immediately terminate the
+/// The function will never return and will immediately terminate the
 /// current process in a platform specific "abnormal" manner.
 ///
 /// The process's termination will be similar to that from the C `abort()`
-/// procedure. On Unix, the process will terminate with signal `SIGABRT`,
+/// function. On Unix, the process will terminate with signal `SIGABRT`,
 /// which typically means that the shell prints "Aborted".
-pub proc process_abort() -> never {
+pub func process_abort() -> never {
     unsafe {
         drop_globals();
         libc.abort();
@@ -68,10 +68,10 @@ pub proc process_abort() -> never {
 
 /// Terminates the current process with the specified exit code.
 ///
-/// This procedure will never return and will immediately terminate the
+/// This function will never return and will immediately terminate the
 /// current process. The exit code is passed through to the underlying
 /// OS and will be available for consumption by another process.
-pub proc process_exit(code: int32 := 0) -> never {
+pub func process_exit(code: int32 := 0) -> never {
     unsafe {
         drop_globals();
         libc.exit(code);

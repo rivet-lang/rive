@@ -43,7 +43,7 @@ pub enum Type < traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
 
-        proc ==(&self, other: &Self) -> bool {
+        func ==(&self, other: &Self) -> bool {
             if self.inners.len != other.inners.len {
                 return false;
             }
@@ -81,7 +81,7 @@ pub enum Type < traits.Stringable {
         mut sym: TypeSym;
         pos: token.Pos;
     },
-    Proc {
+    Func {
         is_method: bool;
         self_is_mut: bool;
         self_is_ptr: bool;
@@ -92,11 +92,11 @@ pub enum Type < traits.Stringable {
         mut has_sym: bool;
 
         #[inline]
-        proc symbol(&self) -> Proc {
-            return if self.has_sym && self.sym.info is .Proc(proc_sym) {
-                proc_sym
+        func symbol(&self) -> Func {
+            return if self.has_sym && self.sym.info is .Func(func_sym) {
+                func_sym
             } else {
-                Proc(
+                Func(
                     is_method: self.is_method,
                     self_type: .Void,
                     self_is_mut: self.self_is_mut,
@@ -109,7 +109,7 @@ pub enum Type < traits.Stringable {
     };
 
     #[inline]
-    pub proc ptr_inner(self) -> Self {
+    pub func ptr_inner(self) -> Self {
         return match self {
             .Pointer(ptr) -> ptr.inner,
             .Rawptr, .Boxedptr -> self,
@@ -117,7 +117,7 @@ pub enum Type < traits.Stringable {
         };
     }
 
-    pub proc unalias(mut self) -> ?Self {
+    pub func unalias(mut self) -> ?Self {
         // NOTE: `.unalias()` returns an option, so we use the same type without
         // unaliasing instead.
         return match self {
@@ -143,12 +143,12 @@ pub enum Type < traits.Stringable {
             .Pointer(mut pointer_data) -> .Pointer(
                 pointer_data.inner.unalias() ?? pointer_data.inner, ...self
             ),
-            .Proc(mut proc_data) -> {
-                for mut arg in proc_data.args {
+            .Func(mut func_data) -> {
+                for mut arg in func_data.args {
                     arg.type = arg.type.unalias() ?? arg.type;
                 }
-                .Proc(
-                    ret_type: proc_data.ret_type.unalias() ?? proc_data.ret_type,
+                .Func(
+                    ret_type: func_data.ret_type.unalias() ?? func_data.ret_type,
                     ...self
                 )
             },
@@ -161,7 +161,7 @@ pub enum Type < traits.Stringable {
         };
     }
 
-    pub proc unalias_in_place(mut self) {
+    pub func unalias_in_place(mut self) {
         if unaliased_type := self.unalias() {
             unsafe {
                 @set_enum_ref_value(self, unaliased_type);
@@ -170,7 +170,7 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc symbol(self) -> ?TypeSym {
+    pub func symbol(self) -> ?TypeSym {
         // NOTE: `.Void`, `.None`, `.Never`, `.Boxedptr` and `.Rawptr` has no
         // `TypeSym` value.
         return match self {
@@ -182,14 +182,14 @@ pub enum Type < traits.Stringable {
             .DynArray(dyn_array_data) -> dyn_array_data.sym,
             .Array(array_data) -> array_data.sym,
             .Pointer(pointer_data) -> pointer_data.inner.symbol(),
-            .Proc(proc_data) -> proc_data.sym,
+            .Func(func_data) -> func_data.sym,
             .Basic(basic) if !basic.is_unresolved -> basic.sym,
             else -> none
         };
     }
 
     #[inline]
-    pub proc is_primitive(self) -> bool {
+    pub func is_primitive(self) -> bool {
         return if type_sym := self.symbol() {
             type_sym.is_primitive()
         } else {
@@ -198,7 +198,7 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_boxed(self) -> bool {
+    pub func is_boxed(self) -> bool {
         return if type_sym := self.symbol() {
             type_sym.is_boxed()
         } else {
@@ -207,7 +207,7 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_void(self) -> bool {
+    pub func is_void(self) -> bool {
         return match self {
             .Void, .Never -> true,
             .Result(result) -> result.inner.is_void(),
@@ -216,12 +216,12 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_pointer(self) -> bool {
+    pub func is_pointer(self) -> bool {
         return self is .Pointer || self is .Rawptr || self is .Boxedptr;
     }
 
     #[inline]
-    pub proc is_mut_pointer(self) -> bool {
+    pub func is_mut_pointer(self) -> bool {
         return match self {
             .Pointer(ptr) -> ptr.is_mut,
             .Rawptr, .Boxedptr -> true,
@@ -230,9 +230,9 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_any_kind_of_pointer(self) -> bool {
+    pub func is_any_kind_of_pointer(self) -> bool {
         return match self {
-            .Pointer, .Rawptr, .Boxedptr, .Proc -> true,
+            .Pointer, .Rawptr, .Boxedptr, .Func -> true,
             else -> if type_sym := self.symbol() {
                 type_sym.is_boxed()
             } else {
@@ -242,7 +242,7 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc position(self) -> token.Pos {
+    pub func position(self) -> token.Pos {
         return match self {
             .Void, .None -> token.no_pos,
             .Never(never_pos) -> never_pos,
@@ -256,7 +256,7 @@ pub enum Type < traits.Stringable {
             .Pointer(ptr_t) -> ptr_t.pos,
             .Rawptr(rawptr_t) -> rawptr_t.pos,
             .Boxedptr(boxedptr_t) -> boxedptr_t.pos,
-            .Proc(proc_t) -> proc_t.pos,
+            .Func(func_t) -> func_t.pos,
             .Basic(basic_t) -> if basic_t.is_unresolved {
                 basic_t.expr.position()
             } else {
@@ -266,7 +266,7 @@ pub enum Type < traits.Stringable {
     }
 
     #[inline]
-    pub proc ==(self, rhs: Self) -> bool {
+    pub func ==(self, rhs: Self) -> bool {
         return match self {
             .None if rhs is .None -> true,
             .Void if rhs is .Void -> true,
@@ -295,15 +295,15 @@ pub enum Type < traits.Stringable {
             },
             .Rawptr if rhs is .Rawptr -> true,
             .Boxedptr if rhs is .Boxedptr -> true,
-            .Proc(proc_lhs) if rhs is .Proc(proc_rhs) -> match {
-                proc_lhs.is_method != proc_rhs.is_method,
-                proc_lhs.self_is_mut != proc_rhs.self_is_mut,
-                proc_lhs.self_is_ptr != proc_rhs.self_is_ptr,
-                proc_lhs.args.len != proc_rhs.args.len -> false,
+            .Func(func_lhs) if rhs is .Func(func_rhs) -> match {
+                func_lhs.is_method != func_rhs.is_method,
+                func_lhs.self_is_mut != func_rhs.self_is_mut,
+                func_lhs.self_is_ptr != func_rhs.self_is_ptr,
+                func_lhs.args.len != func_rhs.args.len -> false,
                 else -> {
-                    mut final_res := proc_lhs.ret_type == proc_rhs.ret_type;
-                    for i, arg_lhs in proc_lhs.args {
-                        arg_rhs := proc_rhs.args[i];
+                    mut final_res := func_lhs.ret_type == func_rhs.ret_type;
+                    for i, arg_lhs in func_lhs.args {
+                        arg_rhs := func_rhs.args[i];
                         if arg_lhs.is_mut != arg_rhs.is_mut {
                             final_res = false;
                             break;
@@ -323,19 +323,19 @@ pub enum Type < traits.Stringable {
         };
     }
 
-    pub proc !=(self, rhs: Self) -> bool {
+    pub func !=(self, rhs: Self) -> bool {
     	return !(self == rhs);
     }
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.to_string_(false);
     }
 
-    pub proc to_qualstring(self) -> string {
+    pub func to_qualstring(self) -> string {
         return self.to_string_(true);
     }
 
-    pub proc to_string_(self, qualstr: bool) -> string {
+    pub func to_string_(self, qualstr: bool) -> string {
         return match self {
             .None -> "<none>",
         	.Void -> "<void>",
@@ -397,30 +397,30 @@ pub enum Type < traits.Stringable {
             },
             .Rawptr -> "rawptr",
             .Boxedptr -> "boxedptr",
-            .Proc(proc_data) -> {
+            .Func(func_data) -> {
                 mut sb := Builder.new(150);
-                sb.write("proc(");
-                if proc_data.is_method {
-                    if proc_data.self_is_mut {
+                sb.write("func(");
+                if func_data.is_method {
+                    if func_data.self_is_mut {
                         sb.write("mut ");
-                    } else if proc_data.self_is_ptr {
+                    } else if func_data.self_is_ptr {
                         sb.write("&");
                     }
                     sb.write("self");
-                    if proc_data.args.len > 0 {
+                    if func_data.args.len > 0 {
                         sb.write(", ");
                     }
                 }
-                for i, arg in proc_data.args {
+                for i, arg in func_data.args {
                     sb.write(arg.type.to_string_(qualstr));
-                    if i < proc_data.args.len - 1 {
+                    if i < func_data.args.len - 1 {
                         sb.write(", ");
                     }
                 }
                 sb.write(")");
-                if proc_data.ret_type !is .Void {
+                if func_data.ret_type !is .Void {
                     sb.write(" -> ");
-                    sb.write(proc_data.ret_type.to_string_(qualstr));
+                    sb.write(func_data.ret_type.to_string_(qualstr));
                 }
                 sb.to_string()
             },
@@ -439,17 +439,17 @@ pub enum Type < traits.Stringable {
 
 extend Env {
     #[inline]
-    pub proc is_number(self, type: Type) -> bool {
+    pub func is_number(self, type: Type) -> bool {
         return self.is_int(type) || self.is_float(type);
     }
 
     #[inline]
-    pub proc is_int(self, type: Type) -> bool {
+    pub func is_int(self, type: Type) -> bool {
         return self.is_signed_int(type) || self.is_unsigned_int(type);
     }
 
     #[inline]
-    pub proc is_signed_int(self, type: Type) -> bool {
+    pub func is_signed_int(self, type: Type) -> bool {
         return type in [
             self.int8_t, self.int16_t, self.int32_t, self.int64_t, self.int_t,
             self.comptime_int_t
@@ -457,23 +457,23 @@ extend Env {
     }
 
     #[inline]
-    pub proc is_unsigned_int(self, type: Type) -> bool {
+    pub func is_unsigned_int(self, type: Type) -> bool {
         return type in [
             self.uint8_t, self.uint16_t, self.uint32_t, self.uint64_t, self.uint_t
         ];
     }
 
     #[inline]
-    pub proc is_float(self, type: Type) -> bool {
+    pub func is_float(self, type: Type) -> bool {
         return type in [self.float32_t, self.float64_t, self.comptime_float_t];
     }
 
     #[inline]
-    pub proc is_comptime_number(self, type: Type) -> bool {
+    pub func is_comptime_number(self, type: Type) -> bool {
         return type == self.comptime_int_t || type == self.comptime_float_t;
     }
 
-    pub proc comptime_number_to_type(self, type: Type) -> Type {
+    pub func comptime_number_to_type(self, type: Type) -> Type {
         return if type == self.comptime_int_t {
             self.int_t
         } else if type == self.comptime_float_t {
@@ -483,7 +483,7 @@ extend Env {
         };
     }
 
-    pub proc number_bits(self, type: Type) -> uint {
+    pub func number_bits(self, type: Type) -> uint {
         return if self.is_int(type) {
             self.int_bits(type)
         } else if self.is_float(type) {
@@ -493,7 +493,7 @@ extend Env {
         };
     }
 
-    pub proc int_bits(self, type: Type) -> uint {
+    pub func int_bits(self, type: Type) -> uint {
         type_sym := type.symbol()?;
         return if type_sym.info is .SizedInt(int_info) {
             int_info.size
@@ -506,7 +506,7 @@ extend Env {
         };
     }
 
-    pub proc float_bits(self, type: Type) -> uint {
+    pub func float_bits(self, type: Type) -> uint {
         _ = self;
         type_sym := type.symbol()?;
         return if type_sym.info is .Float(float_info) {
@@ -518,10 +518,10 @@ extend Env {
 
     /// Returns the size and alignment (in bytes) of `typ`, similarly to
     /// C's `sizeof(T)` and `_Alignof(T)`.
-    pub proc type_size(mut self, type: Type, is_raw: bool := false) -> (uint, uint) {
+    pub func type_size(mut self, type: Type, is_raw: bool := false) -> (uint, uint) {
         return match type {
             .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
-            .Rawptr, .Boxedptr, .Pointer, .Proc -> (self.pointer_size, self.pointer_size),
+            .Rawptr, .Boxedptr, .Pointer, .Func -> (self.pointer_size, self.pointer_size),
             else -> if mut type_sym := type.symbol() {
                 self.type_symbol_size(type_sym, is_raw)
             } else {
@@ -530,7 +530,7 @@ extend Env {
         };
     }
 
-    pub proc type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool := false) -> (uint, uint) {
+    pub func type_symbol_size(mut self, mut type_sym: TypeSym, is_raw: bool := false) -> (uint, uint) {
         return if type_sym.size != 0 {
             (type_sym.size, type_sym.align)
         } else {
@@ -539,7 +539,7 @@ extend Env {
                 (self.pointer_size, self.pointer_size)
             } else {
                 match type_sym.info {
-                    .Proc -> (self.pointer_size, self.pointer_size),
+                    .Func -> (self.pointer_size, self.pointer_size),
                     .Alias(alias_info) -> self.type_size(alias_info.parent),
                     .Bool -> (1, 1),
                     .Uint, .Int -> (self.pointer_size, self.pointer_size),

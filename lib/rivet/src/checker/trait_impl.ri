@@ -5,11 +5,11 @@
 import ../{ ast, token, report };
 
 extend Checker {
-    proc check_trait_impl(mut self, impltor: ast.TypeSym, trait_sym: ast.TypeSym, pos: token.Pos) {
+    func check_trait_impl(mut self, impltor: ast.TypeSym, trait_sym: ast.TypeSym, pos: token.Pos) {
         mut impl_does_not_implemented := []string();
         for sym in trait_sym.scope.syms {
-            if sym is ast.Proc(trait_proc) {
-                if impl := impltor.find_proc(trait_proc.name); !trait_proc.has_body {
+            if sym is ast.Func(trait_func) {
+                if impl := impltor.find_func(trait_func.name); !trait_func.has_body {
                     mut errors := []string();
                     if !impl.is_public {
                         errors.push("method `{}` should be public.".fmt(impl.name));
@@ -19,9 +19,9 @@ extend Checker {
                             "receiver `self` should be a reference, or use the attribute `boxed`."
                         );
                     }
-                    if impl.args.len == trait_proc.args.len {
+                    if impl.args.len == trait_func.args.len {
                         for i, arg in impl.args {
-                            trait_arg := trait_proc.args[i];
+                            trait_arg := trait_func.args[i];
                             if arg.is_mut && !trait_arg.is_mut {
                                 errors.push("argument `{}` should not be `mut`.".fmt(arg.name));
                             } else if !arg.is_mut && trait_arg.is_mut {
@@ -33,12 +33,12 @@ extend Checker {
                         }
                     } else {
                         errors.push(
-                            "expected {} arguments(s), not {}.".fmt(trait_proc.args.len, impl.args.len)
+                            "expected {} arguments(s), not {}.".fmt(trait_func.args.len, impl.args.len)
                         );
                     }
-                    if impl.ret_type != trait_proc.ret_type {
+                    if impl.ret_type != trait_func.ret_type {
                         errors.push("method `{}` should return `{}`.".fmt(
-                            impl.name, trait_proc.ret_type
+                            impl.name, trait_func.ret_type
                         ));
                     }
                     if errors.len > 0 {
@@ -53,7 +53,7 @@ extend Checker {
                         err.add_note("====== method signature for `{}` ======", impl.name);
                         err.add_note(
                             "trait `{}` has `{}`", trait_sym.name,
-                            trait_proc.type(self.env.universe)
+                            trait_func.type(self.env.universe)
                         );
                         err.add_note(
                             "type `{}` has `{}`", impltor.name,
@@ -61,10 +61,10 @@ extend Checker {
                         );
                         err.emit();
                     }
-                } else if !trait_proc.has_body {
+                } else if !trait_func.has_body {
                     impl_does_not_implemented.push(
                         "`{}` - {}".fmt(
-                            trait_proc.name, trait_proc.type(self.env.universe)
+                            trait_func.name, trait_func.type(self.env.universe)
                         )
                     );
                 }

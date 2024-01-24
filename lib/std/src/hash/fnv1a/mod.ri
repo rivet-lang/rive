@@ -3,7 +3,7 @@
 // file.
 
 // This module implements a FNV-1a hash.
-// See: https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_procedure
+// See: https://en.wikipedia.org/wiki/Fowler–Noll–Vo_hash_function
 
 const FNV32_PRIME: uint32 := 16777619;
 const FNV32_OFFSET_BASIS: uint32 := 2166136261;
@@ -14,7 +14,7 @@ const FNV64_OFFSET_BASIS: uint64 := 14695981039346656037;
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-pub proc sum32(data: [:]uint8) -> uint32 {
+pub func sum32(data: [:]uint8) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {
@@ -26,7 +26,7 @@ pub proc sum32(data: [:]uint8) -> uint32 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 #[inline; unsafe]
-pub proc sum32_bytes(data: [&]uint8, data_len: uint) -> uint32 {
+pub func sum32_bytes(data: [&]uint8, data_len: uint) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data_len : i += 1 {
@@ -37,7 +37,7 @@ pub proc sum32_bytes(data: [&]uint8, data_len: uint) -> uint32 {
 
 /// Returns a fnv1a hash of the string, described by `data`
 #[inline]
-pub proc sum32_string(data: string) -> uint32 {
+pub func sum32_string(data: string) -> uint32 {
     mut hash := FNV32_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {
@@ -49,7 +49,7 @@ pub proc sum32_string(data: string) -> uint32 {
 /// Returns a fnv1a hash of the memory block, described by the dynamic
 /// byte array `data`.
 #[inline]
-pub proc sum64(data: [:]uint8) -> uint64 {
+pub func sum64(data: [:]uint8) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {
@@ -61,7 +61,7 @@ pub proc sum64(data: [:]uint8) -> uint64 {
 /// Returns a fnv1a hash of `data_len` bytes starting at
 /// the address in the given &byte pointer `data`.
 #[inline; unsafe]
-pub proc sum64_bytes(data: [&]uint8, data_len: uint) -> uint64 {
+pub func sum64_bytes(data: [&]uint8, data_len: uint) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data_len : i += 1 {
@@ -72,7 +72,7 @@ pub proc sum64_bytes(data: [&]uint8, data_len: uint) -> uint64 {
 
 /// Returns a fnv1a hash of the string, described by `data`
 #[inline]
-pub proc sum64_string(data: string) -> uint64 {
+pub func sum64_string(data: string) -> uint64 {
     mut hash := FNV64_OFFSET_BASIS;
     mut i: uint := 0;
     while i < data.len : i += 1 {

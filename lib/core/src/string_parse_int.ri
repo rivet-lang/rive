@@ -3,14 +3,14 @@
 // file.
 
 #[inline]
-proc lower(c: uint8) -> uint8 {
+func lower(c: uint8) -> uint8 {
     return c | ('x' - 'X');
 }
 
 extend string {
     /// This is like `parse_int` but for unsigned numbers.
     /// A sign prefix is not permitted.
-    pub proc parse_uint(self, mut base: int32, mut bit_size: uint32) -> !uint {
+    pub func parse_uint(self, mut base: int32, mut bit_size: uint32) -> !uint {
         if self == "" {
             throw InvalidSyntaxError("empty string");
         }
@@ -125,7 +125,7 @@ extend string {
     /// The `bit_size` argument specifies the integer type that the result must
     /// fit into. Bit sizes 0, 8, 16, 32, and 64 correspond to int8, int16, int32, and
     /// int. If `bit_size` is below 0 or above 64, an error is returned.
-    pub proc parse_int(self, base: int32, mut bit_size: uint32) -> !int {
+    pub func parse_int(self, base: int32, mut bit_size: uint32) -> !int {
         if self == "" {
             throw InvalidSyntaxError("invalid syntax");
         }
@@ -159,9 +159,9 @@ extend string {
 }
 
 /// Reports whether the underscores in `s_` are allowed.
-/// Checking them in this one procedure lets all the parsers skip over them simply.
+/// Checking them in this one function lets all the parsers skip over them simply.
 /// Underscore must appear only between digits or between a base prefix and a digit.
-proc underscore_ok(s_: string) -> bool {
+func underscore_ok(s_: string) -> bool {
     // saw tracks the last character (class) we saw:
     // ^ for beginning of number,
     // 0 for a digit or base prefix,

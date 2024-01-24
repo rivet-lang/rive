@@ -5,12 +5,12 @@
 extern (Rivet) {
     pub var mut ARGS: []string;
 
-    proc init_string_lits();
-    proc init_globals();
-    proc drop_globals();
+    func init_string_lits();
+    func init_globals();
+    func drop_globals();
 }
 
-proc init_args(_argc: uint, _argv: [&][&]uint8) {
+func init_args(_argc: uint, _argv: [&][&]uint8) {
     unsafe {
         ARGS = []string(cap: _argc);
         mut i: uint := 0;
@@ -21,7 +21,7 @@ proc init_args(_argc: uint, _argv: [&][&]uint8) {
 }
 
 $if _TESTS_ {
-    proc main(_argc: int32, _argv: [&][&]uint8, mut test_runner: TestRunner) {
+    func main(_argc: int32, _argv: [&][&]uint8, mut test_runner: TestRunner) {
         setup_signals_handler();
         init_args(@as(uint, _argc), _argv);
 
@@ -35,7 +35,7 @@ $if _TESTS_ {
         drop_globals();
     }
 } else {
-    proc main(_argc: int32, _argv: [&][&]uint8, mod_main: proc()) {
+    func main(_argc: int32, _argv: [&][&]uint8, mod_main: func()) {
         setup_signals_handler();
         init_args(@as(uint, _argc), _argv);
 

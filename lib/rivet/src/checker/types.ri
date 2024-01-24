@@ -8,15 +8,15 @@ import ../{ ast, token, report };
 struct IncompatibleTypesError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 extend Checker {
-    proc check_argument_type(
+    func check_argument_type(
         self, got: ast.Type, expected: ast.Type, pos: token.Pos, arg_name: string,
-        proc_kind: string, proc_name: string
+        func_kind: string, func_name: string
     ) {
         if mut expected_sym := expected.symbol(); expected_sym.info is .Trait(mut trait_info)
             && expected != got {
@@ -30,7 +30,7 @@ extend Checker {
                     ), pos
                 );
                 err.add_note(
-                    "in argument `{}` of {} `{}`".fmt(arg_name, proc_kind, proc_name)
+                    "in argument `{}` of {} `{}`".fmt(arg_name, func_kind, func_name)
                 );
                 err.emit();
             }
@@ -38,14 +38,14 @@ extend Checker {
             self.check_types(got, expected) catch |err| {
                 mut err2 := report.error_builder(err.to_string(), pos);
                 err2.add_note(
-                    "in argument `{}` of {} `{}`".fmt(arg_name, proc_kind, proc_name)
+                    "in argument `{}` of {} `{}`".fmt(arg_name, func_kind, func_name)
                 );
                 err2.emit();
             };
         }
     }
 
-    proc check_types(self, got: ast.Type, expected: ast.Type) -> ! {
+    func check_types(self, got: ast.Type, expected: ast.Type) -> ! {
         if !self.check_compatible_types(got, expected) {
             got_str := if got is .None {
                 if expected is .Option {
@@ -72,7 +72,7 @@ extend Checker {
         }
     }
 
-    proc check_compatible_types(self, got: ast.Type, expected: ast.Type) -> bool {
+    func check_compatible_types(self, got: ast.Type, expected: ast.Type) -> bool {
         if got is .Never {
             return true;
         } else if (expected is .Never && got is .Void)
@@ -127,7 +127,7 @@ extend Checker {
             return self.check_compatible_types(got, slice_info.elem_type);
         }
 
-        if expected is .Proc && got is .Proc {
+        if expected is .Func && got is .Func {
             return expected == got;
         } else if expected is .DynArray(dyn_array_info) && got is .DynArray(dyn_array_info2) {
             return dyn_array_info.inner == dyn_array_info2.inner;
@@ -195,7 +195,7 @@ extend Checker {
         return expected == got;
     }
 
-    proc check_pointer(expected: ast.Type, got: ast.Type) -> bool {
+    func check_pointer(expected: ast.Type, got: ast.Type) -> bool {
         if expected is .Rawptr {
             // rawptr == &T, is valid
             return got is .Rawptr || got is .Pointer || got is .Boxedptr;

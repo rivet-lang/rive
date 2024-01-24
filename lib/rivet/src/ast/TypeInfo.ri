@@ -32,7 +32,7 @@ pub enum TypeInfo < traits.Stringable {
         size: uint;
     },
     String,
-    Proc(Proc),
+    Func(Func),
     Alias {
         mut parent: Type;
     },
@@ -60,7 +60,7 @@ pub enum TypeInfo < traits.Stringable {
         mut implements: []mut TypeSym;
         mut has_objects: bool;
 
-        proc index_of(&self, type_sym: TypeSym) -> ?uint {
+        func index_of(&self, type_sym: TypeSym) -> ?uint {
             for i, ts in self.implements {
                 if ts.id == type_sym.id {
                     return i;
@@ -69,7 +69,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        proc implement(mut self, type_sym: TypeSym) {
+        func implement(mut self, type_sym: TypeSym) {
             if type_sym !in self.implements {
                 self.implements.push(type_sym);
                 for mut b in self.bases {
@@ -79,7 +79,7 @@ pub enum TypeInfo < traits.Stringable {
         }
 
         #[inline]
-        proc mark_has_objects(mut self) {
+        func mark_has_objects(mut self) {
             self.has_objects = true;
         }
     },
@@ -91,15 +91,15 @@ pub enum TypeInfo < traits.Stringable {
         mut traits: []mut TypeSym;
 
         #[inline]
-        proc add_variant(mut self, variant: EnumVariant) {
+        func add_variant(mut self, variant: EnumVariant) {
             self.variants.push(variant);
         }
 
-        proc has_variant(&self, name: string) -> bool {
+        func has_variant(&self, name: string) -> bool {
             return self.get_variant(name) != none;
         }
 
-        proc get_variant(&self, name: string) -> ?EnumVariant {
+        func get_variant(&self, name: string) -> ?EnumVariant {
             for v in self.variants {
                 if v.name == name {
                     return v;
@@ -108,7 +108,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        proc get_variant_by_type(&self, type: Type) -> ?EnumVariant {
+        func get_variant_by_type(&self, type: Type) -> ?EnumVariant {
             for v in self.variants {
                 if v.has_type && v.type == type {
                     return v;
@@ -117,7 +117,7 @@ pub enum TypeInfo < traits.Stringable {
             return none;
         }
 
-        proc contains_trait(&self, type_sym: TypeSym) -> bool {
+        func contains_trait(&self, type_sym: TypeSym) -> bool {
             for trait_ in self.traits {
                 if trait_.id == type_sym.id {
                     return true;
@@ -134,7 +134,7 @@ pub enum TypeInfo < traits.Stringable {
         mut bases: []mut TypeSym;
         mut traits: []mut TypeSym;
 
-        proc contains_trait(&self, type_sym: TypeSym) -> bool {
+        func contains_trait(&self, type_sym: TypeSym) -> bool {
             for trait_ in self.traits {
                 if trait_.id == type_sym.id {
                     return true;
@@ -145,7 +145,7 @@ pub enum TypeInfo < traits.Stringable {
     };
 
     #[inline]
-    pub proc elem_type(self) -> ?Type {
+    pub func elem_type(self) -> ?Type {
         return match self {
             .Slice(slice) -> slice.elem_type,
             .Array(arr) -> arr.elem_type,
@@ -155,7 +155,7 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_mut_array(self) -> bool {
+    pub func is_mut_array(self) -> bool {
         return match self {
             .Slice(slice) -> slice.is_mut,
             .Array(arr) -> arr.is_mut,
@@ -165,19 +165,19 @@ pub enum TypeInfo < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_primitive(self) -> bool {
+    pub func is_primitive(self) -> bool {
         return self is .Bool || self is .Rune || self is .SizedInt || self is .SizedUint
             || self is .Uint || self is .Int || self is .ComptimeInt
             || self is .ComptimeFloat || self is .ComptimeFloat || self is .Float;
     }
 
     #[inline]
-    pub proc is_compound(self) -> bool {
+    pub func is_compound(self) -> bool {
         return self is .Struct || self is .Trait || self is .Enum || self is .Tuple;
     }
 
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return match self.* {
             .Invalid -> "invalid",
             .Placeholder -> "placeholder",
@@ -192,7 +192,7 @@ pub enum TypeInfo < traits.Stringable {
             .ComptimeFloat -> "comptime_float",
             .Float(float_info) -> "float{}".fmt(float_info.size),
             .String -> "string",
-            .Proc -> "proc",
+            .Func -> "func",
             .Alias -> "alias",
             .Slice -> "slice",
             .Array -> "array",

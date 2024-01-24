@@ -9,11 +9,11 @@ pub struct Block < traits.Stringable {
     mut id: uint;
     mut stmts: []Stmt;
 
-    pub proc add_stmt(mut self, stmt: Stmt) {
+    pub func add_stmt(mut self, stmt: Stmt) {
         self.stmts.push(stmt);
     }
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         mut sb := strings.Builder.new();
         sb.writeln_fmt("@b{} {{", self.id);
         for stmt in self.stmts {
@@ -46,7 +46,7 @@ pub enum Stmt < traits.Stringable {
         expr: Expr := .Empty;
     };
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return match self.* {
             .Expr(expr) -> expr.to_string(),
             .Assign(assign) -> "{} = {}".fmt(assign.left, assign.right),

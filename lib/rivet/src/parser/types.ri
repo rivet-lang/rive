@@ -5,15 +5,15 @@
 import ../{ ast, report };
 
 extend Parser {
-    proc parse_type(mut self) -> ast.Type {
+    func parse_type(mut self) -> ast.Type {
         mut pos := self.tok.pos;
         return match {
             self.accept(.Question) -> .Option(
                 self.parse_type(), pos + self.prev_tok.pos
             ),
-            self.tok.kind == .KwProc -> {
-                // procedure types
-                self.expect(.KwProc);
+            self.tok.kind == .KwFunc -> {
+                // function types
+                self.expect(.KwFunc);
                 self.expect(.Lparen);
                 mut args := []mut ast.Arg();
                 if self.tok.kind != .Rparen {
@@ -39,7 +39,7 @@ extend Parser {
                 } else {
                     .Void
                 };
-                .Proc(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
+                .Func(args: args, ret_type: ret_type, pos: pos + self.prev_tok.pos)
             },
             self.accept(.Amp) -> {
                 // pointers

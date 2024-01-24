@@ -11,7 +11,7 @@ var digit_pairs := "0010203040506070809001112131415161718191021222324252627"
 extend comptime_int < Stringable {
     /// Returns the value of `self` as a string.
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int64, self.*).to_string();
     }
 }
@@ -22,7 +22,7 @@ extend int8 < Stringable {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int32, self.*).str_l(5);
     }
 }
@@ -33,7 +33,7 @@ extend int16 < Stringable {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int32, self.*).str_l(7);
     }
 }
@@ -43,7 +43,7 @@ extend int32 < Stringable {
     pub const MIN: int32 := -2147483648;
 
     /// Returns the string representation of `self` with `max` chars.
-    pub proc str_l(self, max: int32) -> string {
+    pub func str_l(self, max: int32) -> string {
         if self == 0 {
             return "0";
         }
@@ -91,7 +91,7 @@ extend int32 < Stringable {
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return self.*.str_l(12);
     }
 }
@@ -101,7 +101,7 @@ extend int64 < Stringable {
     pub const MIN: int64 := -9223372036854775808;
 
     /// Returns the value of `self` as a string.
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         if self.* == 0 {
             return "0";
         }
@@ -155,13 +155,13 @@ extend int < Stringable {
     pub const MAX := @as(int, $if _x64_ { int64.MAX } else { int32.MAX });
 
     #[inline]
-    pub proc bits() -> uint32 {
+    pub func bits() -> uint32 {
         return $if _x64_ { 64 } else { 32 };
     }
 
     /// Returns the value of `self` as a string.
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(int64, self.*).to_string();
     }
 }

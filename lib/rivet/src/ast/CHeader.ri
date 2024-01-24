@@ -6,7 +6,7 @@ import std/{ traits, process, strings, fs.Path };
 
 import ../token;
 
-// Useful procedures to get system `#define`s. Will soon be used to
+// Useful functions to get system `#define`s. Will soon be used to
 // implement `extern (C) import`.
 
 pub enum CImportAction {
@@ -57,7 +57,7 @@ struct CDefine < traits.Stringable {
     mut cvalue: CImportValue := .Invalid;
     mut has_cvalue: bool;
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         mut sb := strings.Builder.new();
         sb.write(if self.is_macro { "macro " } else { "const " });
         sb.write(self.name);
@@ -82,7 +82,7 @@ struct CDefine < traits.Stringable {
 struct CDefines {
     mut defines: []CDefine;
 
-    proc get(self, name: string) -> ?CDefine {
+    func get(self, name: string) -> ?CDefine {
         for def in self.defines {
             if def.name == name {
                 return def;
@@ -99,19 +99,19 @@ enum CImportValue {
     Uint(uint);
 
     #[inline]
-    pub proc to_bool(self) -> bool {
+    pub func to_bool(self) -> bool {
         return (self is .Int(int_) && int_ == 1)
             || (self is .Uint(uint_) && uint_ == 1);
     }
 }
 
 extend Env {
-    proc setup_c_utils(mut self) {
+    func setup_c_utils(mut self) {
         self.c_include_paths = self.get_include_paths();
         self.c_defines = self.get_global_defines();
     }
 
-    proc get_global_defines(self) -> CDefines {
+    func get_global_defines(self) -> CDefines {
         if result := process.execute(
             "{} -x c -E -dM /dev/null".fmt(self.prefs.target_backend_compiler)
         ) {
@@ -147,7 +147,7 @@ extend Env {
         return CDefines();
     }
 
-    proc get_include_paths(self) -> []string {
+    func get_include_paths(self) -> []string {
         if result := process.execute(
             "{} -x c -E -v /dev/null".fmt(self.prefs.target_backend_compiler)
         ) {
@@ -166,7 +166,7 @@ extend Env {
         return +[];
     }
 
-    proc search_c_header(self, is_local: bool, header: string) -> ?string {
+    func search_c_header(self, is_local: bool, header: string) -> ?string {
         if is_local {
             if Path.is_file(header) {
                 return header;

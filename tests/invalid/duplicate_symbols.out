@@ -1,6 +1,6 @@
 tests/invalid/duplicate_symbols.ri:15:1-17:1: error: duplicate symbol `other` in module `duplicate_symbols`
       | /~~ from here
-   15 | proc other(a: int32) { // FAIL
+   15 | func other(a: int32) { // FAIL
    16 |     a := 1;
    17 | }
       | ^~~ to here

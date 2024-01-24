@@ -1,0 +1,3 @@
+func main() {
+    _ = "abc\_def";
+}

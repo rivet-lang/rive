@@ -51,7 +51,7 @@ class Parser:
         self.advance(2)
         return ast.SourceFile(file, self.parse_decls(), self.mod_sym)
 
-    # ---- useful procedures for working with tokens ----
+    # ---- useful functions for working with tokens ----
     def next(self):
         self.prev_tok = self.tok
         self.tok = self.peek_tok
@@ -227,7 +227,7 @@ class Parser:
             return self.parse_import_decl(attributes, is_public, pos)
         elif self.accept(Kind.KwExtern):
             self.inside_extern = True
-            # extern procedure or var
+            # extern function or var
             abi = self.parse_abi()
             protos = []
             if self.accept(Kind.Lbrace):
@@ -420,8 +420,8 @@ class Parser:
 
             self.inside_extend = prev_inside_extend
             return ast.ExtendDecl(attributes, typ, bases, decls, pos)
-        elif self.accept(Kind.KwProc):
-            return self.parse_proc_decl(
+        elif self.accept(Kind.KwFunc):
+            return self.parse_func_decl(
                 doc_comment, attributes, is_public,
                 attributes.has("unsafe")
                 or (self.inside_extern and self.extern_abi != sym.ABI.Rivet and not attributes.has("trusted")),
@@ -575,7 +575,7 @@ class Parser:
             has_def_expr, pos
         )
 
-    def parse_proc_decl(
+    def parse_func_decl(
         self, doc_comment, attributes, is_public, is_unsafe, abi
     ):
         pos = self.tok.pos
@@ -656,7 +656,7 @@ class Parser:
             while not self.accept(Kind.Rbrace):
                 stmts.append(self.parse_stmt())
         self.close_scope()
-        return ast.ProcDecl(
+        return ast.FuncDecl(
             doc_comment, attributes, is_public, self.inside_extern, is_unsafe,
             name, pos, args, ret_typ, stmts, sc, has_body, is_method,
             self_is_mut, self_is_ptr, has_named_args, self.mod_sym.is_root
@@ -1463,10 +1463,10 @@ class Parser:
         if self.accept(Kind.Question):
             # option
             return type.Option(self.parse_type())
-        elif self.tok.kind == Kind.KwProc:
-            # procedure types
+        elif self.tok.kind == Kind.KwFunc:
+            # function types
             args = []
-            self.expect(Kind.KwProc)
+            self.expect(Kind.KwFunc)
             self.expect(Kind.Lparen)
             if self.tok.kind != Kind.Rparen:
                 while True:
@@ -1485,7 +1485,7 @@ class Parser:
                 ret_typ = self.parse_type()
             else:
                 ret_typ = self.comp.void_t
-            return type.Proc(
+            return type.Func(
                 False, sym.ABI.Rivet, False, args, False, ret_typ, False, False
             )
         elif self.accept(Kind.Amp):

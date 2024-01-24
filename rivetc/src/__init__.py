@@ -396,7 +396,7 @@ class Compiler:
     def type_size(self, typ):
         if isinstance(typ, (type.Result, type.Option)):
             return self.type_size(typ.typ)
-        elif isinstance(typ, (type.Ptr, type.Proc, type.Boxedptr)):
+        elif isinstance(typ, (type.Ptr, type.Func, type.Boxedptr)):
             return self.pointer_size, self.pointer_size
         return self.type_symbol_size(typ.symbol())
 

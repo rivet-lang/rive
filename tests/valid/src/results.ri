@@ -1,20 +1,20 @@
 struct MyError < Throwable {
     msg: string;
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return self.msg;
     }
 }
 
-proc result() -> ! {
+func result() -> ! {
     throw MyError("simple error");
 }
 
-proc result2() -> ! {
+func result2() -> ! {
     throw MyError("simple error (throwed: {}, idx: {})".fmt(true, 0));
 }
 
-proc result3() -> !int32 {
+func result3() -> !int32 {
     return 5;
 }
 
@@ -43,7 +43,7 @@ enum IOError < Throwable {
         size: uint;
     };
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return match self.* {
             .FileNotFound(path) -> "file not found: {}".fmt(path),
             .InvalidFileSize(ifsz) -> "invalid file size for {} (size: {})".fmt(
@@ -62,7 +62,7 @@ test "using a Throwable enum with Stringable trait" {
     );
 }
 
-proc throw_io_error(path: string, check_size: bool) -> ! {
+func throw_io_error(path: string, check_size: bool) -> ! {
     throw if check_size {
         IOError.InvalidFileSize(path, 2004)
     } else {

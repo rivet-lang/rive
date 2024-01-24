@@ -1,4 +1,4 @@
-tests/b_invalid/expected_type.ri:3:11: error: expected type, found procedure
-    3 | proc x(a: my_proc) {}
+tests/b_invalid/expected_type.ri:3:11: error: expected type, found function
+    3 | func x(a: my_fn) {}
       |           ^
 rivetc: error: could not compile module `expected_type`, aborting due to previous error

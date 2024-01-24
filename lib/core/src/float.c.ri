@@ -8,12 +8,12 @@ extend comptime_float < Stringable {
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    pub proc bits(self) -> uint64 {
+    pub func bits(self) -> uint64 {
         return @as(float64, self).bits();
     }
 
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return @as(float64, self.*).to_string();
     }
 }
@@ -23,18 +23,18 @@ extend float32 < Stringable {
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
     #[inline]
-    pub proc from_bits(b: uint32) -> float32 {
+    pub func from_bits(b: uint32) -> float32 {
         return unsafe { @as(&float32, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    pub proc bits(&self) -> uint32 {
+    pub func bits(&self) -> uint32 {
         return unsafe { @as(&uint32, self).* };
     }
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         unsafe {
             cstr: ?[&]uint8 := none;
             len := libc.asprintf(&cstr, c"%g", self.*);
@@ -52,18 +52,18 @@ extend float64 < Stringable {
     /// representation `b`, with the sign bit of b and the result in the same
     /// bit position.
     #[inline]
-    pub proc from_bits(b: uint64) -> float64 {
+    pub func from_bits(b: uint64) -> float64 {
         return unsafe { @as(&float64, &b).* };
     }
 
     /// Returns the IEEE 754 binary representation of `self`, with the sign bit
     /// of `self` and the result in the same bit position.
     #[inline]
-    pub proc bits(&self) -> uint64 {
+    pub func bits(&self) -> uint64 {
         return unsafe { @as(&uint64, self).* };
     }
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         unsafe {
             cstr: ?[&]uint8 := none;
             len := libc.asprintf(&cstr, c"%g", self.*);

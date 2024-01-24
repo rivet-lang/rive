@@ -1,7 +1,7 @@
 import std/console;
 
 #[inline]
-proc factorial(n: uint32) -> uint32 {
+func factorial(n: uint32) -> uint32 {
 	return if n <= 1 {
 		1
 	} else {
@@ -9,7 +9,7 @@ proc factorial(n: uint32) -> uint32 {
 	};
 }
 
-proc main() {
+func main() {
 	res := factorial(5);
 	console.writeln("factorial(5): {}", res);
 	@assert(res == 120);

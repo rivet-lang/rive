@@ -103,7 +103,7 @@ pub enum Decl {
         mut sym: Sym;
         mut scope: Scope;
     },
-    Proc {
+    Func {
         docs: []Comment;
         attributes: Attributes;
         is_public: bool;
@@ -140,7 +140,7 @@ pub enum Decl {
         mut defer_stmts: []Stmt.Defer;
     };
 
-    pub proc position(self) -> token.Pos {
+    pub func position(self) -> token.Pos {
         return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
@@ -155,12 +155,12 @@ pub enum Decl {
             .Extend(extend_d) -> extend_d.pos,
             .Const(const_d) -> const_d.pos,
             .Var(var_d) -> var_d.pos,
-            .Proc(proc_d) -> proc_d.pos,
+            .Func(func_d) -> func_d.pos,
             .Test(test_d) -> test_d.pos
         };
     }
 
-    pub proc decls(self) -> ?[]Self {
+    pub func decls(self) -> ?[]Self {
         return match self {
             .ComptimeIf(comptime_if) -> if branch_idx := comptime_if.branch_idx {
                 nodes_to_decls(
@@ -219,7 +219,7 @@ pub struct ImportListInfo {
     pub pos: token.Pos;
 }
 
-pub proc filter_field_decl(decls: []Decl) -> []Decl {
+pub func filter_field_decl(decls: []Decl) -> []Decl {
     mut fields := []Decl();
     for decl in decls {
         if decl is .Field {

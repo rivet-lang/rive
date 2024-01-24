@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Resolver {
-    proc resolve_decls(mut self, mut decls: []mut ast.Decl) {
+    func resolve_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             old_self_sym := self.self_sym;
@@ -178,33 +178,33 @@ extend Resolver {
                         );
                     }
                 },
-                .Proc(mut proc_decl) -> {
-                    if proc_decl.is_method {
+                .Func(mut func_decl) -> {
+                    if func_decl.is_method {
                         mut self_type := ast.Type.Basic(self.self_sym);
-                        if proc_decl.self_is_ptr {
-                            self_type = .Pointer(self_type, proc_decl.self_is_ptr);
+                        if func_decl.self_is_ptr {
+                            self_type = .Pointer(self_type, func_decl.self_is_ptr);
                         }
-                        is_used := self.self_sym.info is .Trait && !proc_decl.has_body;
-                        proc_decl.scope.add_local(ast.Var(
+                        is_used := self.self_sym.info is .Trait && !func_decl.has_body;
+                        func_decl.scope.add_local(ast.Var(
                             name: "self",
-                            is_mut: proc_decl.self_is_mut && !proc_decl.self_is_ptr,
+                            is_mut: func_decl.self_is_mut && !func_decl.self_is_ptr,
                             is_used: is_used,
                             is_changed: is_used,
                             level: .Receiver,
                             type: self_type,
-                            pos: proc_decl.self_pos
+                            pos: func_decl.self_pos
                         )) catch |err| report.error(
-                            err.to_string(), proc_decl.pos
+                            err.to_string(), func_decl.pos
                         );
-                        proc_decl.self_type = self_type;
-                        @as(ast.Proc, proc_decl.sym).self_type = self_type;
+                        func_decl.self_type = self_type;
+                        @as(ast.Func, func_decl.sym).self_type = self_type;
                     }
-                    for mut arg in proc_decl.args {
+                    for mut arg in func_decl.args {
                         if self.resolve_type(arg.type) {
                             self.check_variable_shadowing(arg.name, arg.pos);
                             is_used := self.self_sym_is_set && self.self_sym.info is .Trait
-                                && !proc_decl.has_body;
-                            proc_decl.scope.add_local(ast.Var(
+                                && !func_decl.has_body;
+                            func_decl.scope.add_local(ast.Var(
                                 is_mut: arg.is_mut,
                                 is_used: is_used,
                                 is_changed: is_used,
@@ -220,8 +220,8 @@ extend Resolver {
                             self.resolve_expr(arg.def_expr);
                         }
                     }
-                    _ = self.resolve_type(proc_decl.ret_type);
-                    for mut stmt in proc_decl.stmts {
+                    _ = self.resolve_type(func_decl.ret_type);
+                    for mut stmt in func_decl.stmts {
                         self.resolve_stmt(stmt);
                     }
                 },

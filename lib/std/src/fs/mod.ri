@@ -3,7 +3,7 @@
 // file.
 
 /// Reads the file in `path` and returns the contents.
-pub proc read_file(path: string) -> !string {
+pub func read_file(path: string) -> !string {
     mut f := File.open(path, "rb")!;
     res := f.read_all()!;
     f.close();
@@ -11,7 +11,7 @@ pub proc read_file(path: string) -> !string {
 }
 
 /// Writes `text` data to a file in `path`.
-pub proc write_file(path: string, text: string) -> ! {
+pub func write_file(path: string, text: string) -> ! {
     mut f := File.open(path, "wb")!;
     f.write(text);
     f.close();

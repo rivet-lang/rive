@@ -12,9 +12,9 @@ from .c import CGen
 from . import ir, cg_utils
 
 class TestInfo:
-    def __init__(self, name, proc):
+    def __init__(self, name, func):
         self.name = name
-        self.proc = proc
+        self.func = func
 
 class Codegen:
     def __init__(self, comp):
@@ -24,11 +24,11 @@ class Codegen:
 
         self.source_file = None
 
-        self.init_global_vars_proc = None
-        self.cur_proc = None
-        self.cur_proc_is_main = False
-        self.cur_proc_ret_typ = self.comp.void_t
-        self.cur_proc_defer_stmts = []
+        self.init_global_vars_fn = None
+        self.cur_func = None
+        self.cur_func_is_main = False
+        self.cur_func_ret_typ = self.comp.void_t
+        self.cur_func_defer_stmts = []
 
         self.inside_trait = False
         self.inside_test = False
@@ -60,55 +60,55 @@ class Codegen:
             )
         )
 
-        # generate 'init_string_lits_proc' procedure
-        self.init_string_lits_proc = ir.ProcDecl(
+        # generate 'init_string_lits_fn' function
+        self.init_string_lits_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "_R4core16init_string_litsF", [],
             False, ir.VOID_T, False
         )
-        self.out_rir.decls.append(self.init_string_lits_proc)
+        self.out_rir.decls.append(self.init_string_lits_fn)
 
-        # generate '_R4core12init_globalsF' procedure
-        self.init_global_vars_proc = ir.ProcDecl(
+        # generate '_R4core12init_globalsF' function
+        self.init_global_vars_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "_R4core12init_globalsF", [], False,
             ir.VOID_T, False
         )
-        self.out_rir.decls.append(self.init_global_vars_proc)
+        self.out_rir.decls.append(self.init_global_vars_fn)
 
-        # generate '_R12drop_globalsZ' procedure
-        g_proc = ir.ProcDecl(
+        # generate '_R12drop_globalsZ' function
+        g_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "_R4core12drop_globalsF", [], False,
             ir.VOID_T, False
         )
-        self.out_rir.decls.append(g_proc)
+        self.out_rir.decls.append(g_fn)
 
         for source_file in source_files:
             self.source_file = source_file
             self.gen_decls(source_file.decls)
 
-        # generate 'main' proc
+        # generate 'main' fn
         argc = ir.Ident(ir.C_INT_T, "_argc")
         argv = ir.Ident(ir.CHAR_T.ptr().ptr(), "_argv")
-        main_proc = ir.ProcDecl(
+        main_fn = ir.FuncDecl(
             False, ast.Attributes(), False, "main", [argc, argv], False,
             ir.C_INT_T, False
         )
         if self.comp.prefs.build_mode == prefs.BuildMode.Test:
-            self.cur_proc = main_proc
-            self.cur_proc.add_call("_R4core16init_string_litsF")
+            self.cur_func = main_fn
+            self.cur_func.add_call("_R4core16init_string_litsF")
             testRunner = ir.Ident(ir.TEST_RUNNER_T, "_testRunner")
-            main_proc.alloca(testRunner)
+            main_fn.alloca(testRunner)
             tests_field = ir.Selector(
                 ir.DYN_ARRAY_T, testRunner, ir.Name("tests")
             )
-            main_proc.store(
+            main_fn.store(
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("ok_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
-            main_proc.store(
+            main_fn.store(
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("fail_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
-            main_proc.store(
+            main_fn.store(
                 ir.Selector(ir.UINT64_T, testRunner, ir.Name("skip_tests")),
                 ir.IntLit(ir.UINT64_T, "0")
             )
@@ -119,35 +119,35 @@ class Codegen:
             gtests_array = []
             for i, gtest in enumerate(self.generated_tests):
                 test_value = ir.Ident(ir.TEST_T, f"test_value_{i}")
-                main_proc.alloca(test_value)
-                main_proc.store(
+                main_fn.alloca(test_value)
+                main_fn.store(
                     ir.Selector(ir.UINT8_T, test_value, ir.Name("result")),
                     ir.IntLit(ir.UINT8_T, "0")
                 )
-                main_proc.store(
+                main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_pos")),
                     ir.Ident(ir.STRING_T, "_R4core12empty_string")
                 )
-                main_proc.store(
+                main_fn.store(
                     ir.Selector(ir.STRING_T, test_value, ir.Name("err_msg")),
                     ir.Ident(ir.STRING_T, "_R4core12empty_string")
                 )
-                main_proc.store(
+                main_fn.store(
                     ir.Selector(
                         ir.STRING_T.ptr(True), test_value, ir.Name("name")
                     ), self.gen_string_literal(gtest.name)
                 )
-                main_proc.store(
+                main_fn.store(
                     ir.Selector(
-                        ir.Procedure(test_t, ir.VOID_T), test_value,
-                        ir.Name("proc_")
-                    ), ir.Name(gtest.proc.name)
+                        ir.Function(test_t, ir.VOID_T), test_value,
+                        ir.Name("fn")
+                    ), ir.Name(gtest.func)
                 )
                 gtests_array.append(test_value)
             test_t_size, _ = self.comp.type_size(
                 type.Type(self.comp.universe["core"]["Test"])
             )
-            main_proc.store(
+            main_fn.store(
                 tests_field,
                 ir.Inst(
                     ir.InstKind.Call, [
@@ -161,7 +161,7 @@ class Codegen:
                     ]
                 )
             )
-            main_proc.add_call(
+            main_fn.add_call(
                 "_R4core4mainF", [
                     argc,
                     ir.Inst(ir.InstKind.Cast,
@@ -170,7 +170,7 @@ class Codegen:
                 ]
             )
         else:
-            main_proc.add_call(
+            main_fn.add_call(
                 "_R4core4mainF", [
                     argc,
                     ir.Inst(ir.InstKind.Cast,
@@ -180,8 +180,8 @@ class Codegen:
                     )
                 ]
             )
-        main_proc.add_ret(ir.IntLit(ir.C_INT_T, "0"))
-        self.out_rir.decls.append(main_proc)
+        main_fn.add_ret(ir.IntLit(ir.C_INT_T, "0"))
+        self.out_rir.decls.append(main_fn)
 
         if report.ERRORS == 0:
             if self.comp.prefs.emit_rir:
@@ -250,7 +250,7 @@ class Codegen:
             self.gen_decl(decl)
 
     def gen_decl(self, decl):
-        self.cur_proc_defer_stmts = []
+        self.cur_func_defer_stmts = []
         if isinstance(decl, ast.ComptimeIf):
             self.gen_decls(self.comp.evalue_comptime_if(decl))
         elif isinstance(decl, ast.ExternDecl):
@@ -267,19 +267,19 @@ class Codegen:
                 )
                 if not decl.is_extern:
                     ident = ir.Ident(typ, name)
-                    self.cur_proc = self.init_global_vars_proc
+                    self.cur_func = self.init_global_vars_fn
                     value = self.gen_expr_with_cast(l.typ, decl.right)
                     if isinstance(typ, ir.Array):
                         size, _ = self.comp.type_size(l.typ)
                         if isinstance(value,
                                       ir.ArrayLit) and len(value.elems) > 0:
-                            self.cur_proc.add_call(
+                            self.cur_func.add_call(
                                 "_R4core3mem4copyF",
                                 [ident, value,
                                  ir.IntLit(ir.UINT_T, str(size))]
                             )
                     else:
-                        self.cur_proc.store(ident, value)
+                        self.cur_func.store(ident, value)
             self.inside_var_decl = False
         elif isinstance(decl, ast.EnumDecl):
             for v in decl.variants:
@@ -293,7 +293,7 @@ class Codegen:
             self.gen_decls(decl.decls)
         elif isinstance(decl, ast.ExtendDecl):
             self.gen_decls(decl.decls)
-        elif isinstance(decl, ast.ProcDecl):
+        elif isinstance(decl, ast.FuncDecl):
             if self.inside_trait and not decl.has_body:
                 return
             if decl.is_main and self.comp.prefs.build_mode == prefs.BuildMode.Test:
@@ -317,7 +317,7 @@ class Codegen:
             ret_typ = self.ir_type(decl.ret_typ)
             arr_ret_struct = ""
             if isinstance(ret_typ, ir.Array):
-                # In C procedures cannot return an array, so we create a special
+                # In C functions cannot return an array, so we create a special
                 # struct for this.
                 if self.comp.prefs.target_backend == prefs.Backend.C:
                     name = f"ArrayReturn{len(self.generated_array_returns)}"
@@ -339,52 +339,52 @@ class Codegen:
                     assert False
             else:
                 name = cg_utils.mangle_symbol(decl.sym)
-            proc_decl = ir.ProcDecl(
+            fn_decl = ir.FuncDecl(
                 False, decl.attributes, decl.is_extern and not decl.has_body,
                 name, args, decl.is_variadic and decl.is_extern, ret_typ,
                 decl.ret_typ == self.comp.never_t
             )
-            self.cur_proc = proc_decl
-            self.cur_proc.arr_ret_struct = arr_ret_struct
-            self.cur_proc_is_main = decl.is_main
-            self.cur_proc_ret_typ = decl.ret_typ
+            self.cur_func = fn_decl
+            self.cur_func.arr_ret_struct = arr_ret_struct
+            self.cur_func_is_main = decl.is_main
+            self.cur_func_ret_typ = decl.ret_typ
             self.gen_defer_stmt_vars(decl.defer_stmts)
             self.gen_stmts(decl.stmts)
-            proc_dec_ret_type_str = str(proc_decl.ret_typ)
-            if proc_dec_ret_type_str == "void" or proc_dec_ret_type_str == "_R6Result_R4void":
+            fn_dec_ret_type_str = str(fn_decl.ret_typ)
+            if fn_dec_ret_type_str == "void" or fn_dec_ret_type_str == "_R6Result_R4void":
                 self.gen_defer_stmts(scope = decl.scope)
-            if proc_dec_ret_type_str == "_R6Result_R4void" and len(
-                proc_decl.instrs
+            if fn_dec_ret_type_str == "_R6Result_R4void" and len(
+                fn_decl.instrs
             ) == 0:
-                self.cur_proc.add_ret(self.result_void(decl.ret_typ))
-            elif proc_dec_ret_type_str != "void" and not (
-                len(proc_decl.instrs) > 0
-                and isinstance(proc_decl.instrs[-1], ir.Inst)
-                and proc_decl.instrs[-1].kind == ir.InstKind.Ret
+                self.cur_func.add_ret(self.result_void(decl.ret_typ))
+            elif fn_dec_ret_type_str != "void" and not (
+                len(fn_decl.instrs) > 0
+                and isinstance(fn_decl.instrs[-1], ir.Inst)
+                and fn_decl.instrs[-1].kind == ir.InstKind.Ret
             ):
-                self.cur_proc.add_ret(self.default_value(decl.ret_typ))
+                self.cur_func.add_ret(self.default_value(decl.ret_typ))
             if decl.is_extern and not decl.has_body:
-                self.out_rir.externs.append(proc_decl)
+                self.out_rir.externs.append(fn_decl)
             else:
-                self.out_rir.decls.append(proc_decl)
+                self.out_rir.decls.append(fn_decl)
         elif isinstance(decl, ast.TestDecl):
             if self.comp.prefs.build_mode == prefs.BuildMode.Test:
                 if not self.source_file.sym.is_root:
                     return # skip non-root module tests
                 self.inside_test = True
                 test_name = utils.smart_quote(decl.name, True)
-                test_proc = f"__test{len(self.generated_tests)}__"
-                test_proc = f"_R{len(test_proc)}{test_proc}"
-                test_proc = ir.ProcDecl(
-                    False, ast.Attributes(), False, test_proc,
+                test_func = f"__test{len(self.generated_tests)}__"
+                test_func = f"_R{len(test_func)}{test_func}"
+                test_fn = ir.FuncDecl(
+                    False, ast.Attributes(), False, test_func,
                     [ir.Ident(ir.TEST_T.ptr(), "test")], False, ir.VOID_T, False
                 )
-                self.cur_proc = test_proc
+                self.cur_func = test_fn
                 self.gen_defer_stmt_vars(decl.defer_stmts)
                 self.gen_stmts(decl.stmts)
                 self.gen_defer_stmts(scope = decl.scope)
-                self.generated_tests.append(TestInfo(test_name, test_proc))
-                self.out_rir.decls.append(test_proc)
+                self.generated_tests.append(TestInfo(test_name, test_func))
+                self.out_rir.decls.append(test_fn)
                 self.inside_test = False
 
     def gen_stmts(self, stmts):
@@ -401,30 +401,30 @@ class Codegen:
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
             iterable_sym = stmt.iterable.typ.symbol()
-            self.loop_entry_label = self.cur_proc.local_name()
-            body_label = self.cur_proc.local_name()
-            self.loop_exit_label = self.cur_proc.local_name()
-            self.cur_proc.add_comment("for in stmt")
+            self.loop_entry_label = self.cur_func.local_name()
+            body_label = self.cur_func.local_name()
+            self.loop_exit_label = self.cur_func.local_name()
+            self.cur_func.add_comment("for in stmt")
             if stmt.index:
-                idx_name = self.cur_proc.unique_name(stmt.index.name)
+                idx_name = self.cur_func.unique_name(stmt.index.name)
                 stmt.scope.update_ir_name(stmt.index.name, idx_name)
             else:
-                idx_name = self.cur_proc.local_name()
+                idx_name = self.cur_func.local_name()
             iterable = self.gen_expr(stmt.iterable)
-            self.cur_proc.inline_alloca(
+            self.cur_func.inline_alloca(
                 ir.UINT_T, idx_name, ir.IntLit(ir.UINT_T, "0")
             )
             idx = ir.Ident(ir.UINT_T, idx_name)
-            self.cur_proc.add_label(self.loop_entry_label)
+            self.cur_func.add_label(self.loop_entry_label)
             if iterable_sym.kind == TypeKind.Array:
                 len_ = ir.IntLit(ir.UINT_T, iterable_sym.info.size.lit)
             else:
                 len_ = ir.Selector(ir.UINT_T, iterable, ir.Name("len"))
-            self.cur_proc.add_cond_br(
+            self.cur_func.add_cond_br(
                 ir.Inst(ir.InstKind.Cmp, [ir.Name("<"), idx, len_]), body_label,
                 self.loop_exit_label
             )
-            self.cur_proc.add_label(body_label)
+            self.cur_func.add_label(body_label)
             value_t_ir = self.ir_type(iterable_sym.info.elem_typ)
             value_is_ref_or_is_mut = stmt.value.is_ref or stmt.value.is_mut
             value_t_is_boxed = isinstance(
@@ -452,14 +452,14 @@ class Codegen:
                 isinstance(value_t_ir, ir.Pointer) and value_t_ir.is_managed
             ):
                 value = ir.Inst(ir.InstKind.LoadPtr, [value])
-            unique_ir_name = self.cur_proc.unique_name(stmt.value.name)
-            self.cur_proc.inline_alloca(value_t_ir, unique_ir_name, value)
+            unique_ir_name = self.cur_func.unique_name(stmt.value.name)
+            self.cur_func.inline_alloca(value_t_ir, unique_ir_name, value)
             stmt.scope.update_ir_name(stmt.value.name, unique_ir_name)
             self.while_continue_expr = ir.Inst(ir.InstKind.Inc, [idx])
             self.gen_stmt(stmt.stmt)
-            self.cur_proc.add_inst(self.while_continue_expr)
-            self.cur_proc.add_br(self.loop_entry_label)
-            self.cur_proc.add_label(self.loop_exit_label)
+            self.cur_func.add_inst(self.while_continue_expr)
+            self.cur_func.add_br(self.loop_entry_label)
+            self.cur_func.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.loop_scope = old_loop_scope
@@ -470,17 +470,17 @@ class Codegen:
             old_while_continue_expr = self.while_continue_expr
             old_entry_label = self.loop_entry_label
             old_exit_label = self.loop_exit_label
-            self.cur_proc.add_comment(f"while stmt (is_inf: {stmt.is_inf})")
-            self.loop_entry_label = self.cur_proc.local_name()
-            body_label = self.cur_proc.local_name()
-            self.loop_exit_label = self.cur_proc.local_name()
-            else_stmt_label = self.cur_proc.local_name(
+            self.cur_func.add_comment(f"while stmt (is_inf: {stmt.is_inf})")
+            self.loop_entry_label = self.cur_func.local_name()
+            body_label = self.cur_func.local_name()
+            self.loop_exit_label = self.cur_func.local_name()
+            else_stmt_label = self.cur_func.local_name(
             ) if stmt.has_else_stmt else ""
             self.while_continue_expr = stmt.continue_expr
-            self.cur_proc.add_label(self.loop_entry_label)
+            self.cur_func.add_label(self.loop_entry_label)
             if stmt.is_inf:
                 cond = ir.IntLit(self.comp.bool_t, "1")
-                self.cur_proc.add_br(body_label)
+                self.cur_func.add_br(body_label)
             else:
                 if isinstance(stmt.cond, ast.GuardExpr):
                     cond = self.gen_guard_expr(
@@ -490,29 +490,29 @@ class Codegen:
                 else:
                     cond = self.gen_expr_with_cast(self.comp.bool_t, stmt.cond)
                 if isinstance(cond, ir.IntLit) and cond.lit == "1":
-                    self.cur_proc.add_br(body_label)
+                    self.cur_func.add_br(body_label)
                 else:
-                    self.cur_proc.add_cond_br(
+                    self.cur_func.add_cond_br(
                         cond, body_label, else_stmt_label
                         if stmt.has_else_stmt else self.loop_exit_label
                     )
             gen_stmt = True
             if isinstance(cond, ir.IntLit) and cond.lit == "0":
-                self.cur_proc.add_comment("skip while stmt (cond: false)")
+                self.cur_func.add_comment("skip while stmt (cond: false)")
                 gen_stmt = False
-            self.cur_proc.add_label(body_label)
+            self.cur_func.add_label(body_label)
             if gen_stmt:
                 self.gen_stmt(stmt.stmt)
                 if stmt.has_continue_expr:
                     self.gen_expr(stmt.continue_expr)
-                self.cur_proc.add_comment(
+                self.cur_func.add_comment(
                     f"while stmt (goto to `{self.loop_entry_label}` for continue)"
                 )
-                self.cur_proc.add_br(self.loop_entry_label)
+                self.cur_func.add_br(self.loop_entry_label)
             if stmt.has_else_stmt:
-                self.cur_proc.add_label(else_stmt_label)
+                self.cur_func.add_label(else_stmt_label)
                 self.gen_stmt(stmt.else_stmt)
-            self.cur_proc.add_label(self.loop_exit_label)
+            self.cur_func.add_label(self.loop_exit_label)
             self.loop_entry_label = old_entry_label
             self.loop_exit_label = old_exit_label
             self.loop_scope = old_loop_scope
@@ -523,22 +523,22 @@ class Codegen:
                 left_ir_typ = self.ir_type(left.typ)
                 ident = ir.Ident(
                     left_ir_typ,
-                    self.cur_proc.local_name() if left.name == "_" else
-                    self.cur_proc.unique_name(left.name)
+                    self.cur_func.local_name() if left.name == "_" else
+                    self.cur_func.unique_name(left.name)
                 )
                 stmt.scope.update_ir_name(left.name, ident.name)
                 if isinstance(left_ir_typ, ir.Array):
                     size, _ = self.comp.type_size(left.typ)
-                    self.cur_proc.alloca(ident)
+                    self.cur_func.alloca(ident)
                     val = self.gen_expr_with_cast(left.typ, stmt.right, ident)
                     if isinstance(val, ir.ArrayLit) and len(val.elems) > 0:
-                        self.cur_proc.add_call(
+                        self.cur_func.add_call(
                             "_R4core3mem4copyF",
                             [ident, val,
                              ir.IntLit(ir.UINT_T, str(size))]
                         )
                 else:
-                    self.cur_proc.alloca(
+                    self.cur_func.alloca(
                         ident, self.gen_expr_with_cast(left.typ, stmt.right)
                     )
             else:
@@ -547,14 +547,14 @@ class Codegen:
                     left_ir_typ = self.ir_type(left.typ)
                     ident = ir.Ident(
                         left_ir_typ,
-                        self.cur_proc.local_name() if left.name == "_" else
-                        self.cur_proc.unique_name(left.name)
+                        self.cur_func.local_name() if left.name == "_" else
+                        self.cur_func.unique_name(left.name)
                     )
                     stmt.scope.update_ir_name(left.name, ident.name)
                     if isinstance(left_ir_typ, ir.Array):
                         size, _ = self.comp.type_size(left.typ)
-                        self.cur_proc.alloca(ident)
-                        self.cur_proc.add_call(
+                        self.cur_func.alloca(ident)
+                        self.cur_func.add_call(
                             "_R4core3mem4copyF", [
                                 ident,
                                 ir.Selector(
@@ -564,15 +564,15 @@ class Codegen:
                             ]
                         )
                     else:
-                        self.cur_proc.alloca(
+                        self.cur_func.alloca(
                             ident,
                             ir.Selector(left_ir_typ, right, ir.Name(f"f{i}"))
                         )
         elif isinstance(stmt, ast.DeferStmt):
-            self.cur_proc.store(
+            self.cur_func.store(
                 ir.Ident(ir.BOOL_T, stmt.flag_var), ir.IntLit(ir.BOOL_T, "1")
             )
-            self.cur_proc_defer_stmts.append(stmt)
+            self.cur_func_defer_stmts.append(stmt)
         elif isinstance(stmt, ast.ExprStmt):
             _ = self.gen_expr(stmt.expr)
 
@@ -643,10 +643,10 @@ class Codegen:
         elif expr_sym.kind == TypeKind.Enum and expr_sym.info.is_tagged and expr_sym.info.has_variant(
             expected_sym.name
         ):
-            tmp = self.cur_proc.local_name()
+            tmp = self.cur_func.local_name()
             tmp_t = expected_typ
             variant_idx = expr_sym.info.get_variant_by_type(expected_typ_).value
-            self.cur_proc.add_call(
+            self.cur_func.add_call(
                 "_R4core16tagged_enum_castF", [
                     ir.Selector(ir.UINT_T, res_expr, ir.Name("_idx_")),
                     variant_idx
@@ -659,7 +659,7 @@ class Codegen:
             value = ir.Selector(
                 self.ir_type(expr.typ), obj_f, ir.Name(f"v{variant_idx}")
             )
-            self.cur_proc.inline_alloca(tmp_t, tmp, value)
+            self.cur_func.inline_alloca(tmp_t, tmp, value)
             res_expr = ir.Ident(tmp_t, tmp)
 
         if isinstance(expected_typ_, type.Variadic):
@@ -765,7 +765,7 @@ class Codegen:
                         if expr.sym.abi == sym.ABI.Rivet else expr.sym.name
                     )
                 return ir.Ident(ir_typ, cg_utils.mangle_symbol(expr.sym))
-            elif isinstance(expr.sym, sym.Proc):
+            elif isinstance(expr.sym, sym.Func):
                 return ir.Ident(
                     self.ir_type(expr.typ), cg_utils.mangle_symbol(expr.sym)
                 )
@@ -788,7 +788,7 @@ class Codegen:
             if expr.name == "set_enum_ref_value":
                 arg0 = self.gen_expr(expr.args[0])
                 arg1 = self.gen_expr(expr.args[1])
-                self.cur_proc.store_ptr(
+                self.cur_func.store_ptr(
                     arg0, ir.Inst(ir.InstKind.LoadPtr, [arg1])
                 )
             elif expr.name == "as":
@@ -817,8 +817,8 @@ class Codegen:
                 typ_sym = arg1.typ.symbol()
                 expr_typ_sym = expr.typ.symbol()
                 if typ_sym.kind == TypeKind.Trait:
-                    tmp = self.cur_proc.local_name()
-                    self.cur_proc.inline_alloca(
+                    tmp = self.cur_func.local_name()
+                    self.cur_func.inline_alloca(
                         ir_typ, tmp,
                         ir.Inst(
                             ir.InstKind.Cast, [
@@ -841,12 +841,12 @@ class Codegen:
                     )
                     return ir.Ident(ir_typ, tmp)
                 elif typ_sym.kind == TypeKind.Enum and typ_sym.info.is_tagged:
-                    tmp = self.cur_proc.local_name()
+                    tmp = self.cur_func.local_name()
                     tmp_t = ir_typ
                     variant_idx = typ_sym.info.get_variant_by_type(
                         expr.typ
                     ).value
-                    self.cur_proc.add_call(
+                    self.cur_func.add_call(
                         "_R4core16tagged_enum_castF", [
                             ir.Selector(ir.UINT_T, res, ir.Name("_idx_")),
                             variant_idx
@@ -860,10 +860,10 @@ class Codegen:
                         self.ir_type(expr.typ), obj_f,
                         ir.Name(f"v{variant_idx}")
                     )
-                    self.cur_proc.inline_alloca(tmp_t, tmp, value)
+                    self.cur_func.inline_alloca(tmp_t, tmp, value)
                     return ir.Ident(tmp_t, tmp)
-                tmp = self.cur_proc.local_name()
-                self.cur_proc.inline_alloca(
+                tmp = self.cur_func.local_name()
+                self.cur_func.inline_alloca(
                     ir_typ, tmp,
                     ir.Inst(ir.InstKind.Cast, [res, ir_typ], ir_typ)
                 )
@@ -879,7 +879,7 @@ class Codegen:
                 if self.inside_test:
                     tmp_idx_ = ir.Ident(ir.TEST_T.ptr(), "test")
                     pos = utils.smart_quote(str(expr.pos), False)
-                    self.cur_proc.add_call(
+                    self.cur_func.add_call(
                         "_R4core11assert_testF", [
                             self.gen_expr(expr.args[0]),
                             self.gen_string_literal(
@@ -892,18 +892,18 @@ class Codegen:
                             ), tmp_idx_
                         ]
                     )
-                    l1 = self.cur_proc.local_name()
-                    l2 = self.cur_proc.local_name()
-                    self.cur_proc.add_cond_br(
+                    l1 = self.cur_func.local_name()
+                    l2 = self.cur_func.local_name()
+                    self.cur_func.add_cond_br(
                         ir.Selector(
                             ir.BOOL_T, tmp_idx_, ir.Name("early_return")
                         ), l1, l2
                     )
-                    self.cur_proc.add_label(l1)
-                    self.cur_proc.add_ret_void()
-                    self.cur_proc.add_label(l2)
+                    self.cur_func.add_label(l1)
+                    self.cur_func.add_ret_void()
+                    self.cur_func.add_label(l2)
                 elif self.comp.prefs.build_mode != prefs.BuildMode.Release:
-                    self.cur_proc.add_call(
+                    self.cur_func.add_call(
                         "_R4core6assertF", [
                             self.gen_expr(expr.args[0]),
                             self.gen_string_literal(
@@ -922,14 +922,14 @@ class Codegen:
             elif expr.name == "unreachable":
                 self.runtime_error("entered unreachable code")
             elif expr.name == "breakpoint" and self.comp.prefs.build_mode != prefs.BuildMode.Release:
-                self.cur_proc.breakpoint()
+                self.cur_func.breakpoint()
         elif isinstance(expr, ast.TupleLiteral):
             expr_sym = expr.typ.symbol()
             tmp = self.stacked_instance(self.ir_type(expr.typ))
             for i, elem in enumerate(expr.exprs):
                 elem_typ = expr_sym.info.types[i]
                 field_expr = self.gen_expr_with_cast(elem_typ, elem)
-                self.cur_proc.store(
+                self.cur_func.store(
                     ir.Selector(elem_typ, tmp, ir.Name(f"f{i}")), field_expr
                 )
             return tmp
@@ -951,7 +951,7 @@ class Codegen:
                         if left == None:
                             continue
                         inst = ir.InstKind.StorePtr if require_store_ptr else ir.InstKind.Store
-                        self.cur_proc.add_inst(
+                        self.cur_func.add_inst(
                             ir.Inst(
                                 inst, [
                                     left,
@@ -973,9 +973,9 @@ class Codegen:
                 else:
                     value = self.gen_expr_with_cast(expr.left.typ, expr.right)
                     if require_store_ptr:
-                        self.cur_proc.store_ptr(left, value)
+                        self.cur_func.store_ptr(left, value)
                     else:
-                        self.cur_proc.store(left, value)
+                        self.cur_func.store(left, value)
             else:
                 single_op = expr.op.single()
                 right = self.gen_expr_with_cast(expr.left.typ, expr.right)
@@ -992,7 +992,7 @@ class Codegen:
                         right_operand = ir.Inst(
                             ir.InstKind.GetPtr, [right_operand]
                         )
-                    self.cur_proc.store(
+                    self.cur_func.store(
                         left,
                         ir.Inst(
                             ir.InstKind.Call, [
@@ -1005,9 +1005,9 @@ class Codegen:
                 elif op_kind := ir.get_ir_op(single_op):
                     value = ir.Inst(op_kind, [left, right])
                     if require_store_ptr:
-                        self.cur_proc.store_ptr(left, value)
+                        self.cur_func.store_ptr(left, value)
                     else:
-                        self.cur_proc.store(left, value)
+                        self.cur_func.store(left, value)
                 else:
                     assert False, expr
         elif isinstance(expr, ast.Block):
@@ -1044,7 +1044,7 @@ class Codegen:
                             else:
                                 field = type_fields[i]
                             initted_fields.append(field.name)
-                            self.cur_proc.store(
+                            self.cur_func.store(
                                 ir.Selector(
                                     self.ir_type(field.typ), tmp,
                                     ir.Name(field.name)
@@ -1074,7 +1074,7 @@ class Codegen:
                                 )
                             else:
                                 value = self.default_value(f.typ)
-                            self.cur_proc.store(
+                            self.cur_func.store(
                                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                             )
                         return self.tagged_enum_variant_with_fields_value(
@@ -1115,7 +1115,7 @@ class Codegen:
                     else:
                         field = type_fields[i]
                     initted_fields.append(field.name)
-                    self.cur_proc.store(
+                    self.cur_func.store(
                         ir.Selector(
                             self.ir_type(field.typ), tmp, ir.Name(field.name)
                         ), self.gen_expr_with_cast(field.typ, f.expr)
@@ -1138,7 +1138,7 @@ class Codegen:
                         value = ir.Selector(f_typ, spread_val, ir.Name(f.name))
                     else:
                         value = self.default_value(f.typ)
-                    self.cur_proc.store(
+                    self.cur_func.store(
                         ir.Selector(f_typ, tmp, ir.Name(f.name)), value
                     )
                 return tmp
@@ -1254,16 +1254,16 @@ class Codegen:
             for i, arg in enumerate(expr.args):
                 if expr.sym.is_variadic and i == args_len:
                     break
-                proc_arg = expr.sym.get_arg(i)
-                proc_arg_typ = proc_arg.typ
-                proc_arg_typ_sym = proc_arg_typ.symbol()
-                if proc_arg.is_mut and not isinstance(
-                    proc_arg.typ, type.Ptr
+                fn_arg = expr.sym.get_arg(i)
+                fn_arg_typ = fn_arg.typ
+                fn_arg_typ_sym = fn_arg_typ.symbol()
+                if fn_arg.is_mut and not isinstance(
+                    fn_arg.typ, type.Ptr
                 ) and not (
-                    proc_arg_typ_sym.is_boxed() or proc_arg_typ_sym.is_primitive()
+                    fn_arg_typ_sym.is_boxed() or fn_arg_typ_sym.is_primitive()
                 ):
-                    proc_arg_typ = type.Ptr(proc_arg_typ)
-                arg_value = self.gen_expr_with_cast(proc_arg_typ, arg.expr)
+                    fn_arg_typ = type.Ptr(fn_arg_typ)
+                arg_value = self.gen_expr_with_cast(fn_arg_typ, arg.expr)
                 if expr.sym.is_method:
                     left_sym = expr.left.left_typ.symbol()
                     if left_sym.kind == TypeKind.DynArray and expr.sym.name == "push":
@@ -1311,18 +1311,18 @@ class Codegen:
                 )
             inst = ir.Inst(ir.InstKind.Call, args)
             if expr.sym.ret_typ in self.void_types:
-                self.cur_proc.add_inst(inst)
+                self.cur_func.add_inst(inst)
             else:
                 is_void_value = expr.typ in self.void_types
-                tmp = "" if custom_tmp else self.cur_proc.local_name()
+                tmp = "" if custom_tmp else self.cur_func.local_name()
                 if isinstance(expr.sym.ret_typ, type.Array):
                     size, _ = self.comp.type_size(expr.sym.ret_typ)
                     if custom_tmp:
                         id = custom_tmp
                     else:
                         id = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
-                        self.cur_proc.alloca(id)
-                    self.cur_proc.add_call(
+                        self.cur_func.alloca(id)
+                    self.cur_func.add_call(
                         "_R4core3mem4copyF", [
                             id,
                             ir.Selector(
@@ -1336,18 +1336,18 @@ class Codegen:
                     ret_typ = self.ir_type(expr.sym.ret_typ)
                     value = ir.Inst(ir.InstKind.Cast, [inst, ret_typ.ptr()])
                     if custom_tmp:
-                        self.cur_proc.store(
+                        self.cur_func.store(
                             custom_tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
                         )
                     else:
-                        self.cur_proc.inline_alloca(
+                        self.cur_func.inline_alloca(
                             ret_typ, tmp, ir.Inst(ir.InstKind.LoadPtr, [value])
                         )
                 else:
                     if custom_tmp:
-                        self.cur_proc.store(custom_tmp, inst)
+                        self.cur_func.store(custom_tmp, inst)
                     else:
-                        self.cur_proc.inline_alloca(
+                        self.cur_func.inline_alloca(
                             self.ir_type(expr.sym.ret_typ), tmp, inst
                         )
                 if expr.has_err_handler():
@@ -1355,27 +1355,27 @@ class Codegen:
                         not expr.err_handler.is_propagate
                     ) and expr.err_handler.expr.typ in self.void_types
                     res_value = ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
-                    panic_l = self.cur_proc.local_name()
-                    else_value = "" if err_handler_is_void else self.cur_proc.local_name(
+                    panic_l = self.cur_func.local_name()
+                    else_value = "" if err_handler_is_void else self.cur_func.local_name(
                     )
-                    exit_l = "" if expr.err_handler.is_propagate else self.cur_proc.local_name(
+                    exit_l = "" if expr.err_handler.is_propagate else self.cur_func.local_name(
                     )
                     res_value_is_err = ir.Selector(
                         ir.BOOL_T, res_value, ir.Name("is_err")
                     )
-                    self.cur_proc.add_cond_br(
+                    self.cur_func.add_cond_br(
                         res_value_is_err, panic_l,
                         exit_l if err_handler_is_void else else_value
                     )
-                    self.cur_proc.add_label(panic_l)
+                    self.cur_func.add_label(panic_l)
                     if expr.err_handler.is_propagate:
                         self.gen_return_trace_add(expr.pos)
                         self.gen_defer_stmts(
                             True, res_value_is_err, scope = expr.scope,
                             run_defer_previous = True
                         )
-                        if self.cur_proc_is_main or self.inside_var_decl:
-                            self.cur_proc.add_call(
+                        if self.cur_func_is_main or self.inside_var_decl:
+                            self.cur_func.add_call(
                                 "_R4core15uncatched_errorF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.throwable_t),
@@ -1385,7 +1385,7 @@ class Codegen:
                             )
                         elif self.inside_test:
                             pos = utils.smart_quote(str(expr.pos), False)
-                            self.cur_proc.add_call(
+                            self.cur_func.add_call(
                                 "_R4core18test_error_throwedF", [
                                     ir.Selector(
                                         self.ir_type(self.comp.throwable_t),
@@ -1395,16 +1395,16 @@ class Codegen:
                                     ir.Ident(ir.TEST_T, "test")
                                 ]
                             )
-                            self.cur_proc.add_ret_void()
+                            self.cur_func.add_ret_void()
                         else:
                             tmp2 = self.stacked_instance(
-                                self.ir_type(self.cur_proc_ret_typ)
+                                self.ir_type(self.cur_func_ret_typ)
                             )
-                            self.cur_proc.store(
+                            self.cur_func.store(
                                 ir.Selector(ir.BOOL_T, tmp2, ir.Name("is_err")),
                                 ir.IntLit(ir.BOOL_T, "1")
                             )
-                            self.cur_proc.store(
+                            self.cur_func.store(
                                 ir.Selector(
                                     self.ir_type(self.comp.throwable_t), tmp2,
                                     ir.Name("err")
@@ -1414,8 +1414,8 @@ class Codegen:
                                     res_value, ir.Name("err")
                                 )
                             )
-                            self.cur_proc.add_ret(tmp2)
-                        self.cur_proc.add_label(else_value)
+                            self.cur_func.add_ret(tmp2)
+                        self.cur_func.add_label(else_value)
                         if is_void_value:
                             return ir.Skip()
                         return ir.Selector(
@@ -1425,13 +1425,13 @@ class Codegen:
                     else: # `catch`
                         self.gen_return_trace_clear()
                         if expr.err_handler.has_varname():
-                            err_ir_name = self.cur_proc.unique_name(
+                            err_ir_name = self.cur_func.unique_name(
                                 expr.err_handler.varname
                             )
                             expr.err_handler.scope.update_ir_name(
                                 expr.err_handler.varname, err_ir_name
                             )
-                            self.cur_proc.inline_alloca(
+                            self.cur_func.inline_alloca(
                                 self.ir_type(self.comp.throwable_t),
                                 err_ir_name,
                                 ir.Selector(
@@ -1443,7 +1443,7 @@ class Codegen:
                             _ = self.gen_expr_with_cast(
                                 expr.sym.ret_typ.typ, expr.err_handler.expr
                             )
-                            self.cur_proc.add_label(exit_l)
+                            self.cur_func.add_label(exit_l)
                             return ir.Selector(
                                 self.ir_type(expr.typ), res_value,
                                 ir.Name("value")
@@ -1454,16 +1454,16 @@ class Codegen:
                                 expr.sym.ret_typ.typ, expr.err_handler.expr
                             )
                         )
-                        self.cur_proc.add_br(exit_l)
-                        self.cur_proc.add_label(else_value)
-                        self.cur_proc.store(
+                        self.cur_func.add_br(exit_l)
+                        self.cur_func.add_label(else_value)
+                        self.cur_func.store(
                             tmp2,
                             ir.Selector(
                                 self.ir_type(expr.typ), res_value,
                                 ir.Name("value")
                             )
                         )
-                        self.cur_proc.add_label(exit_l)
+                        self.cur_func.add_label(exit_l)
                         return tmp2
                 return ir.Ident(self.ir_type(expr.sym.ret_typ), tmp)
         elif isinstance(expr, ast.SelectorExpr):
@@ -1483,7 +1483,7 @@ class Codegen:
                             self.ir_type(expr.left_sym.info.underlying_typ),
                             str(v.value)
                         )
-                elif isinstance(expr.left_sym, sym.Proc):
+                elif isinstance(expr.left_sym, sym.Func):
                     return ir.Ident(
                         self.ir_type(expr.typ),
                         cg_utils.mangle_symbol(expr.left_sym)
@@ -1506,10 +1506,10 @@ class Codegen:
             if expr.is_indirect:
                 return ir.Inst(ir.InstKind.LoadPtr, [left], ir_left_typ.typ)
             elif expr.is_option_check:
-                panic_l = self.cur_proc.local_name()
-                exit_l = self.cur_proc.local_name()
+                panic_l = self.cur_func.local_name()
+                exit_l = self.cur_func.local_name()
                 if expr.left_typ.is_pointer():
-                    self.cur_proc.add_cond_br(
+                    self.cur_func.add_cond_br(
                         ir.Inst(
                             ir.InstKind.Cmp,
                             [ir.Name("=="), left,
@@ -1518,14 +1518,14 @@ class Codegen:
                     )
                     value = left
                 else:
-                    self.cur_proc.add_cond_br(
+                    self.cur_func.add_cond_br(
                         ir.Selector(ir.BOOL_T, left, ir.Name("is_none")),
                         panic_l, exit_l
                     )
                     value = ir.Selector(ir_typ, left, ir.Name("value"))
-                self.cur_proc.add_label(panic_l)
+                self.cur_func.add_label(panic_l)
                 self.runtime_error(f"attempt to use none value (`{expr.left}`)")
-                self.cur_proc.add_label(exit_l)
+                self.cur_func.add_label(exit_l)
                 return value
             elif isinstance(left, ir.StringLit):
                 if expr.field_name == "ptr":
@@ -1576,17 +1576,17 @@ class Codegen:
                 if custom_tmp:
                     final_value = custom_tmp
                 else:
-                    tmp_name = self.cur_proc.local_name()
+                    tmp_name = self.cur_func.local_name()
                     tmp_t = self.ir_type(expr.typ)
                     tmp = ir.Ident(tmp_t, tmp_name)
-                    self.cur_proc.inline_alloca(tmp_t, tmp_name)
+                    self.cur_func.inline_alloca(tmp_t, tmp_name)
                     final_value = tmp
                 if expr.init_value:
                     size, _ = self.comp.type_size(expr.elem_type)
                     init_value = self.gen_expr_with_cast(
                         expr.elem_type, expr.init_value
                     )
-                    self.cur_proc.add_call(
+                    self.cur_func.add_call(
                         "_R4core14array_init_setF", [
                             final_value,
                             ir.IntLit(ir.UINT_T, str(size)),
@@ -1626,7 +1626,7 @@ class Codegen:
                 )
             if custom_tmp:
                 size, _ = self.comp.type_size(expr.typ)
-                self.cur_proc.add_call(
+                self.cur_func.add_call(
                     "_R4core3mem4copyF",
                     [custom_tmp, arr_lit,
                      ir.IntLit(ir.UINT_T, str(size))]
@@ -1650,7 +1650,7 @@ class Codegen:
                         end = ir.IntLit(ir.UINT_T, left.len)
                     else:
                         end = None
-                tmp = self.cur_proc.local_name()
+                tmp = self.cur_func.local_name()
                 if s.kind in (TypeKind.DynArray, TypeKind.Slice):
                     if end == None:
                         method_name = "_R4core5Slice10slice_fromM" if s.kind == TypeKind.Slice else "_R4core8DynArray10slice_fromM"
@@ -1683,15 +1683,15 @@ class Codegen:
                                 end
                             ]
                         )
-                self.cur_proc.inline_alloca(self.ir_type(expr.typ), tmp, inst)
+                self.cur_func.inline_alloca(self.ir_type(expr.typ), tmp, inst)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
             idx = self.gen_expr(expr.index)
             if isinstance(s.info, sym.ArrayInfo):
-                self.cur_proc.add_call(
+                self.cur_func.add_call(
                     "_R4core11array_indexF",
                     [ir.IntLit(ir.UINT_T, s.info.size.lit), idx]
                 )
-            tmp = self.cur_proc.local_name()
+            tmp = self.cur_func.local_name()
             expr_typ_ir = self.ir_type(expr.typ)
             if isinstance(expr.left_typ, type.Ptr) or s.kind == TypeKind.Array:
                 if expr.is_ref:
@@ -1732,19 +1732,19 @@ class Codegen:
                     value = ir.Inst(ir.InstKind.LoadPtr, [value], expr_typ_ir)
             else:
                 assert False, (expr, expr.pos)
-            self.cur_proc.inline_alloca(expr_typ_ir, tmp, value)
+            self.cur_func.inline_alloca(expr_typ_ir, tmp, value)
             return ir.Ident(expr_typ_ir, tmp)
         elif isinstance(expr, ast.UnaryExpr):
             right = self.gen_expr_with_cast(expr.right_typ, expr.right)
             if expr.op == Kind.Amp:
-                tmp = self.cur_proc.local_name()
+                tmp = self.cur_func.local_name()
                 if isinstance(
                     right, ir.Inst
                 ) and right.kind == ir.InstKind.LoadPtr:
                     right = right.args[0]
                 else:
                     right = ir.Inst(ir.InstKind.GetPtr, [right])
-                self.cur_proc.inline_alloca(self.ir_type(expr.typ), tmp, right)
+                self.cur_func.inline_alloca(self.ir_type(expr.typ), tmp, right)
                 return ir.Ident(self.ir_type(expr.typ), tmp)
 
             # runtime calculation
@@ -1775,9 +1775,9 @@ class Codegen:
                     expr_typ = expr_left_typ
                     is_not_never = expr.right.typ != self.comp.never_t
                     left = self.gen_expr_with_cast(expr_typ, expr.left)
-                    is_none_label = self.cur_proc.local_name()
-                    is_not_none_label = self.cur_proc.local_name()
-                    exit_label = self.cur_proc.local_name(
+                    is_none_label = self.cur_func.local_name()
+                    is_not_none_label = self.cur_func.local_name()
+                    exit_label = self.cur_func.local_name(
                     ) if is_not_never else ""
                     if expr_typ.is_pointer():
                         cond = ir.Inst(
@@ -1788,45 +1788,45 @@ class Codegen:
                     else:
                         cond = ir.Selector(ir.BOOL_T, left, ir.Name("is_none"))
                     tmp = self.stacked_instance(self.ir_type(expr_typ.typ))
-                    self.cur_proc.add_cond_br(
+                    self.cur_func.add_cond_br(
                         cond, is_none_label, is_not_none_label
                     )
-                    self.cur_proc.add_label(is_none_label)
+                    self.cur_func.add_label(is_none_label)
                     right = self.gen_expr_with_cast(expr_typ.typ, expr.right)
                     if is_not_never:
-                        self.cur_proc.store(tmp, right)
-                        self.cur_proc.add_br(exit_label)
-                    self.cur_proc.add_label(is_not_none_label)
+                        self.cur_func.store(tmp, right)
+                        self.cur_func.add_br(exit_label)
+                    self.cur_func.add_label(is_not_none_label)
                     if expr_typ.is_pointer():
-                        self.cur_proc.store(tmp, left)
+                        self.cur_func.store(tmp, left)
                     else:
-                        self.cur_proc.store(
+                        self.cur_func.store(
                             tmp,
                             ir.Selector(expr_typ.typ, left, ir.Name("value"))
                         )
                     if is_not_never:
-                        self.cur_proc.add_label(exit_label)
+                        self.cur_func.add_label(exit_label)
                     return tmp
             elif expr.op in (Kind.LogicalAnd, Kind.LogicalOr):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
                 tmp = self.stacked_instance(
                     self.ir_type(self.comp.bool_t), left
                 )
-                left_l = self.cur_proc.local_name()
-                exit_l = self.cur_proc.local_name()
+                left_l = self.cur_func.local_name()
+                exit_l = self.cur_func.local_name()
                 if expr.op == Kind.LogicalAnd:
-                    self.cur_proc.add_cond_br(left, left_l, exit_l)
+                    self.cur_func.add_cond_br(left, left_l, exit_l)
                 else:
-                    self.cur_proc.add_cond_br(left, exit_l, left_l)
-                self.cur_proc.add_label(left_l)
-                self.cur_proc.store(
+                    self.cur_func.add_cond_br(left, exit_l, left_l)
+                self.cur_func.add_label(left_l)
+                self.cur_func.store(
                     tmp, self.gen_expr_with_cast(expr_left_typ, expr.right)
                 )
-                self.cur_proc.add_label(exit_l)
+                self.cur_func.add_label(exit_l)
                 return tmp
             elif expr.op in (Kind.KwIs, Kind.KwNotIs):
                 left = self.gen_expr_with_cast(expr_left_typ, expr.left)
-                tmp = self.cur_proc.local_name()
+                tmp = self.cur_func.local_name()
                 kind = "==" if expr.op == Kind.KwIs else "!="
                 left_sym = expr_left_typ.symbol()
                 expr_right_sym = expr_right_typ.symbol()
@@ -1871,10 +1871,10 @@ class Codegen:
                             ir.IntLit(ir.UINT_T, str(expr_right_sym.id))
                         ]
                     )
-                self.cur_proc.inline_alloca(ir.BOOL_T, tmp, cmp)
+                self.cur_func.inline_alloca(ir.BOOL_T, tmp, cmp)
                 if expr.has_var:
-                    expr_var_exit_label = self.cur_proc.local_name()
-                    self.cur_proc.add_cond_single_br(
+                    expr_var_exit_label = self.cur_func.local_name()
+                    self.cur_func.add_cond_single_br(
                         ir.Inst(
                             ir.InstKind.BooleanNot, [ir.Ident(ir.BOOL_T, tmp)]
                         ), expr_var_exit_label
@@ -1909,10 +1909,10 @@ class Codegen:
                             isinstance(var_t2, ir.Pointer) and var_t2.is_managed
                         ) or expr.var.is_mut or expr.var.is_ref):
                             val = ir.Inst(ir.InstKind.LoadPtr, [val], var_t2)
-                    unique_name = self.cur_proc.unique_name(expr.var.name)
+                    unique_name = self.cur_func.unique_name(expr.var.name)
                     expr.scope.update_ir_name(expr.var.name, unique_name)
-                    self.cur_proc.inline_alloca(var_t, unique_name, val)
-                    self.cur_proc.add_label(expr_var_exit_label)
+                    self.cur_func.inline_alloca(var_t, unique_name, val)
+                    self.cur_func.add_label(expr_var_exit_label)
                 return ir.Ident(ir.BOOL_T, tmp)
             elif expr.op in (Kind.KwIn, Kind.KwNotIn):
                 expr_left_typ = self.comp.comptime_number_to_type(expr_left_typ)
@@ -1933,7 +1933,7 @@ class Codegen:
                         elem_idx_ = ir.Ident(
                             self.ir_type(expr_left_typ), "_elem_"
                         )
-                        contains_decl = ir.ProcDecl(
+                        contains_decl = ir.FuncDecl(
                             False, ast.Attributes(), False, full_name,
                             [self_idx_, elem_idx_], False, ir.BOOL_T, False
                         )
@@ -1944,7 +1944,7 @@ class Codegen:
                         elem_idx_ = ir.Ident(
                             self.ir_type(expr_left_typ), "_elem_"
                         )
-                        contains_decl = ir.ProcDecl(
+                        contains_decl = ir.FuncDecl(
                             False, ast.Attributes(), False, full_name, [
                                 self_idx_,
                                 ir.Ident(ir.UINT_T, "_len_"), elem_idx_
@@ -2030,15 +2030,15 @@ class Codegen:
                 call = ir.Inst(ir.InstKind.Call, args, ir.BOOL_T)
                 if expr.op == Kind.KwNotIn:
                     call = ir.Inst(ir.InstKind.BooleanNot, [call], ir.BOOL_T)
-                tmp = self.cur_proc.local_name()
-                self.cur_proc.inline_alloca(ir.BOOL_T, tmp, call)
+                tmp = self.cur_func.local_name()
+                self.cur_func.inline_alloca(ir.BOOL_T, tmp, call)
                 return ir.Ident(ir.BOOL_T, tmp)
 
             left = self.gen_expr_with_cast(expr_left_typ, expr.left)
             right = self.gen_expr_with_cast(expr_left_typ, expr.right)
 
             # runtime calculation
-            tmp = self.cur_proc.local_name()
+            tmp = self.cur_func.local_name()
             typ_sym = expr_left_typ.symbol()
             if expr.op.is_overloadable_op() and (
                 typ_sym.kind in (
@@ -2052,7 +2052,7 @@ class Codegen:
                     elif expr.op == Kind.Ne:
                         name = "_R4core8array_neF"
                     size, _ = self.comp.type_size(expr_left_typ)
-                    self.cur_proc.inline_alloca(
+                    self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
                             ir.InstKind.Call, [
@@ -2064,7 +2064,7 @@ class Codegen:
                 else:
                     op_method = OVERLOADABLE_OPERATORS_STR[str(expr.op)]
                     sym_is_boxed = typ_sym.is_boxed()
-                    self.cur_proc.inline_alloca(
+                    self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(
                             ir.InstKind.Call, [
@@ -2081,19 +2081,19 @@ class Codegen:
                 return ir.Ident(expr.typ, tmp)
             if expr.op.is_relational():
                 kind = str(expr.op)
-                self.cur_proc.inline_alloca(
+                self.cur_func.inline_alloca(
                     self.ir_type(expr.typ), tmp,
                     ir.Inst(ir.InstKind.Cmp, [ir.Name(kind), left, right])
                 )
             elif expr.op in (Kind.Div, Kind.Mod):
                 is_div = expr.op == Kind.Div
                 kind = ir.InstKind.Div if is_div else ir.InstKind.Mod
-                self.cur_proc.inline_alloca(
+                self.cur_func.inline_alloca(
                     self.ir_type(expr.typ), tmp, ir.Inst(kind, [left, right])
                 )
             else:
                 if op_kind := ir.get_ir_op(expr.op):
-                    self.cur_proc.inline_alloca(
+                    self.cur_func.inline_alloca(
                         self.ir_type(expr.typ), tmp,
                         ir.Inst(op_kind, [left, right])
                     )
@@ -2102,83 +2102,83 @@ class Codegen:
             return ir.Ident(self.ir_type(expr.typ), tmp)
         elif isinstance(expr, ast.IfExpr):
             is_void_value = expr.typ in self.void_types
-            exit_label = self.cur_proc.local_name()
-            else_label = self.cur_proc.local_name(
+            exit_label = self.cur_func.local_name()
+            else_label = self.cur_func.local_name(
             ) if expr.has_else else exit_label
             tmp = ir.Ident(
                 self.ir_type(expr.expected_typ),
-                self.cur_proc.local_name() if not is_void_value else ""
+                self.cur_func.local_name() if not is_void_value else ""
             )
             if not is_void_value:
-                self.cur_proc.alloca(tmp)
-            self.cur_proc.add_comment(f"if expr (end: {exit_label})")
+                self.cur_func.alloca(tmp)
+            self.cur_func.add_comment(f"if expr (end: {exit_label})")
             next_branch = ""
             for i, b in enumerate(expr.branches):
                 is_branch_void_value = b.typ in self.void_types
-                self.cur_proc.add_comment(f"if branch (is_else: {b.is_else})")
+                self.cur_func.add_comment(f"if branch (is_else: {b.is_else})")
                 if b.is_else:
-                    self.cur_proc.add_label(else_label)
+                    self.cur_func.add_label(else_label)
                 else:
                     if isinstance(b.cond, ast.GuardExpr):
                         cond = self.gen_guard_expr(b.cond, "", "", False)
                     else:
                         cond = self.gen_expr_with_cast(self.comp.bool_t, b.cond)
-                    branch_label = self.cur_proc.local_name()
+                    branch_label = self.cur_func.local_name()
                     if i == len(expr.branches) - 1:
                         next_branch = exit_label
                     elif i + 1 == len(expr.branches
                                       ) - 1 and expr.branches[i + 1].is_else:
                         next_branch = else_label
                     else:
-                        next_branch = self.cur_proc.local_name()
+                        next_branch = self.cur_func.local_name()
                     if isinstance(b.cond, ast.GuardExpr):
-                        self.cur_proc.add_cond_single_br(
+                        self.cur_func.add_cond_single_br(
                             ir.Inst(ir.InstKind.BooleanNot, [cond]), next_branch
                         )
                         if b.cond.has_cond:
-                            self.cur_proc.add_cond_single_br(
+                            self.cur_func.add_cond_single_br(
                                 ir.Inst(
                                     ir.InstKind.BooleanNot,
                                     [self.gen_expr(b.cond.cond)]
                                 ), next_branch
                             )
                     else:
-                        self.cur_proc.add_cond_br(
+                        self.cur_func.add_cond_br(
                             cond, branch_label, next_branch
                         )
-                    self.cur_proc.add_label(branch_label)
+                    self.cur_func.add_label(branch_label)
                 if is_branch_void_value:
                     self.gen_expr_with_cast(
                         expr.expected_typ, b.expr
                     ) # ignore void value
                 else:
-                    self.cur_proc.store(
+                    self.cur_func.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_proc.add_comment(
+                self.cur_func.add_comment(
                     "if expr branch (goto to other branch)"
                 )
-                self.cur_proc.add_br(exit_label)
+                self.cur_func.add_br(exit_label)
                 if len(next_branch) > 0 and next_branch != else_label:
-                    self.cur_proc.add_label(next_branch)
-            self.cur_proc.add_label(exit_label)
+                    self.cur_func.add_label(next_branch)
+            self.cur_func.add_label(exit_label)
             if not is_void_value:
                 return tmp
         elif isinstance(expr, ast.MatchExpr):
             is_void_value = expr.typ in self.void_types
-            exit_match = self.cur_proc.local_name()
-            self.cur_proc.add_comment(f"match expr (end: {exit_match})")
+            exit_match = self.cur_func.local_name()
+            self.cur_func.add_comment(f"match expr (end: {exit_match})")
             tmp = ir.Ident(
                 self.ir_type(expr.expected_typ),
-                self.cur_proc.local_name() if not is_void_value else ""
+                self.cur_func.local_name() if not is_void_value else ""
             )
             if not is_void_value:
-                self.cur_proc.alloca(tmp)
+                self.cur_func.alloca(tmp)
             if isinstance(expr.expr, ast.GuardExpr):
                 cond = self.gen_guard_expr(expr.expr, "", "", False)
-                self.cur_proc.add_cond_single_br(cond, exit_match)
+                self.cur_func.add_cond_single_br(cond, exit_match)
                 if expr.expr.has_cond:
-                    self.cur_proc.add_cond_single_br(
+                    self.cur_func.add_cond_single_br(
                         ir.Inst(
                             ir.InstKind.BooleanNot,
                             [self.gen_expr(expr.expr.cond)]
@@ -2191,16 +2191,16 @@ class Codegen:
                 match_expr = self.gen_expr_with_cast(expr.expr.typ, expr.expr)
             for b in expr.branches:
                 is_branch_void_value = b.typ in self.void_types
-                b_label = "" if b.is_else else self.cur_proc.local_name()
-                b_exit = exit_match if b.is_else else self.cur_proc.local_name()
+                b_label = "" if b.is_else else self.cur_func.local_name()
+                b_exit = exit_match if b.is_else else self.cur_func.local_name()
                 if not b.is_else:
-                    self.cur_proc.add_comment(
+                    self.cur_func.add_comment(
                         f"match expr patterns (len: {len(b.pats)})"
                     )
                 for i, p in enumerate(b.pats):
-                    next_pat = self.cur_proc.local_name(
+                    next_pat = self.cur_func.local_name(
                     ) if i < len(b.pats) - 1 else b_exit
-                    tmp2 = self.cur_proc.local_name()
+                    tmp2 = self.cur_func.local_name()
                     if expr.is_typematch:
                         if p.typ.sym.kind == TypeKind.Trait:
                             value_idx_x = ir.IntLit(
@@ -2220,7 +2220,7 @@ class Codegen:
                                 ir.UINT_T, str(p.typ.sym.id)
                             )
                         if p.typ.sym.kind == TypeKind.Enum and not p.typ.sym.info.is_tagged:
-                            self.cur_proc.inline_alloca(
+                            self.cur_func.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
                                     ir.InstKind.Cmp,
@@ -2228,7 +2228,7 @@ class Codegen:
                                 )
                             )
                         else:
-                            self.cur_proc.inline_alloca(
+                            self.cur_func.inline_alloca(
                                 ir.BOOL_T, tmp2,
                                 ir.Inst(
                                     ir.InstKind.Cmp, [
@@ -2284,25 +2284,25 @@ class Codegen:
                                 var_t, ir.Pointer
                             ):
                                 var_t = var_t.ptr(True)
-                            unique_name = self.cur_proc.unique_name(b.var_name)
+                            unique_name = self.cur_func.unique_name(b.var_name)
                             b.scope.update_ir_name(b.var_name, unique_name)
-                            self.cur_proc.inline_alloca(var_t, unique_name, val)
+                            self.cur_func.inline_alloca(var_t, unique_name, val)
                     else:
                         p_typ_sym = p.typ.symbol()
                         tmp2_i = ir.Ident(ir.BOOL_T, tmp2)
                         if isinstance(p, ast.RangeExpr):
-                            rend_l = self.cur_proc.local_name()
+                            rend_l = self.cur_func.local_name()
                             start = self.gen_expr_with_cast(p.typ, p.start)
                             end = self.gen_expr_with_cast(p.typ, p.end)
-                            self.cur_proc.alloca(tmp2_i)
-                            self.cur_proc.add_cond_br(
+                            self.cur_func.alloca(tmp2_i)
+                            self.cur_func.add_cond_br(
                                 ir.Inst(
                                     ir.InstKind.Cmp,
                                     [ir.Name(">="), match_expr, start]
                                 ), rend_l, next_pat
                             )
-                            self.cur_proc.add_label(rend_l)
-                            self.cur_proc.store(
+                            self.cur_func.add_label(rend_l)
+                            self.cur_func.store(
                                 tmp2_i,
                                 ir.Inst(
                                     ir.InstKind.Cmp,
@@ -2325,16 +2325,16 @@ class Codegen:
                                         ), match_expr, p_conv,
                                     ]
                                 )
-                            self.cur_proc.inline_alloca(ir.BOOL_T, tmp2, inst)
-                    self.cur_proc.add_cond_br(
+                            self.cur_func.inline_alloca(ir.BOOL_T, tmp2, inst)
+                    self.cur_func.add_cond_br(
                         ir.Ident(ir.BOOL_T, tmp2), b_label, next_pat
                     )
                     if i < len(b.pats) - 1:
-                        self.cur_proc.add_label(next_pat)
+                        self.cur_func.add_label(next_pat)
                 if not b.is_else:
-                    self.cur_proc.add_label(b_label)
+                    self.cur_func.add_label(b_label)
                     if b.has_cond:
-                        self.cur_proc.add_cond_single_br(
+                        self.cur_func.add_cond_single_br(
                             ir.Inst(
                                 ir.InstKind.BooleanNot, [
                                     self.gen_expr_with_cast(
@@ -2348,13 +2348,13 @@ class Codegen:
                         expr.expected_typ, b.expr
                     ) # ignore void value
                 else:
-                    self.cur_proc.store(
+                    self.cur_func.store(
                         tmp, self.gen_expr_with_cast(expr.expected_typ, b.expr)
                     )
-                self.cur_proc.add_br(exit_match)
+                self.cur_func.add_br(exit_match)
                 if not b.is_else:
-                    self.cur_proc.add_label(b_exit)
-            self.cur_proc.add_label(exit_match)
+                    self.cur_func.add_label(b_exit)
+            self.cur_func.add_label(exit_match)
             if not is_void_value:
                 return tmp
         elif isinstance(expr, ast.LoopControlExpr):
@@ -2363,22 +2363,22 @@ class Codegen:
                     self.while_continue_expr, ast.EmptyExpr
                 ):
                     if isinstance(self.while_continue_expr, ir.Inst):
-                        self.cur_proc.add_inst(self.while_continue_expr)
+                        self.cur_func.add_inst(self.while_continue_expr)
                     else:
                         self.gen_expr(self.while_continue_expr)
-                self.cur_proc.add_br(self.loop_entry_label)
+                self.cur_func.add_br(self.loop_entry_label)
             else:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True,
                     scope_limit = self.loop_scope
                 )
-                self.cur_proc.add_br(self.loop_exit_label)
+                self.cur_func.add_br(self.loop_exit_label)
             return ir.Skip()
         elif isinstance(expr, ast.ReturnExpr):
-            wrap_result = isinstance(self.cur_proc_ret_typ, type.Result)
-            ret_typ = self.cur_proc_ret_typ.typ if wrap_result else self.cur_proc_ret_typ
+            wrap_result = isinstance(self.cur_func_ret_typ, type.Result)
+            ret_typ = self.cur_func_ret_typ.typ if wrap_result else self.cur_func_ret_typ
             if self.inside_test:
-                self.cur_proc.store(
+                self.cur_func.store(
                     ir.Selector(
                         ir.UINT8_T, ir.Ident(ir.TEST_T.ptr(), "test"),
                         ir.Name("result")
@@ -2387,16 +2387,16 @@ class Codegen:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_proc.add_ret_void()
+                self.cur_func.add_ret_void()
             elif expr.has_expr:
-                is_array = self.cur_proc_ret_typ.symbol().kind == TypeKind.Array
+                is_array = self.cur_func_ret_typ.symbol().kind == TypeKind.Array
                 expr_ = self.gen_expr_with_cast(ret_typ, expr.expr)
                 if is_array and self.comp.prefs.target_backend == prefs.Backend.C:
                     size, _ = self.comp.type_size(ret_typ)
                     tmp = self.stacked_instance(
-                        ir.Type(self.cur_proc.arr_ret_struct)
+                        ir.Type(self.cur_func.arr_ret_struct)
                     )
-                    self.cur_proc.add_call(
+                    self.cur_func.add_call(
                         "_R4core3mem4copyF", [
                             ir.Selector(
                                 self.ir_type(ret_typ), tmp, ir.Name("arr")
@@ -2406,21 +2406,21 @@ class Codegen:
                     )
                     expr_ = tmp
                 if wrap_result:
-                    expr_ = self.result_value(self.cur_proc_ret_typ, expr_)
+                    expr_ = self.result_value(self.cur_func_ret_typ, expr_)
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_proc.add_ret(expr_)
+                self.cur_func.add_ret(expr_)
             elif wrap_result:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_proc.add_ret(self.result_void(self.cur_proc_ret_typ))
+                self.cur_func.add_ret(self.result_void(self.cur_func_ret_typ))
             else:
                 self.gen_defer_stmts(
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_proc.add_ret_void()
+                self.cur_func.add_ret_void()
             return ir.Skip()
         elif isinstance(expr, ast.ThrowExpr):
             t_sym = expr.expr.typ.symbol()
@@ -2429,14 +2429,14 @@ class Codegen:
             ) or t_sym == self.comp.throwable_sym:
                 self.gen_return_trace_add(expr.pos)
                 expr_ = self.result_error(
-                    self.cur_proc_ret_typ, expr.expr.typ,
+                    self.cur_func_ret_typ, expr.expr.typ,
                     self.gen_expr(expr.expr)
                 )
                 self.gen_defer_stmts(
                     True, ir.Selector(ir.BOOL_T, expr_, ir.Name("is_err")),
                     scope = expr.scope, run_defer_previous = True
                 )
-                self.cur_proc.add_ret(expr_)
+                self.cur_func.add_ret(expr_)
                 return ir.Skip()
             else:
                 assert False
@@ -2453,7 +2453,7 @@ class Codegen:
         require_store_ptr = False
         if isinstance(expr, ast.Ident):
             if expr.name == "_":
-                self.cur_proc.add_inst(
+                self.cur_func.add_inst(
                     ir.Inst(
                         ir.InstKind.Cast, [self.gen_expr(right), ir.VOID_T]
                     )
@@ -2480,7 +2480,7 @@ class Codegen:
                 expr_right = self.gen_expr_with_cast(right.typ, right)
                 val_sym = right.typ.symbol()
                 method_name = "_R4core5Slice3setM" if left_sym.kind == TypeKind.Slice else "_R4core8DynArray3setM"
-                self.cur_proc.add_call(
+                self.cur_func.add_call(
                     method_name, [
                         rec,
                         self.gen_expr(expr.index),
@@ -2499,8 +2499,8 @@ class Codegen:
 
     def gen_defer_stmt_vars(self, defer_stmts):
         for defer_stmt in defer_stmts:
-            defer_stmt.flag_var = self.cur_proc.local_name()
-            self.cur_proc.alloca(
+            defer_stmt.flag_var = self.cur_func.local_name()
+            self.cur_func.alloca(
                 ir.Ident(ir.BOOL_T, defer_stmt.flag_var),
                 ir.IntLit(ir.BOOL_T, "0")
             )
@@ -2509,8 +2509,8 @@ class Codegen:
         self, gen_errdefer = False, last_ret_was_err = None, scope = None,
         run_defer_previous = False, scope_limit = None
     ):
-        for i in range(len(self.cur_proc_defer_stmts) - 1, -1, -1):
-            defer_stmt = self.cur_proc_defer_stmts[i]
+        for i in range(len(self.cur_func_defer_stmts) - 1, -1, -1):
+            defer_stmt = self.cur_func_defer_stmts[i]
             if not (
                 (run_defer_previous and scope.start >= defer_stmt.scope.start)
                 or (scope.start == defer_stmt.scope.start)
@@ -2526,22 +2526,22 @@ class Codegen:
                 # do not generate `defer` that are in a scope greater than
                 # the established limit, this is used by `break`
                 break
-            defer_start = self.cur_proc.local_name()
-            defer_end = self.cur_proc.local_name()
-            self.cur_proc.add_comment(
+            defer_start = self.cur_func.local_name()
+            defer_end = self.cur_func.local_name()
+            self.cur_func.add_comment(
                 f"defer_stmt (start: {defer_start}, end: {defer_end}, mode: {defer_stmt.mode})"
             )
-            self.cur_proc.add_cond_br(
+            self.cur_func.add_cond_br(
                 ir.Ident(ir.BOOL_T, defer_stmt.flag_var), defer_start, defer_end
             )
-            self.cur_proc.add_label(defer_start)
+            self.cur_func.add_label(defer_start)
             if defer_stmt.mode == ast.DeferMode.ERROR:
-                self.cur_proc.add_cond_single_br(
+                self.cur_func.add_cond_single_br(
                     ir.Inst(ir.InstKind.BooleanNot, [last_ret_was_err]),
                     defer_end
                 )
             self.gen_expr(defer_stmt.expr)
-            self.cur_proc.add_label(defer_end)
+            self.cur_func.add_label(defer_end)
 
     def gen_const(self, const_sym):
         if const_sym.has_evaled_expr:
@@ -2560,7 +2560,7 @@ class Codegen:
 
     def result_void(self, typ):
         tmp = self.stacked_instance(self.ir_type(typ))
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "0")
         )
@@ -2568,24 +2568,24 @@ class Codegen:
 
     def result_value(self, typ, value):
         tmp = self.stacked_instance(self.ir_type(typ))
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "0")
         )
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(
-                self.ir_type(self.cur_proc_ret_typ.typ), tmp, ir.Name("value")
+                self.ir_type(self.cur_func_ret_typ.typ), tmp, ir.Name("value")
             ), value
         )
         return tmp
 
     def result_error(self, typ, expr_t, expr):
         tmp = self.stacked_instance(self.ir_type(typ))
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_err")),
             ir.IntLit(ir.BOOL_T, "1")
         )
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(
                 self.ir_type(self.comp.throwable_t), tmp, ir.Name("err")
             ), self.trait_value(expr, expr_t, self.comp.throwable_t)
@@ -2594,25 +2594,25 @@ class Codegen:
 
     def option_value(self, typ, value):
         tmp = self.stacked_instance(self.ir_type(typ))
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "0")
         )
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(self.ir_type(typ.typ), tmp, ir.Name("value")), value
         )
         return tmp
 
     def option_none(self, typ):
         tmp = self.stacked_instance(self.ir_type(typ))
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_none")),
             ir.IntLit(ir.BOOL_T, "1")
         )
         return tmp
 
     def runtime_error(self, msg):
-        self.cur_proc.add_call(
+        self.cur_func.add_call(
             "_R4core13runtime_errorF", [
                 self.gen_string_literal(utils.smart_quote(msg, False)),
                 self.empty_slice(self.comp.universe["[]core.Stringable"])
@@ -2633,7 +2633,7 @@ class Codegen:
         )
 
     def default_value(self, typ, custom_tmp = None):
-        if isinstance(typ, (type.Ptr, type.Proc, type.Boxedptr)):
+        if isinstance(typ, (type.Ptr, type.Func, type.Boxedptr)):
             return ir.NoneLit(ir.RAWPTR_T)
         if isinstance(typ, type.Option):
             if typ.is_pointer():
@@ -2672,7 +2672,7 @@ class Codegen:
         elif typ_sym.kind == TypeKind.Tuple:
             tmp = self.stacked_instance(typ)
             for i, typ in enumerate(typ_sym.info.types):
-                self.cur_proc.store(
+                self.cur_func.store(
                     ir.Selector(self.ir_type(typ), tmp, ir.Name(f"f{i}")),
                     self.default_value(typ)
                 )
@@ -2692,7 +2692,7 @@ class Codegen:
                     val = self.gen_expr_with_cast(f.typ, f.def_expr)
                 else:
                     val = self.default_value(f.typ)
-                self.cur_proc.store(sltor, val)
+                self.cur_func.store(sltor, val)
             return tmp
         elif typ_sym.kind == TypeKind.Trait:
             if typ_sym.default_value:
@@ -2738,15 +2738,15 @@ class Codegen:
         self.out_rir.globals.append(
             ir.GlobalVar(False, False, ir.STRING_T.ptr(True), tmp.name)
         )
-        self.init_string_lits_proc.store(
+        self.init_string_lits_fn.store(
             ir.Selector(ir.UINT8_T.ptr(), tmp, ir.Name("ptr")),
             ir.StringLit(lit, size)
         )
-        self.init_string_lits_proc.store(
+        self.init_string_lits_fn.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("len")),
             ir.IntLit(ir.UINT_T, str(size))
         )
-        self.init_string_lits_proc.store(
+        self.init_string_lits_fn.store(
             ir.Selector(ir.BOOL_T, tmp, ir.Name("is_ref")),
             ir.IntLit(ir.BOOL_T, "1")
         )
@@ -2754,27 +2754,27 @@ class Codegen:
         return tmp
 
     def stacked_instance(self, typ, init_value = None):
-        tmp = ir.Ident(typ, self.cur_proc.local_name())
+        tmp = ir.Ident(typ, self.cur_func.local_name())
         if init_value:
-            self.cur_proc.alloca(tmp, init_value)
+            self.cur_func.alloca(tmp, init_value)
         else:
-            self.cur_proc.alloca(tmp)
+            self.cur_func.alloca(tmp)
         return tmp
 
     def boxed_instance(self, name, custom_name = None):
         tmp = ir.Ident(
-            ir.Type(name).ptr(True), custom_name or self.cur_proc.local_name()
+            ir.Type(name).ptr(True), custom_name or self.cur_func.local_name()
         )
-        to_proc = self.init_string_lits_proc if custom_name else self.cur_proc
+        to_fn = self.init_string_lits_fn if custom_name else self.cur_func
         inst = ir.Inst(
             ir.InstKind.Call,
             [ir.Name("_R4core3mem9raw_allocF"),
              ir.Name(f"sizeof({name})")]
         )
         if custom_name:
-            to_proc.store(tmp, inst)
+            to_fn.store(tmp, inst)
         else:
-            to_proc.alloca(tmp, inst)
+            to_fn.alloca(tmp, inst)
         return tmp
 
     def trait_value(self, value, value_typ, trait_typ):
@@ -2791,7 +2791,7 @@ class Codegen:
             if not isinstance(f_typ, ir.Pointer):
                 f_typ = f_typ.ptr(True)
                 value_f = ir.Inst(ir.InstKind.GetPtr, [value_f], f_typ)
-            self.cur_proc.store(
+            self.cur_func.store(
                 ir.Selector(f_typ, tmp, ir.Name(f.name)), value_f
             )
         if not is_ptr:
@@ -2811,18 +2811,18 @@ class Codegen:
                     ir.Selector(ir.UINT_T, value, ir.Name("_idx_"))
                 ], ir.UINT_T
             )
-            self.cur_proc.store(
+            self.cur_func.store(
                 ir.Selector(ir.RAWPTR_T, tmp, ir.Name("obj")),
                 ir.Selector(ir.RAWPTR_T, value, ir.Name("obj"))
             )
         else:
             vtbl_idx_x = trait_sym.info.indexof(value_sym)
             index = ir.IntLit(ir.UINT_T, str(vtbl_idx_x))
-            self.cur_proc.store(
+            self.cur_func.store(
                 ir.Selector(ir.RAWPTR_T, tmp, ir.Name("obj")), value
             )
-        self.cur_proc.store(ir.Selector(ir.UINT_T, tmp, ir.Name("_id_")), index)
-        self.cur_proc.store(
+        self.cur_func.store(ir.Selector(ir.UINT_T, tmp, ir.Name("_id_")), index)
+        self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
             ir.IntLit(ir.UINT_T, str(value_sym.id))
         )
@@ -2841,7 +2841,7 @@ class Codegen:
                 tmp = self.stacked_instance(ir.Type(mangled_name))
         uint_t = ir.UINT_T
         variant_info = enum_sym.info.get_variant(variant_name)
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(uint_t, tmp, ir.Name("_idx_")),
             ir.IntLit(uint_t, variant_info.value)
         )
@@ -2854,7 +2854,7 @@ class Codegen:
                 ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp,
                 ir.Name("obj")
             )
-            self.cur_proc.store(
+            self.cur_func.store(
                 ir.Selector(
                     self.ir_type(variant_info.typ), obj_f,
                     ir.Name(f"v{variant_info.value}")
@@ -2874,7 +2874,7 @@ class Codegen:
             else:
                 tmp = self.stacked_instance(ir.Type(mangled_name))
         variant_info = enum_sym.info.get_variant(variant_name)
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("_idx_")),
             ir.IntLit(ir.UINT_T, variant_info.value)
         )
@@ -2882,7 +2882,7 @@ class Codegen:
             ir.Type(f"{cg_utils.mangle_symbol(enum_sym)}6_Union"), tmp,
             ir.Name("obj")
         )
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(
                 self.ir_type(variant_info.typ), obj_f,
                 ir.Name(f"v{variant_info.value}")
@@ -2892,19 +2892,19 @@ class Codegen:
 
     def gen_return_trace_add(self, pos):
         tmp = self.stacked_instance(ir.Type("_R4core9CallTrace"))
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.STRING_T, tmp, ir.Name("name")),
-            self.gen_string_literal(self.cur_proc.name)
+            self.gen_string_literal(self.cur_func.name)
         )
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.STRING_T, tmp, ir.Name("file")),
             self.gen_string_literal(pos.file)
         )
-        self.cur_proc.store(
+        self.cur_func.store(
             ir.Selector(ir.UINT_T, tmp, ir.Name("line")),
             ir.IntLit(ir.UINT_T, str(pos.line + 1))
         )
-        self.cur_proc.add_call(
+        self.cur_func.add_call(
             "_R4core11ReturnTrace3addM", [
                 ir.Inst(
                     ir.InstKind.GetPtr, [
@@ -2918,7 +2918,7 @@ class Codegen:
         )
 
     def gen_return_trace_clear(self):
-        self.cur_proc.add_call(
+        self.cur_func.add_call(
             "_R4core11ReturnTrace5clearM", [
                 ir.Inst(
                     ir.InstKind.GetPtr, [
@@ -2933,7 +2933,7 @@ class Codegen:
 
     def gen_guard_expr(self, expr, entry_label, exit_label, gen_cond = True):
         gexpr = self.gen_expr_with_cast(expr.typ, expr.expr)
-        var_name = self.cur_proc.unique_name(expr.vars[0].name)
+        var_name = self.cur_func.unique_name(expr.vars[0].name)
         expr.scope.update_ir_name(expr.vars[0].name, var_name)
         if expr.is_result:
             cond = ir.Inst(
@@ -2941,7 +2941,7 @@ class Codegen:
                 [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_err"))]
             )
             var_t = self.ir_type(expr.typ)
-            self.cur_proc.inline_alloca(
+            self.cur_func.inline_alloca(
                 var_t, var_name, ir.Selector(var_t, gexpr, ir.Name("value"))
             )
         elif expr.expr.typ.is_pointer():
@@ -2950,20 +2950,20 @@ class Codegen:
                 [ir.Name("!="), gexpr,
                  ir.NoneLit(ir.RAWPTR_T)]
             )
-            self.cur_proc.inline_alloca(self.ir_type(expr.typ), var_name, gexpr)
+            self.cur_func.inline_alloca(self.ir_type(expr.typ), var_name, gexpr)
         else:
             cond = ir.Inst(
                 ir.InstKind.BooleanNot,
                 [ir.Selector(ir.BOOL_T, gexpr, ir.Name("is_none"))]
             )
-            self.cur_proc.inline_alloca(
+            self.cur_func.inline_alloca(
                 self.ir_type(expr.typ), var_name,
                 ir.Selector(
                     self.ir_type(expr.expr.typ.typ), gexpr, ir.Name("value")
                 )
             )
         if expr.has_cond and gen_cond:
-            self.cur_proc.add_cond_br(
+            self.cur_func.add_cond_br(
                 self.gen_expr(expr.cond), entry_label, exit_label
             )
         return cond
@@ -3008,7 +3008,7 @@ class Codegen:
                 )
                 self.generated_opt_res_types.append(name)
             return ir.Type(name)
-        elif isinstance(typ, type.Proc):
+        elif isinstance(typ, type.Func):
             args = []
             if gen_self_arg:
                 args.append(ir.RAWPTR_T)
@@ -3017,7 +3017,7 @@ class Codegen:
                 if arg.is_mut and not isinstance(arg_t, ir.Pointer):
                     arg_t = ir.Pointer(arg_t)
                 args.append(arg_t)
-            return ir.Procedure(args, self.ir_type(typ.ret_typ))
+            return ir.Function(args, self.ir_type(typ.ret_typ))
         elif isinstance(typ, type.Slice):
             return ir.SLICE_T
         elif isinstance(typ, type.Array):
@@ -3114,7 +3114,7 @@ class Codegen:
                 static_vtbl_name = f"{ts_name}4VTBL"
                 fields = []
                 for m in ts.syms:
-                    if isinstance(m, sym.Proc):
+                    if isinstance(m, sym.Func):
                         proto = m.typ()
                         proto.args.insert(
                             0,
@@ -3129,12 +3129,12 @@ class Codegen:
                         fields.append(
                             ir.Field(method_name, self.ir_type(proto))
                         )
-                procs = []
+                funcs = []
                 index_of_vtbl = []
                 for idx, its in enumerate(ts.info.implements):
                     map = {}
                     for m in ts.syms:
-                        if isinstance(m, sym.Proc):
+                        if isinstance(m, sym.Func):
                             method_name = OVERLOADABLE_OPERATORS_STR[
                                 m.name
                             ] if m.name in OVERLOADABLE_OPERATORS_STR else m.name
@@ -3144,28 +3144,28 @@ class Codegen:
                                 )
                             else:
                                 map[method_name] = cg_utils.mangle_symbol(m)
-                    procs.append(map)
+                    funcs.append(map)
                     index_of_vtbl.append((its.qualname(), its.id, idx))
-                if len(procs) > 0 and ts.info.has_objects:
+                if len(funcs) > 0 and ts.info.has_objects:
                     self.out_rir.types.append(
                         ir.Struct(False, vtbl_name, fields)
                     )
                     self.out_rir.decls.append(
                         ir.VTable(
                             vtbl_name, static_vtbl_name, ts_name,
-                            len(ts.info.implements), procs
+                            len(ts.info.implements), funcs
                         )
                     )
-                    index_of_vtbl_proc = ir.ProcDecl(
+                    index_of_vtbl_fn = ir.FuncDecl(
                         False, ast.Attributes(), False,
                         cg_utils.mangle_symbol(ts) + "17__index_of_vtbl__",
                         [ir.Ident(ir.UINT_T, "self")], False, ir.UINT_T, False
                     )
                     for child_name, child_idx_, child_idx_x in index_of_vtbl:
-                        l1 = index_of_vtbl_proc.local_name()
-                        l2 = index_of_vtbl_proc.local_name()
-                        index_of_vtbl_proc.add_comment(f"for: '{child_name}'")
-                        index_of_vtbl_proc.add_cond_br(
+                        l1 = index_of_vtbl_fn.local_name()
+                        l2 = index_of_vtbl_fn.local_name()
+                        index_of_vtbl_fn.add_comment(f"for: '{child_name}'")
+                        index_of_vtbl_fn.add_cond_br(
                             ir.Inst(
                                 ir.InstKind.Cmp, [
                                     "==",
@@ -3174,13 +3174,13 @@ class Codegen:
                                 ]
                             ), l1, l2
                         )
-                        index_of_vtbl_proc.add_label(l1)
-                        index_of_vtbl_proc.add_ret(
+                        index_of_vtbl_fn.add_label(l1)
+                        index_of_vtbl_fn.add_ret(
                             ir.IntLit(ir.UINT_T, str(child_idx_x))
                         )
-                        index_of_vtbl_proc.add_label(l2)
-                    index_of_vtbl_proc.add_ret(ir.IntLit(ir.UINT_T, "0"))
-                    self.out_rir.decls.append(index_of_vtbl_proc)
+                        index_of_vtbl_fn.add_label(l2)
+                    index_of_vtbl_fn.add_ret(ir.IntLit(ir.UINT_T, "0"))
+                    self.out_rir.decls.append(index_of_vtbl_fn)
             elif ts.kind in (
                 TypeKind.Struct, TypeKind.String, TypeKind.DynArray
             ):

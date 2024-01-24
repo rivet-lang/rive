@@ -11,7 +11,7 @@ import ../env;
 pub struct CannotMakeDirectoryError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -20,7 +20,7 @@ pub struct CannotMakeDirectoryError < Throwable {
 pub struct CannotMakeFileError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -29,7 +29,7 @@ pub struct CannotMakeFileError < Throwable {
 pub struct CouldNotOpenDirectoryError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -38,13 +38,13 @@ pub struct CouldNotOpenDirectoryError < Throwable {
 pub struct EmptyStringError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
 pub struct Directory {
-    pub proc make(path_: string, mode: uint := 0o777) -> ! {
+    pub func make(path_: string, mode: uint := 0o777) -> ! {
         if path_ == "." {
             return;
         }
@@ -56,14 +56,14 @@ pub struct Directory {
         }
     }
 
-    pub proc remove(dir: string) -> ! {
+    pub func remove(dir: string) -> ! {
         rpath := Path.resolve(dir)!;
         if unsafe { libc.rmdir(rpath.ptr) == -1 } {
             throw CannotMakeFileError("cannot remove directory `{}`: {}".fmt(dir, c.errno_msg()));
         }
     }
 
-    pub proc tmp_dir() -> string {
+    pub func tmp_dir() -> string {
         return if path := env.get("TMPDIR") {
             path
         } else {
@@ -71,7 +71,7 @@ pub struct Directory {
         };
     }
 
-    pub proc walk(path_: string, ext: string := "") -> ![]string {
+    pub func walk(path_: string, ext: string := "") -> ![]string {
         if path_.is_empty() {
             throw EmptyStringError("`Directory.walk` expects a folder, not an empty string");
         }

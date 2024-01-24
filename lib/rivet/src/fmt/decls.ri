@@ -5,7 +5,7 @@
 import ../{ ast, token };
 
 extend Formatter {
-    proc format_decls(mut self, decls: []ast.Decl, is_root: bool := false) {
+    func format_decls(mut self, decls: []ast.Decl, is_root: bool := false) {
         mut prev_decl := if decls.len > 0 {
             decls[0]
         } else {
@@ -26,7 +26,7 @@ extend Formatter {
         }
     }
 
-    proc format_decl(mut self, decl: ast.Decl) {
+    func format_decl(mut self, decl: ast.Decl) {
         match decl {
             .Comment(comment) -> self.format_comment(comment, has_nl: true),
             .Extern(extern_d) -> {
@@ -49,7 +49,7 @@ extend Formatter {
                 self.writeln(";");
             },
             .Struct(struct_decl) -> self.format_struct(struct_decl),
-            .Proc(proc_decl) -> self.format_proc(proc_decl),
+            .Func(func_decl) -> self.format_func(func_decl),
             .Field(field) -> {
                 self.format_comments(field.docs);
                 self.format_attributes(field.attributes);
@@ -70,7 +70,7 @@ extend Formatter {
         }
     }
 
-    proc format_struct(mut self, struct_decl: ast.Decl.Struct) {
+    func format_struct(mut self, struct_decl: ast.Decl.Struct) {
         self.format_comments(struct_decl.docs);
         self.format_attributes(struct_decl.attributes);
         if struct_decl.is_public {
@@ -86,26 +86,26 @@ extend Formatter {
         }
     }
 
-    proc format_proc(mut self, proc_decl: ast.Decl.Proc) {
-        self.format_comments(proc_decl.docs);
-        self.format_attributes(proc_decl.attributes);
-        if proc_decl.is_public {
+    func format_func(mut self, func_decl: ast.Decl.Func) {
+        self.format_comments(func_decl.docs);
+        self.format_attributes(func_decl.attributes);
+        if func_decl.is_public {
             self.write("pub ");
         }
-        self.write_fmt("proc {}(", proc_decl.name);
-        if proc_decl.is_method {
-            if proc_decl.self_is_ptr {
+        self.write_fmt("func {}(", func_decl.name);
+        if func_decl.is_method {
+            if func_decl.self_is_ptr {
                 self.write("&");
             }
-            if proc_decl.self_is_mut {
+            if func_decl.self_is_mut {
                 self.write("mut ");
             }
             self.write("self");
-            if proc_decl.args.len > 0 {
+            if func_decl.args.len > 0 {
                 self.write(", ");
             }
         }
-        for i, arg in proc_decl.args {
+        for i, arg in func_decl.args {
             if arg.is_mut {
                 self.write("mut ");
             }
@@ -114,19 +114,19 @@ extend Formatter {
                 self.write(" := ");
                 self.format_expr(arg.def_expr);
             }
-            if i < proc_decl.args.len - 1 {
+            if i < func_decl.args.len - 1 {
                 self.write(", ");
             }
         }
         self.write(")");
-        if proc_decl.ret_type !is .Void {
-            self.write_fmt(" -> {}", proc_decl.ret_type);
+        if func_decl.ret_type !is .Void {
+            self.write_fmt(" -> {}", func_decl.ret_type);
         }
-        if proc_decl.is_extern || !proc_decl.has_body {
+        if func_decl.is_extern || !func_decl.has_body {
             self.writeln(";");
         } else {
             self.writeln(" {");
-            self.format_stmts(proc_decl.stmts);
+            self.format_stmts(func_decl.stmts);
             self.writeln("}");
         }
     }

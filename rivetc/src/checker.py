@@ -12,7 +12,7 @@ class Checker:
         self.source_file = None
 
         self.sym = None
-        self.cur_proc = None
+        self.cur_func = None
 
         self.expected_type = self.comp.void_t
         self.void_types = (self.comp.void_t, self.comp.never_t)
@@ -63,7 +63,7 @@ class Checker:
                     "main"
                 ):
                     utils.error(
-                        f"procedure `main` was not defined on module `{self.comp.prefs.mod_name}`"
+                        f"function `main` was not defined on module `{self.comp.prefs.mod_name}`"
                     )
 
     def check_decls(self, decls):
@@ -175,7 +175,7 @@ class Checker:
                         decl.pos
                     )
             self.check_decls(decl.decls)
-        elif isinstance(decl, ast.ProcDecl):
+        elif isinstance(decl, ast.FuncDecl):
             for arg in decl.args:
                 if arg.has_def_expr:
                     old_expected_type = self.expected_type
@@ -192,22 +192,22 @@ class Checker:
                     decl.name_pos
                 )
                 report.note(
-                    "this is because Rivet cannot ensure that the procedure does not always return `none`"
+                    "this is because Rivet cannot ensure that the function does not always return `none`"
                 )
-            self.cur_proc = decl.sym
+            self.cur_func = decl.sym
             self.check_stmts(decl.stmts)
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.check_mut_vars(decl.scope)
         elif isinstance(decl, ast.TestDecl):
-            old_cur_proc = self.cur_proc
-            self.cur_proc = None
+            old_cur_func = self.cur_func
+            self.cur_func = None
             self.inside_test = True
             self.check_stmts(decl.stmts)
             decl.defer_stmts = self.defer_stmts
             self.defer_stmts = []
             self.inside_test = False
-            self.cur_proc = old_cur_proc
+            self.cur_func = old_cur_func
             self.check_mut_vars(decl.scope)
         self.sym = old_sym
 
@@ -370,13 +370,13 @@ class Checker:
                 expr.typ = self.comp.string_t
             elif expr.is_obj:
                 expr.typ = expr.obj.typ
-            elif isinstance(expr.sym, sym.Proc):
+            elif isinstance(expr.sym, sym.Func):
                 if expr.sym.abi != sym.ABI.Rivet:
                     report.error(
-                        "cannot use an extern procedure as value", expr.pos
+                        "cannot use an extern function as value", expr.pos
                     )
                     report.help(
-                        "you can wrap the extern procedure with a procedure"
+                        "you can wrap the extern function with a function"
                     )
                 expr.typ = expr.sym.typ()
             elif isinstance(expr.sym, sym.Const):
@@ -505,7 +505,7 @@ class Checker:
             size = ""
             is_mut = False
             has_exp_typ = False
-            if not isinstance(self.expected_type, type.Proc):
+            if not isinstance(self.expected_type, type.Func):
                 elem_sym = self.expected_type.symbol()
                 if elem_sym.kind in (TypeKind.Array, TypeKind.DynArray):
                     has_exp_typ = True
@@ -658,11 +658,11 @@ class Checker:
                     report.error("pointer arithmetic is not allowed", expr.pos)
                     if expr.op == Kind.Plus:
                         report.help(
-                            "use the `ptr_add` builtin procedure instead"
+                            "use the `ptr_add` builtin function instead"
                         )
                     elif expr.op == Kind.Minus:
                         report.help(
-                            "use the `ptr_diff` builtin procedure instead"
+                            "use the `ptr_diff` builtin function instead"
                         )
             elif isinstance(
                 ltyp, type.Option
@@ -946,11 +946,11 @@ class Checker:
                 expr.sym = expr_left.sym
                 self.check_ctor(expr_left.sym, expr)
             elif isinstance(expr_left, ast.Ident):
-                if isinstance(expr_left.sym, sym.Proc):
+                if isinstance(expr_left.sym, sym.Func):
                     expr.sym = expr_left.sym
                     if expr.sym.is_main:
                         report.error(
-                            "cannot call to `main` procedure", expr_left.pos
+                            "cannot call to `main` function", expr_left.pos
                         )
                     else:
                         self.check_call(expr_left.sym, expr)
@@ -963,13 +963,13 @@ class Checker:
                     self.check_ctor(expr_left.sym, expr)
                 elif expr_left.is_obj:
                     _ = self.check_expr(expr_left)
-                    if isinstance(expr_left.typ, type.Proc):
+                    if isinstance(expr_left.typ, type.Func):
                         expr.sym = expr_left.typ.info()
                         expr.is_closure = True
                         self.check_call(expr.sym, expr)
                     else:
                         report.error(
-                            f"expected procedure, found {expr_left.typ}",
+                            f"expected function, found {expr_left.typ}",
                             expr_left.pos
                         )
             elif isinstance(expr_left, ast.SelectorExpr):
@@ -981,18 +981,18 @@ class Checker:
                                       TypeKind.Enum
                                   ):
                         self.check_ctor(expr_left.field_sym, expr)
-                    elif isinstance(expr_left.field_sym, sym.Proc):
+                    elif isinstance(expr_left.field_sym, sym.Func):
                         expr.sym = expr_left.field_sym
                         self.check_call(expr.sym, expr)
                     else:
                         report.error(
-                            f"expected procedure, found {expr_left.field_sym.typeof()}",
+                            f"expected function, found {expr_left.field_sym.typeof()}",
                             expr.pos
                         )
                 else:
                     left_sym = expr_left.left_typ.symbol()
                     if m := left_sym.find(expr_left.field_name):
-                        if isinstance(m, sym.Proc):
+                        if isinstance(m, sym.Func):
                             if m.is_method:
                                 expr.sym = m
                                 if isinstance(expr_left.left_typ, type.Option):
@@ -1019,7 +1019,7 @@ class Checker:
                                 expr_left.field_pos
                             )
                     elif f := left_sym.find_field(expr_left.field_name):
-                        if isinstance(f.typ, type.Proc):
+                        if isinstance(f.typ, type.Func):
                             if inside_parens:
                                 expr.sym = f.typ.info()
                                 expr.is_closure = True
@@ -1032,11 +1032,11 @@ class Checker:
                                     expr_left.field_pos
                                 )
                                 report.help(
-                                    f"to call the procedure stored in `{expr_left.field_name}`, surround the field access with parentheses"
+                                    f"to call the function stored in `{expr_left.field_name}`, surround the field access with parentheses"
                                 )
                         else:
                             report.error(
-                                f"field `{expr_left.field_name}` of type `{left_sym.name}` is not procedure type",
+                                f"field `{expr_left.field_name}` of type `{left_sym.name}` is not function type",
                                 expr_left.field_pos
                             )
                     else:
@@ -1057,13 +1057,13 @@ class Checker:
             if expr.has_err_handler():
                 if isinstance(expr.typ, type.Result):
                     if expr.err_handler.is_propagate:
-                        if self.cur_proc and not (
-                            self.cur_proc.is_main or self.inside_test
+                        if self.cur_func and not (
+                            self.cur_func.is_main or self.inside_test
                             or self.inside_var_decl
-                            or isinstance(self.cur_proc.ret_typ, type.Result)
+                            or isinstance(self.cur_func.ret_typ, type.Result)
                         ):
                             report.error(
-                                f"to propagate the call, `{self.cur_proc.name}` must return an result type",
+                                f"to propagate the call, `{self.cur_func.name}` must return an result type",
                                 expr.err_handler.pos
                             )
                     else:
@@ -1154,7 +1154,7 @@ class Checker:
                     )
             else:
                 report.error(
-                    f"unknown builtin procedure `{expr.name}`", expr.pos
+                    f"unknown builtin function `{expr.name}`", expr.pos
                 )
             return expr.typ
         elif isinstance(expr, ast.RangeExpr):
@@ -1172,7 +1172,7 @@ class Checker:
         elif isinstance(expr, ast.SelectorExpr):
             expr.typ = self.comp.void_t
             if expr.is_path:
-                if isinstance(expr.field_sym, sym.Proc):
+                if isinstance(expr.field_sym, sym.Func):
                     if expr.field_sym.is_method:
                         report.error(
                             f"cannot take value of method `{expr.field_name}`",
@@ -1256,7 +1256,7 @@ class Checker:
                         expr.typ = field.typ
                         expr.field_is_mut = field.is_mut
                     elif decl := left_sym.find(expr.field_name):
-                        if isinstance(decl, sym.Proc):
+                        if isinstance(decl, sym.Func):
                             if decl.is_method:
                                 report.error(
                                     f"cannot take value of method `{expr.field_name}`",
@@ -1267,7 +1267,7 @@ class Checker:
                                 )
                             else:
                                 report.error(
-                                    f" `{expr.field_name}` cannot take value of associated procedurefrom value",
+                                    f" `{expr.field_name}` cannot take value of associated functionfrom value",
                                     expr.field_pos
                                 )
                                 report.help(
@@ -1314,37 +1314,37 @@ class Checker:
                     "cannot return values inside `test` declaration", expr.pos
                 )
             elif expr.has_expr:
-                if self.cur_proc.ret_typ == self.comp.void_t:
+                if self.cur_func.ret_typ == self.comp.void_t:
                     report.error(
-                        f"{self.cur_proc.typeof()} `{self.cur_proc.name}` should not return a value",
+                        f"{self.cur_func.typeof()} `{self.cur_func.name}` should not return a value",
                         expr.expr.pos
                     )
                 else:
                     old_expected_type = self.expected_type
-                    self.expected_type = self.cur_proc.ret_typ.typ if isinstance(
-                        self.cur_proc.ret_typ, type.Result
-                    ) else self.cur_proc.ret_typ
+                    self.expected_type = self.cur_func.ret_typ.typ if isinstance(
+                        self.cur_func.ret_typ, type.Result
+                    ) else self.cur_func.ret_typ
                     expr_typ = self.check_expr(expr.expr)
                     self.expected_type = old_expected_type
                     try:
-                        self.check_types(expr_typ, self.cur_proc.ret_typ)
+                        self.check_types(expr_typ, self.cur_func.ret_typ)
                     except utils.CompilerError as e:
                         expr_typ_sym = expr_typ.symbol()
                         report.error(e.args[0], expr.expr.pos)
                         report.note(
-                            f"in return argument of {self.cur_proc.typeof()} `{self.cur_proc.name}`"
+                            f"in return argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                         )
-            elif self.cur_proc and not (
-                (self.cur_proc.ret_typ == self.comp.void_t) or (
-                    isinstance(self.cur_proc.ret_typ, type.Result)
-                    and self.cur_proc.ret_typ.typ == self.comp.void_t
+            elif self.cur_func and not (
+                (self.cur_func.ret_typ == self.comp.void_t) or (
+                    isinstance(self.cur_func.ret_typ, type.Result)
+                    and self.cur_func.ret_typ.typ == self.comp.void_t
                 )
             ):
                 report.error(
-                    f"expected `{self.cur_proc.ret_typ}` argument", expr.pos
+                    f"expected `{self.cur_func.ret_typ}` argument", expr.pos
                 )
                 report.note(
-                    f"in return argument of {self.cur_proc.typeof()} `{self.cur_proc.name}`"
+                    f"in return argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                 )
             expr.typ = self.comp.never_t
             return expr.typ
@@ -1353,7 +1353,7 @@ class Checker:
                 report.error(
                     "cannot throw errors inside `test` declaration", expr.pos
                 )
-            elif isinstance(self.cur_proc.ret_typ, type.Result):
+            elif isinstance(self.cur_func.ret_typ, type.Result):
                 expr_typ = self.check_expr(expr.expr)
                 expr_typ_sym = expr_typ.symbol()
                 if not (
@@ -1368,11 +1368,11 @@ class Checker:
                         f"in order to use that value, type `{expr_typ}` should implement the `Throwable` trait"
                     )
                     report.note(
-                        f"in throw argument of {self.cur_proc.typeof()} `{self.cur_proc.name}`"
+                        f"in throw argument of {self.cur_func.typeof()} `{self.cur_func.name}`"
                     )
             else:
                 report.error(
-                    f"{self.cur_proc.typeof()} `{self.cur_proc.name}` cannot throw errors",
+                    f"{self.cur_func.typeof()} `{self.cur_func.name}` cannot throw errors",
                     expr.expr.pos
                 )
                 report.note(
@@ -1650,11 +1650,11 @@ class Checker:
         elif info.is_method and info.self_is_mut:
             self.check_expr_is_mut(expr.left.left)
 
-        proc_args_len = len(info.args)
+        func_args_len = len(info.args)
         if info.is_variadic and not info.is_extern:
-            proc_args_len -= 1
-        if proc_args_len < 0:
-            proc_args_len = 0
+            func_args_len -= 1
+        if func_args_len < 0:
+            func_args_len = 0
 
         # named arguments
         err = False
@@ -1662,10 +1662,10 @@ class Checker:
             if not arg.is_named:
                 continue
             found = False
-            for arg_proc in info.args:
-                if arg_proc.name == arg.name:
+            for arg_fn in info.args:
+                if arg_fn.name == arg.name:
                     found = True
-                    if not arg_proc.has_def_expr:
+                    if not arg_fn.has_def_expr:
                         report.error(
                             f"argument `{arg.name}` is not optional", arg.pos
                         )
@@ -1682,7 +1682,7 @@ class Checker:
         if info.has_named_args:
             args_len = expr.pure_args_count()
             args = expr.args[:args_len]
-            for i in range(args_len, proc_args_len):
+            for i in range(args_len, func_args_len):
                 arg = info.args[i]
                 if arg.has_def_expr:
                     if carg := expr.get_named_arg(arg.name):
@@ -1692,12 +1692,12 @@ class Checker:
             expr.args = args
 
         expr_args_len = expr.pure_args_count()
-        expr_msg = f"expected {proc_args_len} argument(s), found {expr_args_len}"
-        if expr_args_len < proc_args_len:
+        expr_msg = f"expected {func_args_len} argument(s), found {expr_args_len}"
+        if expr_args_len < func_args_len:
             report.error(f"too few arguments to {kind} `{info.name}`", expr.pos)
             report.note(expr_msg)
             return expr.typ
-        elif not info.is_variadic and expr_args_len > proc_args_len:
+        elif not info.is_variadic and expr_args_len > func_args_len:
             report.error(
                 f"too many arguments to {kind} `{info.name}`", expr.pos
             )
@@ -1707,27 +1707,27 @@ class Checker:
         oet = self.expected_type
         for i, arg in enumerate(expr.args):
             if info.is_variadic and i >= len(info.args) - 1:
-                arg_proc = info.args[len(info.args) - 1]
+                arg_fn = info.args[len(info.args) - 1]
             else:
-                arg_proc = info.args[i]
+                arg_fn = info.args[i]
 
-            if isinstance(arg_proc.typ, type.Variadic):
-                self.expected_type = arg_proc.typ.typ
+            if isinstance(arg_fn.typ, type.Variadic):
+                self.expected_type = arg_fn.typ.typ
             else:
-                self.expected_type = arg_proc.typ
+                self.expected_type = arg_fn.typ
             arg.typ = self.check_expr(arg.expr)
             self.expected_type = oet
 
-            if arg_proc.is_mut and not isinstance(
-                arg_proc.typ, type.Ptr
-            ) and not arg_proc.typ.symbol().is_primitive():
+            if arg_fn.is_mut and not isinstance(
+                arg_fn.typ, type.Ptr
+            ) and not arg_fn.typ.symbol().is_primitive():
                 self.check_expr_is_mut(arg.expr)
 
             if not (
                 info.is_variadic and info.is_extern and i >= len(info.args)
             ):
                 self.check_argument_type(
-                    arg.typ, arg_proc.typ, arg.pos, arg_proc.name, kind, info.name
+                    arg.typ, arg_fn.typ, arg.pos, arg_fn.name, kind, info.name
                 )
 
         if expr.has_spread_expr:
@@ -1754,10 +1754,10 @@ class Checker:
         return expr.typ
 
     def check_argument_type(
-        self, got, expected, pos, arg_name, proc_kind, proc_name
+        self, got, expected, pos, arg_name, func_kind, func_name
     ):
         expected_sym = expected.symbol()
-        pos_msg = f"in argument `{arg_name}` of {proc_kind} `{proc_name}`"
+        pos_msg = f"in argument `{arg_name}` of {func_kind} `{func_name}`"
         if expected_sym.kind == TypeKind.Trait:
             if expected != got:
                 got_t = self.comp.comptime_number_to_type(got)
@@ -1849,7 +1849,7 @@ class Checker:
                 return True
             return self.check_compatible_types(got, exp_sym.info.elem_typ)
 
-        if isinstance(expected, type.Proc) and isinstance(got, type.Proc):
+        if isinstance(expected, type.Func) and isinstance(got, type.Func):
             return expected == got
         elif isinstance(expected,
                         type.DynArray) and isinstance(got, type.DynArray):

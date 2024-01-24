@@ -5,7 +5,7 @@
 import c/libc;
 import ./mem;
 
-proc array_init_set(arr: rawptr, elem_size: uint, len: uint, value: rawptr) {
+func array_init_set(arr: rawptr, elem_size: uint, len: uint, value: rawptr) {
     mut i: uint := 0;
     while i < len : i += 1 {
         unsafe {
@@ -14,23 +14,23 @@ proc array_init_set(arr: rawptr, elem_size: uint, len: uint, value: rawptr) {
     }
 }
 
-proc array_index(len: uint, idx: uint) {
+func array_index(len: uint, idx: uint) {
     if idx >= len {
         runtime_error("array index out of range (index: {}, size: {})", idx, len);
     }
 }
 
 #[inline]
-proc array_eq(arr: rawptr, other_arr: rawptr, len: uint) -> bool {
+func array_eq(arr: rawptr, other_arr: rawptr, len: uint) -> bool {
     return unsafe { libc.memcmp(arr, other_arr, len) == 0 };
 }
 
 #[inline]
-proc array_ne(arr: rawptr, other_arr: rawptr, len: uint) -> bool {
+func array_ne(arr: rawptr, other_arr: rawptr, len: uint) -> bool {
     return !array_eq(arr, other_arr, len);
 }
 
-proc array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uint) -> Slice {
+func array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uint) -> Slice {
     if start > end || end > size {
         runtime_error("slice index [{}:{}] out of range (len: {})", start, end, size);
     }
@@ -43,6 +43,6 @@ proc array_slice(arr: rawptr, elem_size: uint, size: uint, start: uint, end: uin
 }
 
 #[inline]
-proc array_slice_from(arr: rawptr, elem_size: uint, size: uint, start: uint) -> Slice {
+func array_slice_from(arr: rawptr, elem_size: uint, size: uint, start: uint) -> Slice {
     return array_slice(arr, elem_size, size, start, size);
 }

@@ -12,7 +12,7 @@ const DOUBLE_QUOTE: uint8 := 34;
 var double_escape := "\\\\";
 var invalid_escapes := b"({`.";
 
-pub proc smart_quote(s: string, raw: bool := false) -> string {
+pub func smart_quote(s: string, raw: bool := false) -> string {
     if s == "" {
         return "";
     } else if s.len < 256 {

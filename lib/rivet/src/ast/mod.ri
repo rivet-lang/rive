@@ -10,12 +10,12 @@ pub struct Comment {
     pub pos: token.Pos;
 
     #[inline]
-    pub proc is_multiline(self) -> bool {
+    pub func is_multiline(self) -> bool {
         return self.text.contains("\n");
     }
 
     #[inline]
-    pub proc is_empty(self) -> bool {
+    pub func is_empty(self) -> bool {
         return self.text.is_empty();
     }
 }
@@ -35,7 +35,7 @@ pub struct ObjectData {
     pub is_global: bool;
 }
 
-pub proc universe() -> Module {
+pub func universe() -> Module {
     return Module(
         name: "universe",
         scope: Scope(syms: +[

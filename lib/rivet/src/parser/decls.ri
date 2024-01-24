@@ -5,7 +5,7 @@
 import ../{ ast, report, token };
 
 extend Parser {
-    proc parse_doc_comments(mut self) -> []ast.Comment {
+    func parse_doc_comments(mut self) -> []ast.Comment {
         mut comments := []ast.Comment();
         while self.tok.kind == .DocComment || (self.tok.kind == .Comment && comments.len > 0) {
             comments.push(self.parse_comment());
@@ -13,7 +13,7 @@ extend Parser {
         return comments;
     }
 
-    pub proc parse_attributes(mut self, parse_mod_attributes: bool := false) -> ast.Attributes {
+    pub func parse_attributes(mut self, parse_mod_attributes: bool := false) -> ast.Attributes {
         mut attributes := ast.Attributes();
         while self.accept(.Hash) {
             if parse_mod_attributes {
@@ -58,12 +58,12 @@ extend Parser {
     }
 
     #[inline]
-    proc is_public(mut self) -> bool {
+    func is_public(mut self) -> bool {
         is_public := self.accept(.KwPub);
         return self.inside_trait || self.inside_enum_variant_with_fields || is_public;
     }
 
-    proc parse_abi(mut self) -> ast.ABI {
+    func parse_abi(mut self) -> ast.ABI {
         self.expect(.Lparen);
         abi_pos := self.tok.pos;
         abi := self.parse_name();
@@ -76,7 +76,7 @@ extend Parser {
         };
     }
 
-    proc parse_decls(mut self) -> []ast.Decl {
+    func parse_decls(mut self) -> []ast.Decl {
         mut decls := []ast.Decl();
         while self.tok.kind != .EndOfFile {
             decls.push(self.parse_decl());
@@ -84,7 +84,7 @@ extend Parser {
         return decls;
     }
 
-    proc parse_decl(mut self) -> ast.Decl {
+    func parse_decl(mut self) -> ast.Decl {
         doc_comment := self.parse_doc_comments();
         is_mod_attr := self.tok.kind == .Hash && self.peek_tok.kind == .Bang;
         attributes := self.parse_attributes(is_mod_attr);
@@ -105,7 +105,7 @@ extend Parser {
             self.accept(.KwImport) -> return self.parse_import_decl(attributes, is_public, pos),
             self.accept(.KwExtern) -> {
                 self.inside_extern = true;
-                // extern procedure or var
+                // extern function or var
                 abi := self.parse_abi();
                 mut decls := []ast.Decl();
                 if self.accept(.Lbrace) {
@@ -410,7 +410,7 @@ extend Parser {
                     pos
                 );
             },
-            self.accept(.KwProc) -> return self.parse_proc_decl(
+            self.accept(.KwFunc) -> return self.parse_func_decl(
                 doc_comment, attributes, is_public, attributes.has("unsafe") || (
                     self.inside_extern && self.extern_abi != .Rivet && !attributes.has("trusted")
                 ), if self.inside_extern { self.extern_abi } else { .Rivet }
@@ -418,7 +418,7 @@ extend Parser {
             self.accept(.KwTest) -> {
                 name := self.tok.lit;
                 self.expect(.String);
-                self.inside_proc = true;
+                self.inside_func = true;
                 self.open_scope();
                 mut sc := self.scope;
                 sc.detached_from_parent = true;
@@ -428,7 +428,7 @@ extend Parser {
                     stmts.push(self.parse_stmt());
                 }
                 self.close_scope();
-                self.inside_proc = false;
+                self.inside_func = false;
                 return .Test(
                     doc_comment,
                     attributes,
@@ -447,7 +447,7 @@ extend Parser {
         return .Empty(pos);
     }
 
-    proc parse_proc_decl(
+    func parse_func_decl(
         mut self, docs: []ast.Comment, attributes: ast.Attributes,
         is_public: bool, is_unsafe: bool, abi: ast.ABI
     ) -> ast.Decl {
@@ -470,7 +470,7 @@ extend Parser {
         mut has_named_args := false;
         mut is_variadic := false;
 
-        self.inside_proc = true;
+        self.inside_func = true;
         self.open_scope();
         mut sc := self.scope;
         sc.detached_from_parent = true;
@@ -553,9 +553,9 @@ extend Parser {
             }
         }
         self.close_scope();
-        self.inside_proc = false;
+        self.inside_func = false;
         is_main := self.mod_sym.is_root && self.mod_sym.name != "core" && name == "main";
-        return .Proc(
+        return .Func(
             docs: docs,
             abi: abi,
             attributes: attributes,

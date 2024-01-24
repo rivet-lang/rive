@@ -4,7 +4,7 @@
 
 var mut runtime_is_started := false;
 
-proc assert(cond: bool, msg: string) {
+func assert(cond: bool, msg: string) {
     if !cond {
         console_ewriteln("panic: assertion failed: {}", msg);
         bt_print(2);
@@ -12,7 +12,7 @@ proc assert(cond: bool, msg: string) {
     }
 }
 
-proc runtime_error(s: string, args: ...Stringable) -> never {
+func runtime_error(s: string, args: ...Stringable) -> never {
     console_ewriteln("runtime error: {}", s.fmt(args));
     bt_print(2);
     process_exit(100);

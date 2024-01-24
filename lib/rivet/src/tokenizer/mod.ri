@@ -22,13 +22,13 @@ pub struct Tokenizer {
     mut is_cr_lf: bool;
     mut eofs: uint;
 
-    pub proc new(text: string, env: ast.Env) -> Tokenizer {
+    pub func new(text: string, env: ast.Env) -> Tokenizer {
         mut t := Tokenizer(env: env, text: text);
         t.init();
         return t;
     }
 
-    pub proc from_file(file: string, env: ast.Env) -> Tokenizer {
+    pub func from_file(file: string, env: ast.Env) -> Tokenizer {
         mut t := Tokenizer(
             env: env, file: file, text: utils.read_file(file) catch |err| utils.error(
                 err.to_string()
@@ -38,12 +38,12 @@ pub struct Tokenizer {
         return t;
     }
 
-    proc init(mut self) {
+    func init(mut self) {
         self.all_tokens = []token.Token(cap: self.text.len / 3);
         self.tokenize_remaining_text();
     }
 
-    proc tokenize_remaining_text(mut self) {
+    func tokenize_remaining_text(mut self) {
         while {
             t := self.internal_next();
             self.all_tokens.push(t);
@@ -54,7 +54,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc new_token(self, kind: token.Kind, lit: string := "", len: uint := 1) -> token.Token {
+    func new_token(self, kind: token.Kind, lit: string := "", len: uint := 1) -> token.Token {
         return token.Token(lit, kind, len, token.Pos(
             file: self.file,
             line: self.line,
@@ -65,7 +65,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc new_multiline_token(
+    func new_multiline_token(
         self, kind: token.Kind, lit: string := "", len: uint := 1,
         start_line: uint := 0, end_line: uint := 0, start_col: uint := 0
     ) -> token.Token {
@@ -82,7 +82,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc new_eof_token(self) -> token.Token {
+    func new_eof_token(self) -> token.Token {
         return token.Token(
             kind: .EndOfFile,
             pos: token.Pos(
@@ -95,7 +95,7 @@ pub struct Tokenizer {
         );
     }
 
-    proc end_of_file(mut self) -> token.Token {
+    func end_of_file(mut self) -> token.Token {
         self.eofs += 1;
         if self.eofs > 50 {
             self.line -= 1;
@@ -111,12 +111,12 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc current_char(self) -> uint8 {
+    func current_char(self) -> uint8 {
         return self.text[self.pos];
     }
 
     #[inline]
-    proc current_pos(self) -> token.Pos {
+    func current_pos(self) -> token.Pos {
         return token.Pos(
             file: self.file,
             line: self.line,
@@ -127,7 +127,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc current_column(self) -> uint {
+    func current_column(self) -> uint {
         return if self.line == 0 {
             self.pos + 1
         } else {
@@ -135,17 +135,17 @@ pub struct Tokenizer {
         };
     }
 
-    proc ignore_line(mut self) {
+    func ignore_line(mut self) {
         self.eat_to_end_of_line();
         self.inc_line_number();
     }
 
     #[inline]
-    proc eat_to_end_of_line(mut self) {
+    func eat_to_end_of_line(mut self) {
         while self.pos < self.text.len && self.current_char() != LF : self.pos += 1 {}
     }
 
-    proc inc_line_number(mut self) {
+    func inc_line_number(mut self) {
         self.last_nl_pos = utils.min(self.text.len - 1, self.pos);
         if self.is_cr_lf {
             self.last_nl_pos += 1;
@@ -154,7 +154,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc skip_whitespace(mut self) {
+    func skip_whitespace(mut self) {
         while self.pos < self.text.len : self.pos += 1 {
             c := self.current_char();
             if c == 8 {
@@ -174,7 +174,7 @@ pub struct Tokenizer {
         }
     }
 
-    proc matches(self, want: string, start_pos: uint) -> bool {
+    func matches(self, want: string, start_pos: uint) -> bool {
         end_pos := start_pos + want.len;
         if start_pos < 0 || end_pos < 0 || start_pos >= self.text.len
             || end_pos > self.text.len {
@@ -190,7 +190,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    pub proc peek_token(self, n: uint) -> token.Token {
+    pub func peek_token(self, n: uint) -> token.Token {
         idx := self.tidx + n;
         return if idx >= self.all_tokens.len {
             self.new_eof_token()
@@ -200,7 +200,7 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc look_ahead(self, n: uint) -> uint8 {
+    func look_ahead(self, n: uint) -> uint8 {
         return if self.pos + n < self.text.len {
             self.text[self.pos + n]
         } else {
@@ -208,16 +208,16 @@ pub struct Tokenizer {
         };
     }
 
-    proc invalid_character(mut self) {
+    func invalid_character(mut self) {
         len := self.text[self.pos].len_utf8();
         end := utils.min(self.pos + len, self.text.len);
         self.error("invalid character: `{}`".fmt(self.text.substr(self.pos, end)));
         self.pos += len;
     }
 
-    // NOTE: this procedure doesn't do any decoding... it just replaces '\xc0' with
+    // NOTE: this function doesn't do any decoding... it just replaces '\xc0' with
     // the byte 0xc0
-    proc decode_h_escape_single(self, str: string, idx: uint) -> (uint, string) {
+    func decode_h_escape_single(self, str: string, idx: uint) -> (uint, string) {
         end_idx := idx + 4; // "\xXX".len == 4
         if idx + 2 > str.len || end_idx > str.len {
             self.error("unfinished single hex escape started at");
@@ -230,7 +230,7 @@ pub struct Tokenizer {
     }
 
     // only handle single-byte inline escapes like '\xc0'
-    proc decode_h_escapes(self, s: string, start: uint, escapes_pos: []uint) -> string {
+    func decode_h_escapes(self, s: string, start: uint, escapes_pos: []uint) -> string {
         if escapes_pos.is_empty() {
             return s;
         }
@@ -250,30 +250,30 @@ pub struct Tokenizer {
     }
 
     #[inline]
-    proc error(self, msg: string, pos: token.Pos := self.current_pos()) {
+    func error(self, msg: string, pos: token.Pos := self.current_pos()) {
         report.error(msg, pos);
     }
 
     #[inline]
-    proc warn(self, msg: string, pos: token.Pos := self.current_pos()) {
+    func warn(self, msg: string, pos: token.Pos := self.current_pos()) {
         report.warn(msg, pos);
     }
 
     #[inline]
-    proc error_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
+    func error_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
         return report.error_builder(msg, pos);
     }
 
     #[inline]
-    proc warn_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
+    func warn_builder(self, msg: string, pos: token.Pos := self.current_pos()) -> report.ReportBuilder {
         return report.warn_builder(msg, pos);
     }
 }
 
 // handle single-byte inline octal escapes like '\###'
-// NOTE: this procedure doesn't do any decoding... it just replaces '\141' with
+// NOTE: this function doesn't do any decoding... it just replaces '\141' with
 // the byte 0o141
-proc decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
+func decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     if escapes_pos.is_empty() {
         return s;
     }
@@ -295,14 +295,14 @@ proc decode_o_escapes(s: string, start: uint, escapes_pos: []uint) -> string {
     return utils.join(ss[:], "");
 }
 
-proc decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
+func decode_u_escape_single(str: string, idx: uint) -> (uint, string) {
     end_idx := idx + 6; // "\uXXXX".len == 6
     escaped_code_point := str.substr(idx + 2, end_idx).parse_uint(16, 32) catch 0;
     return (end_idx, @as(uint32, escaped_code_point).to_string());
 }
 
 // decode the flagged unicode escape sequences into their utf-8 bytes
-proc decode_unicode_escaped_rune(str: string) -> string {
+func decode_unicode_escaped_rune(str: string) -> string {
     (end_idx, segment) := decode_u_escape_single(str, 0);
     return if str.len == end_idx {
         segment
@@ -314,7 +314,7 @@ proc decode_unicode_escaped_rune(str: string) -> string {
     };
 }
 
-proc trim_slash_line_break(s: string) -> string {
+func trim_slash_line_break(s: string) -> string {
     (mut start: uint, mut ret_str) := (0, s);
     while idx := ret_str.index_after_of("\\\n", start) {
         start = idx;
@@ -336,7 +336,7 @@ proc trim_slash_line_break(s: string) -> string {
 }
 
 #[inline]
-proc number_literal_without_separator(lit: string) -> string {
+func number_literal_without_separator(lit: string) -> string {
     return if lit.contains("_") {
         mut sb := strings.Builder.new(lit.len - lit.count("_"));
         for ch in lit.as_bytes() {

@@ -80,7 +80,7 @@ var kind_strings := [
     KindMap(.KwExtend, "extend"),
     KindMap(.KwExtern, "extern"),
     KindMap(.KwFalse, "false"),
-    KindMap(.KwProc, "proc"),
+    KindMap(.KwFunc, "func"),
     KindMap(.KwFor, "for"),
     KindMap(.KwIf, "if"),
     KindMap(.KwImport, "import"),
@@ -179,7 +179,7 @@ pub enum Kind < traits.Stringable {
     KwExtend, // extend
     KwExtern, // extern
     KwFalse, // false
-    KwProc, // proc
+    KwFunc, // func
     KwFor, // for
     KwIf, // if
     KwImport, // import
@@ -207,7 +207,7 @@ pub enum Kind < traits.Stringable {
     KeywordEnd;
 
     #[inline]
-    pub proc lookup(str: string) -> Self {
+    pub func lookup(str: string) -> Self {
         for &km in keywords_table {
             if km.value == str {
                 return km.key;
@@ -217,7 +217,7 @@ pub enum Kind < traits.Stringable {
     }
 
     #[inline]
-    pub proc single(self) -> Kind {
+    pub func single(self) -> Kind {
         return match self {
             .PlusAssign -> .Plus,
             .MinusAssign -> .Minus,
@@ -232,15 +232,15 @@ pub enum Kind < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_start_of_type(self) -> bool {
+    pub func is_start_of_type(self) -> bool {
         return self in [
             .Bang, .Name, .Lparen, .Amp, .Mul, .Lbracket, .Question, .KwSelfTy,
-            .KwProc
+            .KwFunc
         ];
     }
 
     #[inline]
-    pub proc is_assign(self) -> bool {
+    pub func is_assign(self) -> bool {
         return self in [
             .DeclAssign, .Assign, .PlusAssign, .MinusAssign, .MulAssign, .DivAssign,
             .ModAssign, .AmpAssign, .PipeAssign, .XorAssign
@@ -248,13 +248,13 @@ pub enum Kind < traits.Stringable {
     }
 
     #[inline]
-    pub proc is_relational(self) -> bool {
+    pub func is_relational(self) -> bool {
         return self in [
             .Eq, .Ne, .Lt, .Gt, .Le, .Ge, .KwIs, .KwNotIs, .KwIn, .KwNotIn
         ];
     }
 
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         for &km in kind_strings {
             if km.key == self.* {
                 return km.value;
@@ -265,17 +265,17 @@ pub enum Kind < traits.Stringable {
 }
 
 #[inline]
-pub proc is_keyword(lit: string) -> bool {
+pub func is_keyword(lit: string) -> bool {
     return Kind.lookup(lit) != .Name;
 }
 
 #[inline]
-pub proc is_overloadable_operator(kind: Kind) -> bool {
+pub func is_overloadable_operator(kind: Kind) -> bool {
     return kind in [.Plus, .Minus, .Mul, .Div, .Mod, .Eq, .Ne, .Lt, .Gt, .Le, .Ge];
 }
 
 #[inline]
-pub proc overloadable_operator_name(kind: Kind) -> string {
+pub func overloadable_operator_name(kind: Kind) -> string {
     return match kind {
         .Plus -> "_add_",
         .Minus -> "_sub_",

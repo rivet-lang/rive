@@ -10,14 +10,14 @@ pub struct TextScanner {
     mut pos: uint; // current position; pos is always kept in [0, .len]
 
     /// Returns a stack allocated instance of TextScanner.
-    pub proc new(input: string) -> Self {
+    pub func new(input: string) -> Self {
         return Self(input, input.len);
     }
 
     /// Returns the next character code from the input text or `none` if it
     /// can't reach the next character. Advances the scanner position.
     #[inline]
-    pub proc next(mut self) -> ?uint8 {
+    pub func next(mut self) -> ?uint8 {
         if self.pos < self.len {
             opos := self.pos;
             self.pos += 1;
@@ -29,7 +29,7 @@ pub struct TextScanner {
     /// Skips ahead `n` characters, stopping at the end of the input; `skip` is
     /// slightly faster than `.next()`.
     #[inline]
-    pub proc skip(mut self, n: uint := 1) {
+    pub func skip(mut self, n: uint := 1) {
         self.pos += n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -40,7 +40,7 @@ pub struct TextScanner {
     /// it can't peek `n` characters ahead.
     /// Unlike `.next()`, `.peek()` does not change the state of the scanner.
     #[inline]
-    pub proc peek(&self, n: uint := 0) -> ?uint8 {
+    pub func peek(&self, n: uint := 0) -> ?uint8 {
         if self.pos + n < self.len {
             return self.input[self.pos + n];
         }
@@ -48,7 +48,7 @@ pub struct TextScanner {
     }
 
     /// Goes back `n` characters from the current scanner position.
-    pub proc back(mut self, n: uint := 1) {
+    pub func back(mut self, n: uint := 1) {
         self.pos -= n;
         if self.pos > self.len {
             self.pos = self.len;
@@ -59,7 +59,7 @@ pub struct TextScanner {
     /// it can't peek `n` characters back.
     /// Unlike `.back()`, `.peek_back()` does not change the state of the scanner.
     #[inline]
-    pub proc peek_back(&self, n: uint := 1) -> ?uint8 {
+    pub func peek_back(&self, n: uint := 1) -> ?uint8 {
         offset := n + 1;
         if self.pos >= offset {
             return self.input[self.pos - offset];
@@ -71,7 +71,7 @@ pub struct TextScanner {
     /// of the input text.
     /// NOTE: after `c := ts.next()`, `ts.current()` will also return `c`.
     #[inline]
-    pub proc current(self) -> ?uint8 {
+    pub func current(self) -> ?uint8 {
         if self.pos > 0 {
             return self.input[self.pos - 1];
         }
@@ -81,18 +81,18 @@ pub struct TextScanner {
     /// Has the same effect as `while c := ts.next() -> {}` i.e. after calling `.goto_end()`,
     /// the scanner will be at the end of the input text.
     /// Further `.next()` calls will return `none`, unless you go back.
-    pub proc goto_end(mut self) {
+    pub func goto_end(mut self) {
         self.pos = self.len;
     }
 
     /// Returns how many characters remain from current position.
-    pub proc remaining(&self) -> uint {
+    pub func remaining(&self) -> uint {
         return self.len - self.pos;
     }
 
     /// Resets the internal state of the scanner. After calling `.reset()`, `.next()`
     /// will start reading again from the start of the input text.
-    pub proc reset(mut self) {
+    pub func reset(mut self) {
         self.pos = 0;
     }
 }

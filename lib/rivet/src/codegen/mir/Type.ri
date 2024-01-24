@@ -32,13 +32,13 @@ pub enum Type < traits.Stringable {
         count: uint;
         size: uint;
     },
-    Proc {
+    Func {
         args: []Type;
         ret_type: Type;
         size: uint;
     };
 
-    pub proc size(self) -> uint {
+    pub func size(self) -> uint {
         return match self {
             .SizedInt(int) -> int.size,
             .SizedUint(uint) -> uint.size,
@@ -46,12 +46,12 @@ pub enum Type < traits.Stringable {
             .Rawptr(size) -> size,
             .Pointer(ptr) -> ptr.size,
             .Array(arr) -> arr.size,
-            .Proc(proc_) -> proc_.size,
+            .Func(func_) -> func_.size,
             .Void, .Never -> process.panic("codegen.mir.Type.size: `void` or `never` type use")
         };
     }
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return match self {
             .Void -> "void",
             .Never -> "never",
@@ -69,15 +69,15 @@ pub enum Type < traits.Stringable {
                 "*"
             }.concat(ptr.inner.to_string()),
             .Array(arr) -> "[{}]{}".fmt(arr.count, arr.elem_type),
-            .Proc(proc_) -> {
-                mut sb := strings.Builder.from_string("*proc(");
-                for i, arg in proc_.args {
+            .Func(fn) -> {
+                mut sb := strings.Builder.from_string("*func(");
+                for i, arg in fn.args {
                     sb.write(arg.to_string());
-                    if i < proc_.args.len - 1 {
+                    if i < fn.args.len - 1 {
                         sb.write(", ");
                     }
                 }
-                sb.write_fmt(") -> {}", proc_.ret_type);
+                sb.write_fmt(") -> {}", fn.ret_type);
                 sb.to_string()
             }
         };

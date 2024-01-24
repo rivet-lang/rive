@@ -66,7 +66,7 @@ $if _LINUX_ {
 
 $if _WINDOWS_ {
     extern (C) {
-        proc __acrt_iob_fn(index: uint32) -> &mut FILE;
+        func __acrt_iob_fn(index: uint32) -> &mut FILE;
     }
 
     pub alias fpos_t := int64;
@@ -92,28 +92,28 @@ $if _WINDOWS_ {
 }
 
 extern (C) {
-    pub proc fopen(path: [&]uint8, mode: [&]uint8) -> ?&mut FILE;
-    pub proc feof(stream: &FILE) -> int32;
-    pub proc ferror(stream: &FILE) -> int32;
-    pub proc fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
-    pub proc ftell(stream: &mut FILE) -> int64;
-    pub proc fread(ptr: rawptr, size: uint, nitems: uint, stream: &mut FILE) -> uint;
-    pub proc fputc(c: int32, stream: &mut FILE) -> int32;
-    pub proc fputs(s: [&]uint8, stream: &mut FILE) -> int32;
-    pub proc fprintf(stream: &mut FILE, fmt: [&]uint8, ...) -> int32;
-    pub proc fwrite(ptr: rawptr, size: uint, nobj: uint, stream: &mut FILE) -> uint;
-    pub proc fflush(stream: &mut FILE) -> int32;
-    pub proc fgets(s: [&]mut uint8, n: uint, stream: &mut FILE) -> int32;
-    pub proc fclose(stream: &mut FILE) -> int32;
-    pub proc fileno(stream: &FILE) -> int32;
-    pub proc rewind(stream: &mut FILE);
+    pub func fopen(path: [&]uint8, mode: [&]uint8) -> ?&mut FILE;
+    pub func feof(stream: &FILE) -> int32;
+    pub func ferror(stream: &FILE) -> int32;
+    pub func fseek(stream: &mut FILE, offset: uint64, whence: int32) -> int32;
+    pub func ftell(stream: &mut FILE) -> int64;
+    pub func fread(ptr: rawptr, size: uint, nitems: uint, stream: &mut FILE) -> uint;
+    pub func fputc(c: int32, stream: &mut FILE) -> int32;
+    pub func fputs(s: [&]uint8, stream: &mut FILE) -> int32;
+    pub func fprintf(stream: &mut FILE, fmt: [&]uint8, ...) -> int32;
+    pub func fwrite(ptr: rawptr, size: uint, nobj: uint, stream: &mut FILE) -> uint;
+    pub func fflush(stream: &mut FILE) -> int32;
+    pub func fgets(s: [&]mut uint8, n: uint, stream: &mut FILE) -> int32;
+    pub func fclose(stream: &mut FILE) -> int32;
+    pub func fileno(stream: &FILE) -> int32;
+    pub func rewind(stream: &mut FILE);
 
-    pub proc printf(fmt: [&]uint8, ...) -> int32;
-    pub proc asprintf(strp: &?[&]uint8, fmt: [&]uint8, ...) -> int32;
-    pub proc putchar(s: int32) -> int32;
+    pub func printf(fmt: [&]uint8, ...) -> int32;
+    pub func asprintf(strp: &?[&]uint8, fmt: [&]uint8, ...) -> int32;
+    pub func putchar(s: int32) -> int32;
 
-	pub proc popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
-	pub proc pclose(stream: &mut FILE) -> int32;
+	pub func popen(cmd: [&]uint8, modes: [&]uint8) -> ?&mut FILE;
+	pub func pclose(stream: &mut FILE) -> int32;
 
-	pub proc getline(lineptr: &?[&]uint8, n: &uint, stream: &mut FILE) -> int;
+	pub func getline(lineptr: &?[&]uint8, n: &uint, stream: &mut FILE) -> int;
 }

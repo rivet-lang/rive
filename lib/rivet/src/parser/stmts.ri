@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Parser {
-    proc parse_stmt(mut self) -> ast.Stmt {
+    func parse_stmt(mut self) -> ast.Stmt {
         return match {
             self.tok.kind == .Comment -> .Comment(self.parse_comment()),
             self.accept(.Dollar) -> match self.tok.kind {

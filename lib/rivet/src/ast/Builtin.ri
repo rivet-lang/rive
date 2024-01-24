@@ -10,14 +10,14 @@ pub enum Builtin {
         name: string;
         type: Type;
     },
-    Proc {
+    Func {
         name: string;
         args: []BuiltinArg;
         type: Type;
         is_unsafe: bool;
-        checks: []BuiltinProcCheck;
+        checks: []BuiltinFuncCheck;
 
-        proc args_len(self) -> uint {
+        func args_len(self) -> uint {
             mut l: uint := 0;
             for arg in self.args {
                 if arg.is_optional {
@@ -29,10 +29,10 @@ pub enum Builtin {
         }
     };
 
-    pub proc type(self) -> Type {
+    pub func type(self) -> Type {
         return match self {
             .Const(b_const) -> b_const.type,
-            .Proc(b_proc) -> b_proc.type,
+            .Func(b_func) -> b_func.type,
             else -> .Void
         };
     }
@@ -46,13 +46,13 @@ struct BuiltinArg {
     pub is_optional: bool;
 }
 
-enum BuiltinProcType {
+enum BuiltinFuncType {
     Pointer,
     Enum,
     Integer
 }
 
-enum BuiltinProcCheck {
+enum BuiltinFuncCheck {
     ReturnTypeEqualToArgumentType(uint),
     ArgumentTypeEqualToArgumentType {
         arg1_idx: uint;
@@ -60,12 +60,12 @@ enum BuiltinProcCheck {
     },
     ArgumentTypeShouldBe {
         arg_idx: uint;
-        type: BuiltinProcType;
+        type: BuiltinFuncType;
     }
 }
 
 extend Env {
-    proc setup_builtins(mut self) {
+    func setup_builtins(mut self) {
         self.builtins = +[
             // variables
             .Const("_FILE_", self.string_t),
@@ -75,11 +75,11 @@ extend Env {
             .Const("_RIVET_VERSION_", self.string_t),
             .Const("_RIVET_COMMIT_", self.string_t),
 
-            // procedures
-            .Proc("size_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
-            .Proc("align_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
+            // functions
+            .Func("size_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
+            .Func("align_of", +[BuiltinArg("value", is_any: true)], self.uint_t),
 
-            .Proc("ptr_add", +[
+            .Func("ptr_add", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
             ], is_unsafe: true, checks: +[
@@ -87,7 +87,7 @@ extend Env {
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
-            .Proc("ptr_sub", +[
+            .Func("ptr_sub", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("value", is_any: true)
             ], self.uint_t, is_unsafe: true, checks: +[
@@ -95,7 +95,7 @@ extend Env {
                 .ArgumentTypeShouldBe(1, .Integer),
                 .ReturnTypeEqualToArgumentType(0)
             ]),
-            .Proc("ptr_diff", +[
+            .Func("ptr_diff", +[
                 BuiltinArg("pointer", is_any: true),
                 BuiltinArg("pointer2", is_any: true)
             ], self.uint_t, is_unsafe: true, checks: +[
@@ -103,21 +103,21 @@ extend Env {
                 .ArgumentTypeEqualToArgumentType(1, 0)
             ]),
 
-            .Proc("as", +[
+            .Func("as", +[
                 BuiltinArg("type", is_any: true),
                 BuiltinArg("value", is_any: true)
             ], checks: +[
                 .ReturnTypeEqualToArgumentType(0)
             ]),
 
-            .Proc("unreachable", +[], .Never(token.no_pos)),
-            .Proc("breakpoint", +[]),
-            .Proc("assert", +[
+            .Func("unreachable", +[], .Never(token.no_pos)),
+            .Func("breakpoint", +[]),
+            .Func("assert", +[
                 BuiltinArg("cond", type: self.bool_t),
                 BuiltinArg("msg", type: self.string_t, is_optional: true)
             ]),
 
-            .Proc("set_enum_ref_value", +[
+            .Func("set_enum_ref_value", +[
                 BuiltinArg("enum_value", is_any: true, is_mut: true),
                 BuiltinArg("new_value", is_any: true)
             ], is_unsafe: true, checks: +[
@@ -126,17 +126,17 @@ extend Env {
             ]),
 
             // TODO: rename to `ignore_warn`: `@ignore_warn("not_mutated", expr)`.
-            .Proc("ignore_not_mutated_warn", +[
+            .Func("ignore_not_mutated_warn", +[
                 BuiltinArg("expr", is_any: true, is_mut: true)
             ])
         ];
     }
 
-    pub proc find_builtin(self, name: string) -> ?Builtin {
+    pub func find_builtin(self, name: string) -> ?Builtin {
         for builtin in self.builtins {
             is_equal := match builtin {
                 .Const(b_var) -> b_var.name == name,
-                .Proc(b_proc) -> b_proc.name == name,
+                .Func(b_func) -> b_func.name == name,
                 else -> false
             };
             if is_equal {
@@ -146,7 +146,7 @@ extend Env {
         return none;
     }
 
-    pub proc exist_builtin(self, name: string) -> bool {
+    pub func exist_builtin(self, name: string) -> bool {
         return self.find_builtin(name) != none;
     }
 }

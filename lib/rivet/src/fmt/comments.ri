@@ -15,7 +15,7 @@ extend Formatter {
     // - same_line: line comments will be on the same line as the last statement
     // - level:  either .Keep (don't indent), or .Indent (increment indentation)
     // - prev_line: the line number of the previous token to save linebreaks
-    proc format_comment(
+    func format_comment(
         mut self, comment: ast.Comment, same_line: bool := false,
         level: CommentsLevel := .Keep, has_nl: bool := false
     ) {
@@ -63,7 +63,7 @@ extend Formatter {
         }
     }
 
-    proc format_comments(
+    func format_comments(
         mut self, comments: []ast.Comment, has_nl: bool := true,
         same_line: bool := false, level: CommentsLevel := .Keep, prev_line_: ?uint := none
     ) {

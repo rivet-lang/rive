@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-proc demangle_symbol(name: string) -> string {
+func demangle_symbol(name: string) -> string {
     @assert(name.len > 0);
     if !name.starts_with("_R") {
         return name;

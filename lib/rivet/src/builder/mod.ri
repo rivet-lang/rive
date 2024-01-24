@@ -17,7 +17,7 @@ pub struct Builder {
     mut checker: checker.Checker;
     mut codegen: codegen.Codegen;
 
-    pub proc new(prefs_: prefs.Prefs) -> Self {
+    pub func new(prefs_: prefs.Prefs) -> Self {
         env := ast.Env.new(prefs_);
         return Self(
             env: env,
@@ -27,7 +27,7 @@ pub struct Builder {
         );
     }
 
-    pub proc run(mut self) -> ! {
+    pub func run(mut self) -> ! {
         self.make_rivet_directory()!;
 
         // if we are compiling the `core` module, avoid autoloading it
@@ -73,7 +73,7 @@ pub struct Builder {
         }
     }
 
-    proc make_rivet_directory(&self) -> ! {
+    func make_rivet_directory(&self) -> ! {
         if !Path.exists(prefs.rivet_dir) {
             self.vlog("making Rivet directory");
             if !Path.exists(prefs.obj_dir) {
@@ -87,7 +87,7 @@ pub struct Builder {
         }
     }
 
-    proc parse_files(mut self, mod_sym: ast.Module, files: []string) {
+    func parse_files(mut self, mod_sym: ast.Module, files: []string) {
         for sf in parser.Parser(env: self.env).parse_module(mod_sym, files) {
             self.env.source_files.push(sf);
         }
@@ -96,7 +96,7 @@ pub struct Builder {
         }
     }
 
-    proc load_root_module(mut self) -> ! {
+    func load_root_module(mut self) -> ! {
         files := if Path.is_directory(self.env.prefs.input) {
             mut filtered_files := self.env.filter_files(
                 Directory.walk(self.env.prefs.input, ".ri")!
@@ -136,7 +136,7 @@ pub struct Builder {
         self.parse_files(root_sym, files);
     }
 
-    proc import_modules(mut self) -> ! {
+    func import_modules(mut self) -> ! {
         for mut sf in self.env.source_files {
             self.import_modules_from_decls(sf, sf.decls)!;
         }
@@ -147,7 +147,7 @@ pub struct Builder {
         }
     }
 
-    proc import_modules_from_decls(
+    func import_modules_from_decls(
         mut self, sf: ast.SourceFile, mut decls: []mut ast.Decl
     ) -> ! {
         for mut decl in decls {
@@ -162,7 +162,7 @@ pub struct Builder {
         }
     }
 
-    proc import_module(mut self, sf: ast.SourceFile, mut import_decl: ast.ImportDecl) -> ! {
+    func import_module(mut self, sf: ast.SourceFile, mut import_decl: ast.ImportDecl) -> ! {
         if !import_decl.subimports.is_empty() {
             for mut subimport in import_decl.subimports {
                 self.import_module(sf, subimport)!;
@@ -179,7 +179,7 @@ pub struct Builder {
         import_decl.alias_name = import_decl.info.alias_name;
     }
 
-    proc load_module(
+    func load_module(
         mut self, path: string, alias_name: string, file_path: string, pos: token.Pos
     ) -> !ast.ImportedMod {
         mut mod := self.load_module_files(alias_name, path, file_path)!;
@@ -207,7 +207,7 @@ pub struct Builder {
         return mod;
     }
 
-    proc load_module_files(&self, alias_name: string, path: string, file_path: string) -> !ast.ImportedMod {
+    func load_module_files(&self, alias_name: string, path: string, file_path: string) -> !ast.ImportedMod {
         self.vlog("Builder.load_module_files: searching module `{}`", path);
         mut found := false;
         mut name := "";
@@ -296,7 +296,7 @@ pub struct Builder {
         );
     }
 
-    proc resolve_deps(mut self) {
+    func resolve_deps(mut self) {
         g := self.import_graph();
         g_resolved := g.resolve();
         self.vlog(
@@ -324,7 +324,7 @@ pub struct Builder {
         self.vlog("module dependencies resolved...");
     }
 
-    proc import_graph(mut self) -> depgraph.DepGraph {
+    func import_graph(mut self) -> depgraph.DepGraph {
         mut g := depgraph.DepGraph.new();
         for mut pf in self.env.source_files {
             mut deps := []string();
@@ -337,7 +337,7 @@ pub struct Builder {
         return g;
     }
 
-    proc import_graph_decls(mut self, mut pf: ast.SourceFile, mut deps: []string, mut decls: []mut ast.Decl) {
+    func import_graph_decls(mut self, mut pf: ast.SourceFile, mut deps: []string, mut decls: []mut ast.Decl) {
         for mut d in decls {
             if d is .Import(import_decl) {
                 if import_decl.subimports.len > 0 {
@@ -356,7 +356,7 @@ pub struct Builder {
         }
     }
 
-    proc import_graph_mod(import_decl: &ast.ImportDecl, pf: ast.SourceFile) -> ?string {
+    func import_graph_mod(import_decl: &ast.ImportDecl, pf: ast.SourceFile) -> ?string {
         if !import_decl.info.found {
             return none; // module not found
         }
@@ -367,13 +367,13 @@ pub struct Builder {
         return import_decl.info.full_name;
     }
 
-    proc vlog(&self, msg: string, args: ...traits.Stringable) {
+    func vlog(&self, msg: string, args: ...traits.Stringable) {
         if self.env.prefs.is_verbose {
             console.writeln(utils.bold(utils.green("[rivet-log] ")).concat(msg), args);
         }
     }
 
-    proc abort(&self) {
+    func abort(&self) {
         mut msg := if report.total_errors() == 1 {
             "could not compile module `{}`, aborting due to previous error".fmt(self.env.prefs.mod_name)
         } else {

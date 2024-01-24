@@ -9,13 +9,13 @@ pub struct ErrnoError < Throwable {
     pub msg: string;
     pub code: int32;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return "errno: {} (code: {})".fmt(self.msg, self.code);
     }
 }
 
 #[inline]
-pub proc errno() -> int32 {
+pub func errno() -> int32 {
     $if _LINUX_ {
         return unsafe { libc.__errno_location()?.* };
     } else {
@@ -24,7 +24,7 @@ pub proc errno() -> int32 {
 }
 
 #[inline]
-pub proc errno_msg(code: int32 := errno()) -> string {
+pub func errno_msg(code: int32 := errno()) -> string {
     unsafe {
         return if s := libc.strerror(code) {
             string.from_raw(s)
@@ -35,6 +35,6 @@ pub proc errno_msg(code: int32 := errno()) -> string {
 }
 
 #[inline]
-pub proc last_errno_error() -> ErrnoError {
+pub func last_errno_error() -> ErrnoError {
     return ErrnoError(errno_msg(), errno());
 }

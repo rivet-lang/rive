@@ -1,4 +1,4 @@
-proc default_arg(x: int32 := 1) {
+func default_arg(x: int32 := 1) {
     @assert(x == 1 || x == 5 || x == 10);
 }
 
@@ -8,13 +8,13 @@ test "call expression with default arguments" {
     default_arg(x: 10);
 }
 
-proc foo(_a: bool := false, _b: bool := false) { }
+func foo(_a: bool := false, _b: bool := false) { }
 
-proc bar(_a: bool, _b: bool := true) { }
+func bar(_a: bool, _b: bool := true) { }
 
-proc baz(_a: bool, _b: bool) { }
+func baz(_a: bool, _b: bool) { }
 
-proc qux(_a: bool) { }
+func qux(_a: bool) { }
 
 test "call expression with named arguments" {
     foo(_a: true, _b: true);
@@ -25,7 +25,7 @@ test "call expression with named arguments" {
     qux(a);
 }
 
-proc args(values: ...int) -> int {
+func args(values: ...int) -> int {
     mut res := 0;
     for v in values {
         res += v;
@@ -38,11 +38,11 @@ test "call expression with spread expression" {
     @assert(args(...[10, 9, 8, 7, 6, 5, 4, 3, 2, 1]) == 55);
 }
 
-proc mutable_primitive_type_argument(mut a: int) {
+func mutable_primitive_type_argument(mut a: int) {
     a += 2;
 }
 
-test "call expression to a procedure with mutable argument of primitive type without modifying its value" {
+test "call expression to a function with mutable argument of primitive type without modifying its value" {
     x := 2;
     mutable_primitive_type_argument(x);
     @assert(x == 2);

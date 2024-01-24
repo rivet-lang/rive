@@ -10,13 +10,13 @@ pub var home_dir := get($if _LINUX_ { "HOME" } else { "USERPROFILE" }) ?? "";
 
 /// Returns `true` if the environment variable exists.
 #[inline]
-pub proc exists(name: string) -> bool {
+pub func exists(name: string) -> bool {
     return get(name) != none;
 }
 
 /// Returns the value of the environment variable named by the key.
 #[inline]
-pub proc get(name: string) -> ?string {
+pub func get(name: string) -> ?string {
     return unsafe {
         if s := libc.getenv(name.ptr) {
             string.from_raw(s)
@@ -27,14 +27,14 @@ pub proc get(name: string) -> ?string {
 }
 
 /// Sets the value of an environment variable with `name` to `value`.
-pub proc set(name: string, value: string, overwrite: bool := true) -> ! {
+pub func set(name: string, value: string, overwrite: bool := true) -> ! {
     if unsafe { libc.setenv(name.ptr, value.ptr, overwrite) == -1 } {
         throw core.last_errno_error();
     }
 }
 
 /// Removes an environment variable with `name`.
-pub proc remove(name: string) -> ! {
+pub func remove(name: string) -> ! {
     if unsafe { libc.unsetenv(name.ptr) } == -1 {
         throw core.last_errno_error();
     }

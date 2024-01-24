@@ -13,7 +13,7 @@ pub struct ComptimeIf {
     pub pos: token.Pos;
     pub mut type: Type;
 
-    pub proc nodes(self) -> ?[]Node {
+    pub func nodes(self) -> ?[]Node {
         if branch_idx := self.branch_idx {
             return self.branches[branch_idx].nodes;
         }
@@ -31,7 +31,7 @@ pub struct ComptimeIfBranch {
 }
 
 extend Env {
-    pub proc evalue_comptime_if(self, mut comptime_if: ComptimeIf) -> []mut Node {
+    pub func evalue_comptime_if(self, mut comptime_if: ComptimeIf) -> []mut Node {
         if branch_idx := comptime_if.branch_idx {
             return comptime_if.branches[branch_idx].nodes;
         }
@@ -48,7 +48,7 @@ extend Env {
         return +[];
     }
 
-    proc evalue_comptime_condition(self, cond: Expr) -> ?bool {
+    func evalue_comptime_condition(self, cond: Expr) -> ?bool {
         return match cond {
             .Paren(paren) -> self.evalue_comptime_condition(paren.expr),
             .BoolLiteral(bool_lit) -> bool_lit.value,
@@ -84,7 +84,7 @@ extend Env {
         };
     }
 
-    proc evalue_comptime_ident(self, name: string, pos: token.Pos) -> bool {
+    func evalue_comptime_ident(self, name: string, pos: token.Pos) -> bool {
         match name {
             // operating systems
             "_LINUX_", "_WINDOWS_" -> {

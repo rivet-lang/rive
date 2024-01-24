@@ -1,41 +1,41 @@
 trait Reader {
-    proc read(self) -> uint8;
+    func read(self) -> uint8;
 }
 
 trait Writer {
-    proc write(self, b: uint8) -> bool;
+    func write(self, b: uint8) -> bool;
 }
 
 trait ReaderWriter < Reader, Writer {
-    proc write_and_read(self, b: uint8) -> uint8;
+    func write_and_read(self, b: uint8) -> uint8;
 }
 
 struct SomeStream < ReaderWriter {
-    pub proc read(&self) -> uint8 {
+    pub func read(&self) -> uint8 {
         _ = self;
         return 'A';
     }
 
-    pub proc write(&self, _b: uint8) -> bool {
+    pub func write(&self, _b: uint8) -> bool {
         _ = self;
         return true;
     }
 
-    pub proc write_and_read(&self, b: uint8) -> uint8 {
+    pub func write_and_read(&self, b: uint8) -> uint8 {
         _ = self.write(b);
         return self.read();
     }
 }
 
-proc writer(w: Writer) -> bool {
+func writer(w: Writer) -> bool {
     return w.write('A');
 }
 
-proc reader(r: Reader) -> uint8 {
+func reader(r: Reader) -> uint8 {
     return r.read();
 }
 
-proc reader_writer(rw: ReaderWriter) -> uint8 {
+func reader_writer(rw: ReaderWriter) -> uint8 {
     return rw.write_and_read('A');
 }
 
@@ -49,21 +49,21 @@ test "traits: inheritance" {
 trait Eq {
     x: string;
 
-    proc equal(self, x: Self) -> bool;
+    func equal(self, x: Self) -> bool;
 
-    proc nequal(self, x: Self) -> bool {
+    func nequal(self, x: Self) -> bool {
         return !self.equal(x);
     }
 }
 
 #[boxed]
 struct Poketrait < Eq {
-    pub proc equal(self, x: Eq) -> bool {
+    pub func equal(self, x: Eq) -> bool {
         return self.x == x.x;
     }
 }
 
-proc ship(a: Eq, b: Eq) -> bool {
+func ship(a: Eq, b: Eq) -> bool {
     return !a.nequal(b);
 }
 

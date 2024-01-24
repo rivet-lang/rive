@@ -8,8 +8,8 @@ pub const RTLD_BINDING_MASK := 0x3;
 pub const RTLD_GLOBAL := 0x100;
 
 extern (C) {
-    pub proc dlopen(__file: [&]uint8, __mode: int32) -> ?rawptr;
-    pub proc dlclose(__handle: rawptr) -> int32;
-    pub proc dlsym(__handle: rawptr, __name: [&]uint8) -> ?rawptr;
-    pub proc dlerror() -> ?[&]uint8;
+    pub func dlopen(__file: [&]uint8, __mode: int32) -> ?rawptr;
+    pub func dlclose(__handle: rawptr) -> int32;
+    pub func dlsym(__handle: rawptr, __name: [&]uint8) -> ?rawptr;
+    pub func dlerror() -> ?[&]uint8;
 }

@@ -8,7 +8,7 @@ import rivet/{ ast, fmt, prefs, utils, parser };
 var fmt_desc := "Formats the given Rivet source files or recursively formats all files in the
 directory, then prints their formatted source to stdout.";
 
-pub proc cmd_fmt(args: [:]string) -> ! {
+pub func cmd_fmt(args: [:]string) -> ! {
     mut fp := flag.FlagParser.new(args);
     fp.set_application_name("rivet fmt");
     fp.set_arguments_description("[FILES|DIRECTORIES]");

@@ -11,30 +11,30 @@ $if _LINUX_ {
 }
 
 extern (C) {
-    pub proc rand() -> int32;
-    pub proc srand(seed: uint32);
+    pub func rand() -> int32;
+    pub func srand(seed: uint32);
 
-    pub proc atof(nptr: ?[&]uint8) -> float64;
-    pub proc atoi(nptr: ?[&]uint8) -> int32;
-    pub proc atol(nptr: ?[&]uint8) -> int64;
-    pub proc atoll(nptr: ?[&]uint8) -> int64;
+    pub func atof(nptr: ?[&]uint8) -> float64;
+    pub func atoi(nptr: ?[&]uint8) -> int32;
+    pub func atol(nptr: ?[&]uint8) -> int64;
+    pub func atoll(nptr: ?[&]uint8) -> int64;
 
-    pub proc strtod(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float64;
-    pub proc strtof(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float32;
-    pub proc strtol(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
-    pub proc strtoll(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
-    pub proc strtoul(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
-    pub proc strtoull(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
+    pub func strtod(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float64;
+    pub func strtof(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> float32;
+    pub func strtol(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
+    pub func strtoll(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> int64;
+    pub func strtoul(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
+    pub func strtoull(nptr: [&]uint8, endptr: ?[&]uint8, base: int32) -> uint64;
 
-    pub proc malloc(size: uint) -> ?rawptr;
-    pub proc calloc(nobj: uint, size: uint) -> ?rawptr;
-    pub proc realloc(p: ?rawptr, size: uint) -> ?rawptr;
-    pub proc free(p: rawptr);
+    pub func malloc(size: uint) -> ?rawptr;
+    pub func calloc(nobj: uint, size: uint) -> ?rawptr;
+    pub func realloc(p: ?rawptr, size: uint) -> ?rawptr;
+    pub func free(p: rawptr);
 
-    pub proc getenv(name: [&]uint8) -> ?[&]mut uint8;
-    pub proc setenv(name: [&]uint8, value: [&]uint8, replace: bool) -> int32;
-    pub proc unsetenv(name: [&]uint8) -> int32;
+    pub func getenv(name: [&]uint8) -> ?[&]mut uint8;
+    pub func setenv(name: [&]uint8, value: [&]uint8, replace: bool) -> int32;
+    pub func unsetenv(name: [&]uint8) -> int32;
 
-    pub proc exit(status: int32) -> never;
-    pub proc abort() -> never;
+    pub func exit(status: int32) -> never;
+    pub func abort() -> never;
 }

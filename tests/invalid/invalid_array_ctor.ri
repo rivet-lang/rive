@@ -1,0 +1,3 @@
+func main() {
+    _ = []int(init: 5); // invalid
+}

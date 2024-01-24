@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Resolver {
-    proc resolve_type(mut self, mut type: ast.Type) -> bool {
+    func resolve_type(mut self, mut type: ast.Type) -> bool {
         return match type {
             .Void, .Never, .Rawptr, .Boxedptr -> true,
             .Option(mut opt) -> self.resolve_type(opt.inner),
@@ -68,14 +68,14 @@ extend Resolver {
                 }
                 resolved
             },
-            .Proc(mut proc_t) -> {
+            .Func(mut func_t) -> {
                 mut res1 := false;
-                for mut arg in proc_t.args {
+                for mut arg in func_t.args {
                     res1 = self.resolve_type(arg.type);
                 }
-                res1 = self.resolve_type(proc_t.ret_type);
-                proc_t.sym = self.env.universe.add_or_get_proc(proc_t.symbol());
-                proc_t.has_sym = true;
+                res1 = self.resolve_type(func_t.ret_type);
+                func_t.sym = self.env.universe.add_or_get_func(func_t.symbol());
+                func_t.has_sym = true;
                 res1
             },
             .Basic(mut basic) -> if basic.is_unresolved {

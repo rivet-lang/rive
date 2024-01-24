@@ -4,17 +4,17 @@
 
 extend bool < Stringable {
     #[inline]
-    pub proc to_int(self) -> int {
+    pub func to_int(self) -> int {
         return if self { 1 } else { 0 };
     }
 
     #[inline]
-    pub proc to_uint(self) -> uint {
+    pub func to_uint(self) -> uint {
         return if self { 1 } else { 0 };
     }
 
     #[inline]
-    pub proc to_string(&self) -> string {
+    pub func to_string(&self) -> string {
         return if self.* { "true" } else { "false" };
     }
 }

@@ -13,7 +13,7 @@ pub var shared_lib_extension := get_shared_library_extension();
 /// Returns a library name with the operating system specific extension for shared
 /// libraries.
 #[inline]
-pub proc library_name(libname: string) -> string {
+pub func library_name(libname: string) -> string {
     return if libname.ends_with(shared_lib_extension) {
         libname
     } else {
@@ -25,7 +25,7 @@ pub proc library_name(libname: string) -> string {
 pub struct SymbolNotFoundError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
@@ -34,12 +34,12 @@ pub struct SymbolNotFoundError < Throwable {
 pub struct CannotLoadLibraryError < Throwable {
     msg: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return self.msg;
     }
 }
 
-pub proc load(path: string, global_symbols: bool := false) -> !Library {
+pub func load(path: string, global_symbols: bool := false) -> !Library {
     flags: int32 := if global_symbols { libc.RTLD_NOW | libc.RTLD_GLOBAL } else { libc.RTLD_NOW };
     if ptr := unsafe { libc.dlopen(path.ptr, flags) } {
         return Library(path, ptr);
@@ -55,7 +55,7 @@ struct Library {
     pub path: string;
     ptr: rawptr;
 
-    pub proc address_of(self, symbol: string) -> !rawptr {
+    pub func address_of(self, symbol: string) -> !rawptr {
         if ptr := unsafe { libc.dlsym(self.ptr, symbol.ptr) } {
             return ptr;
         }
@@ -69,21 +69,21 @@ struct Library {
     }
 
     #[inline]
-    pub proc exists(self, symbol: string) -> bool {
+    pub func exists(self, symbol: string) -> bool {
         return if _ := self.address_of(symbol) { true } else { false };
     }
 
     #[inline]
-    pub proc close(self) {
+    pub func close(self) {
         _ = unsafe { libc.dlclose(self.ptr) };
     }
 
-    proc __destroy__(self) {
+    func __destroy__(self) {
         self.close();
     }
 }
 
-proc dlerror() -> ?string {
+func dlerror() -> ?string {
     if err := unsafe { libc.dlerror() } {
         return unsafe { string.from_raw(err) }.clone();
     }
@@ -91,7 +91,7 @@ proc dlerror() -> ?string {
 }
 
 #[inline]
-proc get_shared_library_extension() -> string {
+func get_shared_library_extension() -> string {
     return $if _LINUX_ {
         ".so"
     } else if _WINDOWS_ {

@@ -1,13 +1,13 @@
 tests/invalid/extend_primitive_types.ri:1:1-3:1: error: cannot extend primitive types
       | /~~ from here
     1 | extend bool {
-    2 |     proc my_proc(self) { _ = self; }
+    2 |     func my_func(self) { _ = self; }
     3 | }
       | ^~~ to here
 tests/invalid/extend_primitive_types.ri:5:1-7:1: error: cannot extend primitive types
       | /~~ from here
     5 | extend uint {
-    6 |     proc my_proc(self) { _ = self; }
+    6 |     func my_func(self) { _ = self; }
     7 | }
       | ^~~ to here
 rivet: error: could not compile module `extend_primitive_types`, aborting due to 2 previous errors

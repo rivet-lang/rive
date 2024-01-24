@@ -1,24 +1,24 @@
 trait ToStr {
-    proc to_str1(&self) -> string;
+    func to_str1(&self) -> string;
 }
 
-proc my_print(v: ToStr) {
+func my_print(v: ToStr) {
     _ = v.to_str1();
 }
 
 extend string < ToStr {
-    proc to_str1(self) -> string {
+    func to_str1(self) -> string {
         return self;
     }
 }
 
 extend bool < ToStr {
-    proc to_str1(&self) -> string {
+    func to_str1(&self) -> string {
         return if self.* { "true" } else { "false" };
     }
 }
 
-proc main() {
+func main() {
     my_print(""); // OK
     my_print(true); // OK
     my_print(1); // FAIL

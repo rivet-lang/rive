@@ -8,7 +8,7 @@ test "using `alias` with symbols" {
 
 alias RawptrOption := ?rawptr;
 
-proc rawptr_option() -> RawptrOption {
+func rawptr_option() -> RawptrOption {
     return none;
 }
 

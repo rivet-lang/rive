@@ -5,13 +5,13 @@
 import ../{ ast, report };
 
 extend Resolver {
-    proc resolve_stmts(mut self, mut stmts: []mut ast.Stmt) {
+    func resolve_stmts(mut self, mut stmts: []mut ast.Stmt) {
         for mut stmt in stmts {
             self.resolve_stmt(stmt);
         }
     }
 
-    proc resolve_stmt(mut self, mut stmt: ast.Stmt) {
+    func resolve_stmt(mut self, mut stmt: ast.Stmt) {
         match stmt {
             .Comment -> {},
             .Empty(empty_pos) -> report.error("bug: unexpected empty statement found", empty_pos),

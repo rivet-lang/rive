@@ -8,7 +8,7 @@ import ../token;
 pub struct AttributeDuplicatedError < Throwable {
     name: string;
 
-    pub proc to_string(self) -> string {
+    pub func to_string(self) -> string {
         return "duplicated attribute `{}`".fmt(self.name);
     }
 }
@@ -24,7 +24,7 @@ pub struct Attribute {
     pub args: []AttributeArgument;
     pub pos: token.Pos;
 
-    pub proc find_argument(&self, name: string) -> ?AttributeArgument {
+    pub func find_argument(&self, name: string) -> ?AttributeArgument {
         for arg in self.args {
             if arg.name == name {
                 return arg;
@@ -37,14 +37,14 @@ pub struct Attribute {
 pub struct Attributes {
     pub mut attributes: []Attribute;
 
-    pub proc add(mut self, attribute: Attribute) -> ! {
+    pub func add(mut self, attribute: Attribute) -> ! {
         if self.has(attribute.name) {
             throw AttributeDuplicatedError(attribute.name);
         }
         self.attributes.push(attribute);
     }
 
-    pub proc find(&self, name: string) -> ?Attribute {
+    pub func find(&self, name: string) -> ?Attribute {
         for attribute in self.attributes {
             if attribute.name == name {
                 return attribute;
@@ -54,12 +54,12 @@ pub struct Attributes {
     }
 
     #[inline]
-    pub proc has(&self, name: string) -> bool {
+    pub func has(&self, name: string) -> bool {
         return self.find(name) != none;
     }
 
     #[inline]
-    pub proc is_empty(&self) -> bool {
+    pub func is_empty(&self) -> bool {
         return self.attributes.is_empty();
     }
 }

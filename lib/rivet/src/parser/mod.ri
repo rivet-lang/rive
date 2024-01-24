@@ -29,17 +29,17 @@ pub struct Parser {
     mut inside_trait: bool;
     mut inside_enum_variant_with_fields: bool;
     mut inside_extend: bool;
-    mut inside_proc: bool;
+    mut inside_func: bool;
     mut inside_match_header: bool;
     mut inside_block: bool;
 
-    pub proc parse_module(mut self, mod_sym: ast.Module, files: []string) -> []ast.SourceFile {
+    pub func parse_module(mut self, mod_sym: ast.Module, files: []string) -> []ast.SourceFile {
         self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
         return self.parse_module_files(files);
     }
 
-    pub proc parse_module_files(mut self, files: []string) -> []ast.SourceFile {
+    pub func parse_module_files(mut self, files: []string) -> []ast.SourceFile {
         mut source_files := []ast.SourceFile();
         for file in files {
             source_files.push(self.parse_file(file));
@@ -47,7 +47,7 @@ pub struct Parser {
         return source_files;
     }
 
-    pub proc parse_file(mut self, file: string) -> ast.SourceFile {
+    pub func parse_file(mut self, file: string) -> ast.SourceFile {
         self.file_path = file;
         self.file_dir = Path.dir_name(file) ?? file;
         self.tokenizer = tokenizer.Tokenizer.from_file(file, self.env);
@@ -59,18 +59,18 @@ pub struct Parser {
         return ast.SourceFile(file, self.parse_decls(), self.mod_sym, pos: pos + self.prev_tok.pos);
     }
 
-    proc next(mut self) {
+    func next(mut self) {
         self.prev_tok = self.tok;
         self.tok = self.peek_tok;
         self.peek_tok = self.tokenizer.next();
     }
 
     #[inline]
-    proc peek_token(self, n: uint) -> token.Token {
+    func peek_token(self, n: uint) -> token.Token {
         return self.tokenizer.peek_token(n - 2);
     }
 
-    proc advance(mut self, n: uint) {
+    func advance(mut self, n: uint) {
         mut i: uint := 0;
         while i < n : i += 1 {
             self.next();
@@ -78,7 +78,7 @@ pub struct Parser {
     }
 
     #[inline]
-    proc accept(mut self, kind: token.Kind) -> bool {
+    func accept(mut self, kind: token.Kind) -> bool {
         return if self.tok.kind == kind {
             self.next();
             true
@@ -87,7 +87,7 @@ pub struct Parser {
         };
     }
 
-    proc expect(mut self, kind: token.Kind) {
+    func expect(mut self, kind: token.Kind) {
         if self.accept(kind) {
             return;
         } else if self.last_err_pos.pos == self.tok.pos.pos {
@@ -102,21 +102,21 @@ pub struct Parser {
         report.error("expected {}, found {}".fmt(kstr, self.tok), self.tok.pos);
     }
 
-    proc parse_name(mut self) -> string {
+    func parse_name(mut self) -> string {
         lit := self.tok.lit;
         self.expect(.Name);
         return lit;
     }
 
-    proc open_scope(mut self) {
+    func open_scope(mut self) {
         self.scope = ast.Scope(
             start: self.tok.pos.pos,
             parent: self.scope,
-            is_local: self.inside_proc
+            is_local: self.inside_func
         );
     }
 
-    proc close_scope(mut self) {
+    func close_scope(mut self) {
         self.scope.end = self.tok.pos.pos;
         if mut parent := self.scope.parent {
             parent.childrens.push(self.scope);
@@ -124,7 +124,7 @@ pub struct Parser {
         }
     }
 
-    proc parse_var_decl(
+    func parse_var_decl(
         mut self, inside_global: bool := false, support_type: bool := true,
         support_ref: bool := false, support_mut: bool := true
     ) -> ast.ObjectData {
@@ -143,7 +143,7 @@ pub struct Parser {
         );
     }
 
-    proc decl_operator_is_used(self) -> bool {
+    func decl_operator_is_used(self) -> bool {
         mut assign_was_used := false;
         mut i: uint := 1;
         while i < self.tokenizer.all_tokens.len : i += 1 {
@@ -158,7 +158,7 @@ pub struct Parser {
         return false;
     }
 
-    proc parse_comment(mut self) -> ast.Comment {
+    func parse_comment(mut self) -> ast.Comment {
         if self.env.prefs.is_fmt || (self.env.prefs.is_docs && self.tok.kind == .DocComment) {
             if self.accept(.Comment) || self.accept(.DocComment) {
                 return ast.Comment(
@@ -173,7 +173,7 @@ pub struct Parser {
     // - same_line: only eat comments on the same line as the previous token.
     // - follow_up: comments directly below the previous token as long as there
     // - is no empty line.
-    proc eat_comments(mut self, same_line: bool := false, follow_up: bool := false) -> []ast.Comment {
+    func eat_comments(mut self, same_line: bool := false, follow_up: bool := false) -> []ast.Comment {
         mut comments := []ast.Comment();
         mut line := self.prev_tok.pos.line;
         while {

@@ -6,13 +6,13 @@ import ./mir;
 import ../ast;
 
 extend Codegen {
-    proc gen_decls(mut self, mut decls: []mut ast.Decl) {
+    func gen_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             self.gen_decl(decl);
         }
     }
 
-    proc gen_decl(mut self, mut decl: ast.Decl) {
+    func gen_decl(mut self, mut decl: ast.Decl) {
         match decl {
             .Extern(mut extern_decl) -> self.gen_decls(extern_decl.decls),
             .Var(var_decl) -> {
@@ -28,47 +28,47 @@ extend Codegen {
             .Enum(mut enum_decl) -> self.gen_decls(enum_decl.decls),
             .Struct(mut struct_decl) -> self.gen_decls(struct_decl.decls),
             .Extend(mut extend_decl) -> self.gen_decls(extend_decl.decls),
-            .Proc(mut proc_decl) -> self.gen_proc(proc_decl),
+            .Func(mut func_decl) -> self.gen_func(func_decl),
             else -> {}
         }
     }
 
-    proc gen_proc(mut self, mut proc_decl: ast.Decl.Proc) {
-        ret_type_is_void := proc_decl.ret_type.is_void();
-        self.cur_proc = mir.Proc(
-            name: if proc_decl.is_extern && proc_decl.abi != .Rivet {
-                proc_decl.name
+    func gen_func(mut self, mut func_decl: ast.Decl.Func) {
+        ret_type_is_void := func_decl.ret_type.is_void();
+        self.cur_func = mir.Func(
+            name: if func_decl.is_extern && func_decl.abi != .Rivet {
+                func_decl.name
             } else {
-                self.mangle_symbol(proc_decl.sym)
+                self.mangle_symbol(func_decl.sym)
             },
-            args_len: proc_decl.args.len + if proc_decl.is_method { 1 } else { 0 },
-            ret_type: self.type_to_mir(proc_decl.ret_type),
-            is_extern: proc_decl.is_extern
+            args_len: func_decl.args.len + if func_decl.is_method { 1 } else { 0 },
+            ret_type: self.type_to_mir(func_decl.ret_type),
+            is_extern: func_decl.is_extern
         );
-        self.add_locals(proc_decl.scope);
+        self.add_locals(func_decl.scope);
         if !ret_type_is_void {
-            self.cur_proc.add_local(mir.Var(
+            self.cur_func.add_local(mir.Var(
                 dbg_name: "_return_value",
                 level: .Local,
-                type: self.type_to_mir(proc_decl.ret_type)
+                type: self.type_to_mir(func_decl.ret_type)
             ));
         }
-        self.cur_proc.cur_block = mir.Block();
-        self.cur_proc.add_block(self.cur_proc.cur_block);
-        self.gen_stmts(proc_decl.stmts);
-        self.cur_proc.add_block(
+        self.cur_func.cur_block = mir.Block();
+        self.cur_func.add_block(self.cur_func.cur_block);
+        self.gen_stmts(func_decl.stmts);
+        self.cur_func.add_block(
             mir.Block(stmts: +[
                 if ret_type_is_void {
                     .Return()
                 } else {
-                    .Return(true, .Ident(self.cur_proc.locals[self.cur_proc.locals.len - 1]))
+                    .Return(true, .Ident(self.cur_func.locals[self.cur_func.locals.len - 1]))
                 }
             ])
         );
-        if self.cur_proc.is_extern {
-            self.mir.externs.push(self.cur_proc);
+        if self.cur_func.is_extern {
+            self.mir.externs.push(self.cur_func);
         } else {
-            self.mir.procs.push(self.cur_proc);
+            self.mir.funcs.push(self.cur_func);
         }
     }
 }

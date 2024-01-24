@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-alias BoxedptrDestroy := proc(boxedptr);
+alias BoxedptrDestroy := func(boxedptr);
 
 const BOXEDPTR_SIZE := @size_of(Boxedptr);
 
@@ -12,12 +12,12 @@ struct Boxedptr {
     mut dtor: ?BoxedptrDestroy;
 
     #[inline]
-    pub proc from_boxedptr(ptr: boxedptr) -> &mut Self {
+    pub func from_boxedptr(ptr: boxedptr) -> &mut Self {
         return unsafe { @as(&mut Boxedptr, @ptr_sub(@as([&]uint8, ptr), BOXEDPTR_SIZE)) };
     }
 }
 
-pub proc boxed_alloc(size: uint, dtor: ?BoxedptrDestroy) -> boxedptr {
+pub func boxed_alloc(size: uint, dtor: ?BoxedptrDestroy) -> boxedptr {
     boxed := unsafe { @as(&mut Boxedptr, raw_alloc(BOXEDPTR_SIZE + size)) };
     boxed.value = unsafe { @as(boxedptr, @ptr_add(@as([&]uint8, boxed), BOXEDPTR_SIZE)) };
     boxed.ref_count = 1;
@@ -25,7 +25,7 @@ pub proc boxed_alloc(size: uint, dtor: ?BoxedptrDestroy) -> boxedptr {
     return boxed.value;
 }
 
-pub proc boxed_zeroed(size: uint, dtor: ?BoxedptrDestroy) -> boxedptr {
+pub func boxed_zeroed(size: uint, dtor: ?BoxedptrDestroy) -> boxedptr {
     boxed := unsafe { @as(&mut Boxedptr, raw_zeroed(BOXEDPTR_SIZE + size)) };
     boxed.value = unsafe { @as(boxedptr, @ptr_add(@as([&]uint8, boxed), BOXEDPTR_SIZE)) };
     boxed.ref_count = 1;
@@ -33,7 +33,7 @@ pub proc boxed_zeroed(size: uint, dtor: ?BoxedptrDestroy) -> boxedptr {
     return boxed.value;
 }
 
-pub proc boxed_resize(ptr: boxedptr, size: uint) -> boxedptr {
+pub func boxed_resize(ptr: boxedptr, size: uint) -> boxedptr {
     old_boxed := Boxedptr.from_boxedptr(ptr);
     new_boxed := unsafe {
         @as(&mut Boxedptr, raw_resize(@as(rawptr, ptr), BOXEDPTR_SIZE + size))
@@ -48,17 +48,17 @@ pub proc boxed_resize(ptr: boxedptr, size: uint) -> boxedptr {
 }
 
 #[inline]
-pub proc boxed_ref_count(ptr: boxedptr) -> int {
+pub func boxed_ref_count(ptr: boxedptr) -> int {
     return Boxedptr.from_boxedptr(ptr).ref_count;
 }
 
-pub proc boxed_retain(ptr: boxedptr) -> boxedptr {
+pub func boxed_retain(ptr: boxedptr) -> boxedptr {
     boxed := Boxedptr.from_boxedptr(ptr);
     boxed.ref_count += 1;
     return boxed.value;
 }
 
-pub proc boxed_release(ptr: boxedptr) {
+pub func boxed_release(ptr: boxedptr) {
     boxed := Boxedptr.from_boxedptr(ptr);
     if boxed.ref_count > 0 {
         boxed.ref_count -= 1;

@@ -8,7 +8,7 @@ pub alias Builder := core.StringBuilder;
 
 /// Uses levenshtein distance algorithm to calculate the distance between
 /// two strings (lower is closer).
-pub proc levenshtein_distance(a: string, b: string) -> int32 {
+pub func levenshtein_distance(a: string, b: string) -> int32 {
     f := []mut int32(init: 0, len: b.len + 1);
     for ca in a.as_bytes() {
         mut j: uint := 1;
@@ -35,7 +35,7 @@ pub proc levenshtein_distance(a: string, b: string) -> int32 {
 
 /// Use levenshtein distance algorithm to calculate how similar two strings
 /// are as a percentage (higher is closer).
-pub proc levenshtein_distance_percentage(a: string, b: string) -> float32 {
+pub func levenshtein_distance_percentage(a: string, b: string) -> float32 {
     d := levenshtein_distance(a, b);
     l := if a.len >= b.len { a.len } else { b.len };
     return (1.00 - @as(float32, d) / @as(float32, l)) * 100.00;
