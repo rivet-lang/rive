@@ -6,7 +6,7 @@ import rivet/{ prefs, token, tokenizer, ast.Env };
 
 var prefs_ := prefs.Prefs();
 
-func tokenize(text: string) -> []token.Token {
+proc tokenize(text: string) -> []token.Token {
     mut tokenizer_ := tokenizer.Tokenizer.new(text, Env.new(prefs_));
     mut tokens := []token.Token(cap: text.len / 3);
     mut token_ := tokenizer_.next();
@@ -20,10 +20,10 @@ func tokenize(text: string) -> []token.Token {
     return tokens;
 }
 
-test "tokenizer: simple `func main() { }`" {
-    tokens := tokenize("func main() { }");
+test "tokenizer: simple `proc main() { }`" {
+    tokens := tokenize("proc main() { }");
     @assert(tokens.len == 6);
-    @assert(tokens[0].kind == .KwFunc);
+    @assert(tokens[0].kind == .KwProc);
     @assert(tokens[1].kind == .Name && tokens[1].lit == "main");
     @assert(tokens[2].kind == .Lparen);
     @assert(tokens[3].kind == .Rparen);

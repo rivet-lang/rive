@@ -6,7 +6,7 @@ import c/libc;
 
 /// Writes a message to stdout. Unlike `println` stdout is not automatically
 /// flushed.
-pub func console_write(s: string, args: ...Stringable) {
+pub proc console_write(s: string, args: ...Stringable) {
     sx := s.fmt(args);
     unsafe {
         write_buf_to_fd(1, sx.ptr, sx.len);
@@ -15,14 +15,14 @@ pub func console_write(s: string, args: ...Stringable) {
 
 /// Writes a message with a line end to stdout. stdout is flushed.
 #[inline]
-pub func console_writeln(s: string := "", args: ...Stringable) {
+pub proc console_writeln(s: string := "", args: ...Stringable) {
     unsafe {
         writeln_to_fd(1, s.fmt(args));
     }
 }
 
 /// Writes a message to stderr. Both stderr and stdout are flushed.
-pub func console_ewrite(s: string, args: ...Stringable) {
+pub proc console_ewrite(s: string, args: ...Stringable) {
     sx := s.fmt(args);
     unsafe {
         _ = libc.fflush(libc.stdout);
@@ -34,7 +34,7 @@ pub func console_ewrite(s: string, args: ...Stringable) {
 
 /// Writes a message with a line end to stderr. Both stderr and stdout are
 /// flushed.
-pub func console_ewriteln(s: string := "", args: ...Stringable) {
+pub proc console_ewriteln(s: string := "", args: ...Stringable) {
     unsafe {
         _ = libc.fflush(libc.stdout);
         _ = libc.fflush(libc.stderr);
@@ -46,12 +46,12 @@ pub func console_ewriteln(s: string := "", args: ...Stringable) {
 /// Returns `true` if the `fd` file descriptor is open and refers to a
 /// terminal.
 #[inline]
-pub func console_is_atty(fd: int32) -> bool {
+pub proc console_is_atty(fd: int32) -> bool {
     return unsafe { libc.isatty(fd) == 1 };
 }
 
 #[unsafe]
-func write_buf_to_fd(fd: int32, buf: [&]uint8, len: uint) {
+proc write_buf_to_fd(fd: int32, buf: [&]uint8, len: uint) {
     unsafe {
         mut x: int := 0;
         mut remaining_bytes := @as(int, len);
@@ -63,7 +63,7 @@ func write_buf_to_fd(fd: int32, buf: [&]uint8, len: uint) {
 }
 
 #[unsafe]
-func writeln_to_fd(fd: int32, s: string) {
+proc writeln_to_fd(fd: int32, s: string) {
     unsafe {
         write_buf_to_fd(fd, s.ptr, s.len);
         write_buf_to_fd(fd, c"\n", 1);

@@ -2,19 +2,19 @@ struct Vec {
     x: int32;
     y: int32;
 
-    func +(&self, other: &Self) -> Self {
+    proc +(&self, other: &Self) -> Self {
         return Self(self.x + other.x, self.y + other.y);
     }
 
-    func -(&self, other: &Self) -> Self {
+    proc -(&self, other: &Self) -> Self {
         return Self(self.x - other.x, self.y - other.y);
     }
 
-    func *(&self, other: &Self) -> Self {
+    proc *(&self, other: &Self) -> Self {
         return Self(self.x * other.x, self.y * other.y);
     }
 
-    func /(&self, other: &Self) -> Self {
+    proc /(&self, other: &Self) -> Self {
         return Self(self.x / other.x, self.y / other.y);
     }
 }

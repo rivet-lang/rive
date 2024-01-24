@@ -12,7 +12,7 @@ struct StringUint {
 pub struct MapStringUint {
     mut pairs: []mut StringUint;
 
-    pub func set(mut self, key: string, value: uint) {
+    pub proc set(mut self, key: string, value: uint) {
         for mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -23,7 +23,7 @@ pub struct MapStringUint {
         self.pairs.push(StringUint(key, value));
     }
 
-    pub func get(&self, key: string) -> ?uint {
+    pub proc get(&self, key: string) -> ?uint {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -32,7 +32,7 @@ pub struct MapStringUint {
         return none;
     }
 
-    pub func delete(mut self, key: string) {
+    pub proc delete(mut self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
@@ -42,12 +42,12 @@ pub struct MapStringUint {
     }
 
     #[inline]
-    pub func contains(&self, key: string) -> bool {
+    pub proc contains(&self, key: string) -> bool {
         return self.get(key) != none;
     }
 
     #[inline]
-    pub func len(&self) -> uint {
+    pub proc len(&self) -> uint {
         return self.pairs.len;
     }
 }
@@ -62,7 +62,7 @@ pub struct MapStringArrayOfStringsIterator {
     mut idx: uint;
 
     #[inline]
-    pub func next(mut self) -> ?StringArrayOfStrings {
+    pub proc next(mut self) -> ?StringArrayOfStrings {
         return if self.idx < self.ref.len() {
             idx := self.idx;
             self.idx += 1;
@@ -76,11 +76,11 @@ pub struct MapStringArrayOfStringsIterator {
 pub struct MapStringArrayOfStrings {
     mut pairs: []mut StringArrayOfStrings;
 
-    pub func iterator(&self) -> MapStringArrayOfStringsIterator {
+    pub proc iterator(&self) -> MapStringArrayOfStringsIterator {
         return MapStringArrayOfStringsIterator(self);
     }
 
-    pub func set(mut self, key: string, value: []string) {
+    pub proc set(mut self, key: string, value: []string) {
         for mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -91,7 +91,7 @@ pub struct MapStringArrayOfStrings {
         self.pairs.push(StringArrayOfStrings(key, value));
     }
 
-    pub func get(&self, key: string) -> ?[]string {
+    pub proc get(&self, key: string) -> ?[]string {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -100,7 +100,7 @@ pub struct MapStringArrayOfStrings {
         return none;
     }
 
-    pub func delete(mut self, key: string) {
+    pub proc delete(mut self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
@@ -110,12 +110,12 @@ pub struct MapStringArrayOfStrings {
     }
 
     #[inline]
-    pub func contains(&self, key: string) -> bool {
+    pub proc contains(&self, key: string) -> bool {
         return self.get(key) != none;
     }
 
     #[inline]
-    pub func len(&self) -> uint {
+    pub proc len(&self) -> uint {
         return self.pairs.len;
     }
 }
@@ -128,7 +128,7 @@ struct StringBool {
 pub struct MapStringBool {
     mut pairs: []mut StringBool;
 
-    pub func set(mut self, key: string, value: bool) {
+    pub proc set(mut self, key: string, value: bool) {
         for mut pair in self.pairs {
             if pair.key == key {
                 pair.value = value;
@@ -139,7 +139,7 @@ pub struct MapStringBool {
         self.pairs.push(StringBool(key, value));
     }
 
-    pub func get(&self, key: string) -> ?bool {
+    pub proc get(&self, key: string) -> ?bool {
         for pair in self.pairs {
             if pair.key == key {
                 return pair.value;
@@ -148,7 +148,7 @@ pub struct MapStringBool {
         return none;
     }
 
-    pub func delete(mut self, key: string) {
+    pub proc delete(mut self, key: string) {
         for i, pair in self.pairs {
             if pair.key == key {
                 self.pairs.delete(i);
@@ -158,12 +158,12 @@ pub struct MapStringBool {
     }
 
     #[inline]
-    pub func contains(&self, key: string) -> bool {
+    pub proc contains(&self, key: string) -> bool {
         return self.get(key) != none;
     }
 
     #[inline]
-    pub func len(&self) -> uint {
+    pub proc len(&self) -> uint {
         return self.pairs.len;
     }
 }

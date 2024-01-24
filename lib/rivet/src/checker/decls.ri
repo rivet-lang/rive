@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_global_vars(mut self, mut decls: []mut ast.Decl) {
+    proc check_global_vars(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             old_sym := self.sym;
             if decl is .Const || decl is .Var {
@@ -17,7 +17,7 @@ extend Checker {
         }
     }
 
-    func check_decls(mut self, mut decls: []mut ast.Decl) {
+    proc check_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             if !(decl is .Const || decl is .Var) {
                 self.check_decl(decl);
@@ -25,7 +25,7 @@ extend Checker {
         }
     }
 
-    func check_decl(mut self, mut decl: ast.Decl) {
+    proc check_decl(mut self, mut decl: ast.Decl) {
         old_sym := self.sym;
         defer self.sym = old_sym;
         match decl {
@@ -157,72 +157,72 @@ extend Checker {
                 }
                 self.check_decls(extend_decl.decls);
             },
-            .Func(mut func_decl) -> self.check_func(func_decl),
+            .Proc(mut proc_decl) -> self.check_proc(proc_decl),
             .Test(mut test_decl) -> {
-                old_cur_func := self.cur_func;
-                self.cur_func = ast.Func(ret_type: .Void);
+                old_cur_proc := self.cur_proc;
+                self.cur_proc = ast.Proc(ret_type: .Void);
                 self.inside_test = true;
                 self.check_stmts(test_decl.stmts);
                 self.inside_test = false;
-                self.cur_func = old_cur_func;
+                self.cur_proc = old_cur_proc;
                 self.check_scope_vars(test_decl.scope);
             },
             else -> {}
         }
     }
 
-    func check_func(mut self, mut func_decl: ast.Decl.Func) {
-        if !func_decl.is_operator {
-            name := if func_decl.is_method && func_decl.is_special_method {
-                func_decl.name.substr(2, func_decl.name.len - 2) // skip `__`
+    proc check_proc(mut self, mut proc_decl: ast.Decl.Proc) {
+        if !proc_decl.is_operator {
+            name := if proc_decl.is_method && proc_decl.is_special_method {
+                proc_decl.name.substr(2, proc_decl.name.len - 2) // skip `__`
             } else {
-                func_decl.name
+                proc_decl.name
             };
             self.check_name_case(
-                .Snake, if func_decl.is_method {
-                    if func_decl.is_special_method {
+                .Snake, if proc_decl.is_method {
+                    if proc_decl.is_special_method {
                         "special method"
                     } else {
                         "method"
                     }
                 } else {
-                    "function"
-                }, name, func_decl.pos
+                    "procedure"
+                }, name, proc_decl.pos
             );
         }
-        if func_decl.is_special_method {
-            if func_decl.is_method {
-                if func_decl.is_public {
+        if proc_decl.is_special_method {
+            if proc_decl.is_method {
+                if proc_decl.is_public {
                     report.error(
-                        "special methods cannot be public", func_decl.pos
+                        "special methods cannot be public", proc_decl.pos
                     );
                 }
-                if !func_decl.attributes.is_empty() {
+                if !proc_decl.attributes.is_empty() {
                     report.error(
-                        "special methods cannot have attributes", func_decl.pos
+                        "special methods cannot have attributes", proc_decl.pos
                     );
                 }
-                match func_decl.name {
+                match proc_decl.name {
                     "__destroy__" -> {},
                     else -> report.error(
-                        "unknown special method `{}`".fmt(func_decl.name),
-                        func_decl.pos
+                        "unknown special method `{}`".fmt(proc_decl.name),
+                        proc_decl.pos
                     )
                 }
             } else {
                 report.error(
-                    "this special function should be a method", func_decl.pos
+                    "this special procedure should be a method", proc_decl.pos
                 );
             }
         }
-        if func_decl.is_method && func_decl.self_is_ptr && func_decl.self_type.is_boxed() {
-            report.error("cannot take the address of a boxed value as receiver", func_decl.self_pos);
+        if proc_decl.is_method && proc_decl.self_is_ptr && proc_decl.self_type.is_boxed() {
+            report.error("cannot take the address of a boxed value as receiver", proc_decl.self_pos);
         }
-        for mut arg in func_decl.args {
+        for mut arg in proc_decl.args {
             self.check_name_case(.Snake, "argument", arg.name, arg.pos);
             if arg.has_def_expr {
-                if func_decl.abi != .Rivet {
-                    report.error("extern functions cannot have default arguments", arg.pos);
+                if proc_decl.abi != .Rivet {
+                    report.error("extern procedures cannot have default arguments", arg.pos);
                     break;
                 }
                 old_expected_type := self.expected_type;
@@ -234,22 +234,22 @@ extend Checker {
                 };
             }
         }
-        if func_decl.ret_type is .Pointer && func_decl.abi != .Rivet {
+        if proc_decl.ret_type is .Pointer && proc_decl.abi != .Rivet {
             mut err := report.error_builder(
-                "function `{}` should return an optional pointer".fmt(func_decl.name),
-                func_decl.ret_type.position()
+                "procedure `{}` should return an optional pointer".fmt(proc_decl.name),
+                proc_decl.ret_type.position()
             );
-            err.add_note("this is because Rivet cannot ensure that the function does not always return a null pointer");
+            err.add_note("this is because Rivet cannot ensure that the procedure does not always return a null pointer");
             err.emit();
         }
-        self.cur_func = @as(ast.Func, func_decl.sym);
-        self.check_stmts(func_decl.stmts);
-        func_decl.defer_stmts = self.defer_stmts;
+        self.cur_proc = @as(ast.Proc, proc_decl.sym);
+        self.check_stmts(proc_decl.stmts);
+        proc_decl.defer_stmts = self.defer_stmts;
         self.defer_stmts = +[];
-        self.check_scope_vars(func_decl.scope);
-        if func_decl.ret_type is .Never && !self.inside_extern {
-            if func_decl.stmts.len > 0 {
-                match func_decl.stmts[func_decl.stmts.len - 1] {
+        self.check_scope_vars(proc_decl.scope);
+        if proc_decl.ret_type is .Never && !self.inside_extern {
+            if proc_decl.stmts.len > 0 {
+                match proc_decl.stmts[proc_decl.stmts.len - 1] {
                     .While(while_stmt) if while_stmt.is_inf
                         && while_stmt.stmt is .Expr(expr) && expr is .Block(block) -> {
                         if !block.stmts.is_empty() {
@@ -259,8 +259,8 @@ extend Checker {
                     .Expr(expr2) if expr2 is .Call(call_expr) -> {
                         if call_expr.type !is .Never {
                             report.error(
-                                "`{}` is not a `never` function".fmt(
-                                    call_expr.func_.name
+                                "`{}` is not a `never` procedure".fmt(
+                                    call_expr.proc_.name
                                 ), call_expr.pos
                             );
                         }
@@ -270,45 +270,45 @@ extend Checker {
                         if last_stmt is .Expr(last_expr) && last_expr is .Call(call_expr) {
                             if call_expr.type !is .Never {
                                 report.error(
-                                    "`{}` is not a `never` function".fmt(
-                                        call_expr.func_.name
+                                    "`{}` is not a `never` procedure".fmt(
+                                        call_expr.proc_.name
                                     ), call_expr.pos
                                 );
                             }
                         } else {
                             mut err := report.error_builder(
-                                "`never` functions cannot return",
-                                func_decl.pos
+                                "`never` procedures cannot return",
+                                proc_decl.pos
                             );
-                            err.add_note("`never` functions should end with a call to another `never` function, or with a `while {}`");
+                            err.add_note("`never` procedures should end with a call to another `never` procedure, or with a `while {}`");
                             err.emit();
                         }
                     },
                     else -> {
                         mut err := report.error_builder(
-                            "`never` functions cannot return",
-                            func_decl.pos
+                            "`never` procedures cannot return",
+                            proc_decl.pos
                         );
-                        err.add_note("`never` functions should end with a call to another `never` function, or with a `while {}`");
+                        err.add_note("`never` procedures should end with a call to another `never` procedure, or with a `while {}`");
                         err.emit();
                     }
                 }
             } else {
                 mut err := report.error_builder(
-                    "`never` functions cannot be empty",
-                    func_decl.pos
+                    "`never` procedures cannot be empty",
+                    proc_decl.pos
                 );
-                err.add_note("`never` functions should end with a call to another `never` function, or with a `while {}`");
+                err.add_note("`never` procedures should end with a call to another `never` procedure, or with a `while {}`");
                 err.emit();
             }
-        } else if func_decl.has_body && !func_decl.ret_type.is_void()
-            && !self.has_return(func_decl.stmts, func_decl.ret_type is .Result) {
+        } else if proc_decl.has_body && !proc_decl.ret_type.is_void()
+            && !self.has_return(proc_decl.stmts, proc_decl.ret_type is .Result) {
             report.error(
                 "missing `return` statement at end of {} `{}`".fmt(
-                    if func_decl.is_method { "method" } else { "function" },
-                    func_decl.name
+                    if proc_decl.is_method { "method" } else { "procedure" },
+                    proc_decl.name
                 ),
-                func_decl.pos
+                proc_decl.pos
             );
         }
     }

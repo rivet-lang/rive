@@ -1,8 +1,8 @@
-func ret_none() -> ?int32 {
+proc ret_none() -> ?int32 {
     return 3;
 }
 
-func ret_err() -> !int32 {
+proc ret_err() -> !int32 {
     return 3;
 }
 

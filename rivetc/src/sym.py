@@ -190,10 +190,10 @@ class Sym:
             return "variable"
         elif isinstance(self, Type):
             return "type"
-        elif isinstance(self, Func):
+        elif isinstance(self, Proc):
             if self.is_method:
                 return "method"
-            return "function"
+            return "procedure"
         return "unknown symbol kind"
 
     def qualname(self):
@@ -247,7 +247,7 @@ class Mod(Sym):
             fields = [Field("len", False, True, type_Type(self[14]))]
         )
         slice_sym.add(
-            Func(
+            Proc(
                 ABI.Rivet, True, False, False, True, False,
                 "to_dynamic_array", [],
                 type_Type(self.add_or_get_dyn_array(elem_typ, is_mut)), False,
@@ -290,7 +290,7 @@ class Mod(Sym):
             ]
         )
         dyn_array_sym.add(
-            Func(
+            Proc(
                 ABI.Rivet, True, False, False, True, False, "push",
                 [Arg("value", False, elem_typ, None, False, NO_POS)],
                 type_Type(self[0]), False, True, NO_POS, True, False,
@@ -298,13 +298,13 @@ class Mod(Sym):
             )
         )
         dyn_array_sym.add(
-            Func(
+            Proc(
                 ABI.Rivet, True, False, False, True, False, "pop", [], elem_typ,
                 False, True, NO_POS, True, False, type_Type(dyn_array_sym)
             )
         )
         dyn_array_sym.add(
-            Func(
+            Proc(
                 ABI.Rivet, True, False, False, True, False, "clone", [],
                 type_Type(dyn_array_sym), False, True, NO_POS, False, False,
                 type_Type(dyn_array_sym)
@@ -657,7 +657,7 @@ class Arg:
         self.has_def_expr = has_def_expr
         self.pos = pos
 
-class Func(Sym):
+class Proc(Sym):
     def __init__(
         self, abi, is_public, is_extern, is_unsafe, is_method, is_variadic,
         name, args, ret_typ, has_named_args, has_body, name_pos, self_is_mut,
@@ -697,11 +697,11 @@ class Func(Sym):
     def kind(self):
         if self.is_method:
             return "method"
-        return "function"
+        return "procedure"
 
     def typ(self):
-        from .type import Func
-        return Func(
+        from .type import Proc
+        return Proc(
             self.is_extern, self.abi, self.is_method, self.args,
             self.is_variadic, self.ret_typ, self.self_is_mut, self.self_is_ptr
         )

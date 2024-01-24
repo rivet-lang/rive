@@ -8,11 +8,11 @@ import ../{ ast, report, token };
 
 extend Parser {
     #[inline]
-    func parse_import_decl(mut self, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos) -> ast.Decl {
+    proc parse_import_decl(mut self, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos) -> ast.Decl {
         return .Import(self.parse_import("", attributes, is_public, pos));
     }
 
-    func parse_import(
+    proc parse_import(
         mut self, prev_mod_path: string, attributes: ast.Attributes, is_public: bool, mut pos: token.Pos
     ) -> ast.ImportDecl {
         mut mod_path_pos := self.tok.pos;
@@ -78,7 +78,7 @@ extend Parser {
         );
     }
 
-    func parse_import_path(mut self) -> string {
+    proc parse_import_path(mut self) -> string {
         mut sb := strings.Builder.new();
         if self.accept(.Dot) {
             sb.write(".");
@@ -107,7 +107,7 @@ extend Parser {
         return sb.to_string();
     }
 
-    func parse_import_list(mut self, mod_path_pos: token.Pos) -> (bool, []ast.ImportListInfo) {
+    proc parse_import_list(mut self, mod_path_pos: token.Pos) -> (bool, []ast.ImportListInfo) {
         mut import_list := []ast.ImportListInfo();
         mut glob := false;
         if self.accept(.Dot) {

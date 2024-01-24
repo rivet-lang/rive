@@ -1,4 +1,4 @@
-func main() {
+proc main() {
     x := 1;
     x := 1; // FAIL
 
@@ -8,11 +8,11 @@ func main() {
     }
 }
 
-func other(a: int32) {
+proc other(a: int32) {
     a := 1;
 }
 
-func other(a: int32) { // FAIL
+proc other(a: int32) { // FAIL
     a := 1;
 }
 

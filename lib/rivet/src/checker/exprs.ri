@@ -5,7 +5,7 @@
 import ../{ ast, report };
 
 extend Checker {
-    func check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
+    proc check_expr(mut self, mut expr: ast.Expr) -> ast.Type {
         return match expr {
             .Empty, .Comment -> .Void,
             .Type(type) -> type,
@@ -174,15 +174,15 @@ extend Checker {
                     match ident.sym is {
                         ast.Const(const_sym) -> const_sym.type,
                         ast.Var(var_sym) -> var_sym.type,
-                        ast.Func(func_sym) -> {
-                            if func_sym.abi != .Rivet {
+                        ast.Proc(proc_sym) -> {
+                            if proc_sym.abi != .Rivet {
                                 mut err := report.error_builder(
-                                    "cannot use an extern function as a value", ident.pos
+                                    "cannot use an extern procedure as a value", ident.pos
                                 );
-                                err.add_help("wrap the extern function with a function");
+                                err.add_help("wrap the extern procedure with a procedure");
                                 err.emit();
                             }
-                            func_sym.type(self.env.universe)
+                            proc_sym.type(self.env.universe)
                         },
                         else -> .Void
                     }
@@ -302,7 +302,7 @@ extend Checker {
         };
     }
 
-    func check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) -> ast.Type {
+    proc check_tuple_literal(mut self, mut tuple_lit: ast.Expr.TupleLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut has_expected_types := false;
         mut expected_types := []ast.Type();
@@ -332,7 +332,7 @@ extend Checker {
         return tuple_lit.type;
     }
 
-    func check_array_literal(mut self, mut array_lit: ast.Expr.ArrayLiteral) -> ast.Type {
+    proc check_array_literal(mut self, mut array_lit: ast.Expr.ArrayLiteral) -> ast.Type {
         old_expected_type := self.expected_type;
         mut size: uint := 0;
         mut is_mut := false;
@@ -391,7 +391,7 @@ extend Checker {
         return array_lit.type;
     }
 
-    func check_selector(mut self, mut selector: ast.Expr.Selector) -> ast.Type {
+    proc check_selector(mut self, mut selector: ast.Expr.Selector) -> ast.Type {
         selector.type = if selector.is_path {
             if selector.left_sym is ast.TypeSym(type_sym) {
                 if type_sym.info is .Enum(enum_info) {
@@ -412,15 +412,15 @@ extend Checker {
                 .Basic(type_sym, pos: selector.pos)
             } else {
                 match selector.sym is {
-                    ast.Func(func_sym) -> {
-                        if func_sym.is_method {
+                    ast.Proc(proc_sym) -> {
+                        if proc_sym.is_method {
                             report.error(
                                 "cannot take value of method `{}`".fmt(
                                     selector.field_name
                                 ), selector.field_pos
                             );
                         }
-                        func_sym.type(self.env.universe)
+                        proc_sym.type(self.env.universe)
                     },
                     ast.TypeSym(type_sym_) -> .Basic(type_sym_, pos: selector.pos),
                     ast.Const(const_sym) -> const_sym.type,
@@ -443,8 +443,8 @@ extend Checker {
                     selector.field_is_mut = field.is_mut;
                     field.type
                 } else if sym := left_sym.scope.find(selector.field_name) {
-                    if sym is ast.Func(func_sym) {
-                        if func_sym.is_method {
+                    if sym is ast.Proc(proc_sym) {
+                        if proc_sym.is_method {
                             mut err := report.error_builder(
                                 "cannot take value of method `{}`".fmt(selector.field_name),
                                 selector.field_pos
@@ -454,7 +454,7 @@ extend Checker {
                             .Void
                         } else {
                             mut err := report.error_builder(
-                                "cannot take value of associated function `{}`".fmt(
+                                "cannot take value of associated procedure `{}`".fmt(
                                     selector.field_name
                                 ), selector.field_pos
                             );
@@ -462,7 +462,7 @@ extend Checker {
                                 "use `{}.{}` instead", left_sym.name, selector.field_name
                             );
                             err.emit();
-                            func_sym.type(self.env.universe)
+                            proc_sym.type(self.env.universe)
                         }
                     } else {
                         report.error(
@@ -500,7 +500,7 @@ extend Checker {
         return selector.type;
     }
 
-    func check_index(mut self, mut index: ast.Expr.Index) -> ast.Type {
+    proc check_index(mut self, mut index: ast.Expr.Index) -> ast.Type {
         index.left_type = self.check_expr(index.left);
         left_sym := index.left_type.symbol()?;
         index_t := self.check_expr(index.index);
@@ -564,7 +564,7 @@ extend Checker {
         return index.type;
     }
 
-    func check_unary(mut self, mut unary: ast.Expr.Unary) -> ast.Type {
+    proc check_unary(mut self, mut unary: ast.Expr.Unary) -> ast.Type {
         unary.type = self.check_expr(unary.right);
         match unary.op {
             .Bang if unary.type != self.env.bool_t -> report.error(
@@ -625,7 +625,7 @@ extend Checker {
         return unary.type;
     }
 
-    func check_binary(mut self, mut binary: ast.Expr.Binary) -> ast.Type {
+    proc check_binary(mut self, mut binary: ast.Expr.Binary) -> ast.Type {
         left_type := self.check_expr(binary.left);
         old_expected_type := self.expected_type;
         self.expected_type = left_type;
@@ -638,9 +638,9 @@ extend Checker {
                     "pointer arithmetic is not allowed", binary.pos
                 );
                 if binary.op == .Plus {
-                    err.add_help("use the `ptr_add` builtin function instead");
+                    err.add_help("use the `ptr_add` builtin procedure instead");
                 } else if binary.op == .Minus {
-                    err.add_help("use the `ptr_diff` builtin function instead");
+                    err.add_help("use the `ptr_diff` builtin procedure instead");
                 }
                 err.emit();
             }
@@ -867,7 +867,7 @@ extend Checker {
         return binary.type;
     }
 
-    func check_if(mut self, mut if_expr: ast.Expr.If) -> ast.Type {
+    proc check_if(mut self, mut if_expr: ast.Expr.If) -> ast.Type {
         if_expr.expected_type = self.expected_type;
         for i, mut branch in if_expr.branches {
             if !branch.is_else {
@@ -903,63 +903,63 @@ extend Checker {
         return if_expr.expected_type;
     }
 
-    func check_return(mut self, mut return_expr: ast.Expr.Return) -> ast.Type {
-        if self.cur_func.ret_type is .Never {
-            report.error("`never` functions cannot use `return` statements", return_expr.pos);
+    proc check_return(mut self, mut return_expr: ast.Expr.Return) -> ast.Type {
+        if self.cur_proc.ret_type is .Never {
+            report.error("`never` procedures cannot use `return` statements", return_expr.pos);
         } else if self.return_tracker == .Defer {
             report.error("`return` is not allowed inside `defer` statement", return_expr.pos);
         } else if self.inside_test && return_expr.has_expr {
             report.error("cannot return values inside `test` declaration", return_expr.pos);
         } else if return_expr.has_expr {
-            if self.cur_func.ret_type is .Void {
+            if self.cur_proc.ret_type is .Void {
                 report.error(
                     "{} `{}` should not return a value".fmt(
-                        self.cur_func.kind(), self.cur_func.name
+                        self.cur_proc.kind(), self.cur_proc.name
                     ), return_expr.expr.position()
                 );
             } else {
                 old_expected_type := self.expected_type;
-                self.expected_type = if self.cur_func.ret_type is .Result(res_t) {
+                self.expected_type = if self.cur_proc.ret_type is .Result(res_t) {
                     res_t.inner
                 } else {
-                    self.cur_func.ret_type
+                    self.cur_proc.ret_type
                 };
                 expr_type := self.check_expr(return_expr.expr);
                 self.expected_type = old_expected_type;
-                self.check_types(expr_type, self.cur_func.ret_type) catch |err| {
+                self.check_types(expr_type, self.cur_proc.ret_type) catch |err| {
                     mut err_b := report.error_builder(
                         err.to_string(), return_expr.expr.position()
                     );
                     err_b.add_note(
-                        "in return of {} `{}`", self.cur_func.kind(),
-                        self.cur_func.name
+                        "in return of {} `{}`", self.cur_proc.kind(),
+                        self.cur_proc.name
                     );
                     err_b.emit();
                 };
             }
         } else if !(
-            self.cur_func.ret_type is .Void
-            || (self.cur_func.ret_type is .Result(res_t) && res_t.inner is .Void)
+            self.cur_proc.ret_type is .Void
+            || (self.cur_proc.ret_type is .Result(res_t) && res_t.inner is .Void)
         ) {
             mut err := report.error_builder(
-                "expected `{}` value in return argument".fmt(self.cur_func.ret_type),
+                "expected `{}` value in return argument".fmt(self.cur_proc.ret_type),
                 return_expr.pos
             );
-            err.add_note("in return of {} `{}`", self.cur_func.kind(), self.cur_func.name);
+            err.add_note("in return of {} `{}`", self.cur_proc.kind(), self.cur_proc.name);
             err.emit();
         }
         self.scope_returns = true;
         return .Never(return_expr.pos);
     }
 
-    func check_throw(mut self, mut throw_expr: ast.Expr.Throw) -> ast.Type {
-        if self.cur_func.ret_type is .Never {
-            report.error("`never` functions cannot use `throw` statements", throw_expr.pos);
+    proc check_throw(mut self, mut throw_expr: ast.Expr.Throw) -> ast.Type {
+        if self.cur_proc.ret_type is .Never {
+            report.error("`never` procedures cannot use `throw` statements", throw_expr.pos);
         } else if self.return_tracker == .Defer {
             report.error("`throw` is not allowed inside `defer` statement", throw_expr.pos);
         } else if self.inside_test {
             report.error("cannot throw errors inside `test` declaration", throw_expr.pos);
-        } else if self.cur_func.ret_type is .Result {
+        } else if self.cur_proc.ret_type is .Result {
             expr_type := self.check_expr(throw_expr.expr);
             expr_sym := expr_type.symbol()?;
             if !(expr_sym == self.env.throwable_sym
@@ -973,15 +973,15 @@ extend Checker {
                     "in order to use that value, type `{}` should implement the `Throwable` trait".fmt(expr_type)
                 );
                 err_b.add_note(
-                    "in throw argument of {} `{}`", self.cur_func.kind(),
-                    self.cur_func.name
+                    "in throw argument of {} `{}`", self.cur_proc.kind(),
+                    self.cur_proc.name
                 );
                 err_b.emit();
             }
         } else {
             mut err_b := report.error_builder(
                 "{} `{}` cannot throws errors".fmt(
-                    self.cur_func.kind(), self.cur_func.name
+                    self.cur_proc.kind(), self.cur_proc.name
                 ), throw_expr.expr.position()
             );
             err_b.add_note("if you want to throw errors, add `!` in front of the return type");
@@ -991,7 +991,7 @@ extend Checker {
         return .Never(throw_expr.pos);
     }
 
-    func check_assign(mut self, mut assign: ast.Expr.Assign) -> ast.Type {
+    proc check_assign(mut self, mut assign: ast.Expr.Assign) -> ast.Type {
         left_type := self.check_expr(assign.left);
         self.check_expr_is_mut(assign.left, true);
         old_expected_type := self.expected_type;

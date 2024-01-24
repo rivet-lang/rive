@@ -25,7 +25,7 @@ pub struct Resolver {
     mut source_file_abi: ast.ABI;
     mut different_abi_usage_count: uint;
 
-    pub func resolve_files(mut self, source_files: []ast.SourceFile) {
+    pub proc resolve_files(mut self, source_files: []ast.SourceFile) {
         Register(self.env).walk_files(source_files);
         if report.total_errors() > 0 {
             return;
@@ -45,7 +45,7 @@ pub struct Resolver {
         }
     }
 
-    func detect_source_file_abi(mut self) {
+    proc detect_source_file_abi(mut self) {
         filename := Path.file_name(self.source_file.path);
         if filename.ends_with(".c.ri") {
             self.source_file_abi = .C;
@@ -54,13 +54,13 @@ pub struct Resolver {
         }
     }
 
-    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+    proc check_vis(self, sym: ast.Sym, pos: token.Pos) {
         if !sym.is_public && !self.source_file.mod.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }
     }
 
-    func eval_size(mut self, mut expr: ast.Expr) -> ?int {
+    proc eval_size(mut self, mut expr: ast.Expr) -> ?int {
         return match expr {
             .ComptimeIf(mut comptime_if) -> {
                 mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];
@@ -122,7 +122,7 @@ pub struct Resolver {
         };
     }
 
-    func eval_sym(mut self, mut sym: ast.Sym, pos: token.Pos) -> ?int {
+    proc eval_sym(mut self, mut sym: ast.Sym, pos: token.Pos) -> ?int {
         if sym is ast.Const(mut const_) {
             if !const_.has_evaled_size {
                 const_.evaled_size = self.eval_size(const_.expr)?;
@@ -133,7 +133,7 @@ pub struct Resolver {
         return none;
     }
 
-    func check_variable_shadowing(self, name: string, pos: token.Pos) {
+    proc check_variable_shadowing(self, name: string, pos: token.Pos) {
         if self.source_file.imported_symbols.exists(name) {
             report.error(
                 "name `{}` hide an imported symbol".fmt(name), pos

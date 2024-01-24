@@ -1,5 +1,5 @@
-func my_fn() { }
+proc my_proc() { }
 
-func x(a: my_fn) {}
+proc x(a: my_proc) {}
 
-func main() { }
+proc main() { }

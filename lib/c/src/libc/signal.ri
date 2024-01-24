@@ -7,7 +7,7 @@
 
 import ../ctypes.{ pid_t, uid_t };
 
-pub alias SignalHandler := func(int32, &mut siginfo_t, rawptr);
+pub alias SignalHandler := proc(int32, &mut siginfo_t, rawptr);
 
 $if _LINUX_ {
     pub const SA_ONSTACK := 0x08000000;
@@ -74,7 +74,7 @@ $if _LINUX_ {
         pub sa_sigaction: SignalHandler;
         pub sa_mask: sigset_t;
         pub sa_flags: int32;
-        pub sa_restorer: func();
+        pub sa_restorer: proc();
     }
 } else if _WINDOWS_ {
     pub const SIGABRT := 22;
@@ -89,8 +89,8 @@ $if _LINUX_ {
 
 extern (C) {
     $if _LINUX_ {
-        pub func sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
+        pub proc sigaction(signum: int32, act: ?&sigaction_t, old_act: ?&mut sigaction_t) -> int32;
     }
-    pub func signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;
-    pub func raise(sig: int32) -> int32;
+    pub proc signal(sig: int32, handler: SignalHandler) -> ?SignalHandler;
+    pub proc raise(sig: int32) -> int32;
 }

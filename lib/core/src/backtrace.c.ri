@@ -14,18 +14,18 @@ $if !_RELEASE_ { // skip backtrace in release mode
         mut has_error: bool;
     }
 
-    alias BacktraceErrorCB := func(rawptr, ?[&]mut uint8, int32);
-    alias BacktraceFullCB := func(
+    alias BacktraceErrorCB := proc(rawptr, ?[&]mut uint8, int32);
+    alias BacktraceFullCB := proc(
         rawptr, int32, ?[&]mut uint8, int32, ?[&]mut uint8
     ) -> int32;
 
     extern (C) {
-        func backtrace_create_state(
+        proc backtrace_create_state(
             filename: [&]uint8, threaded: bool, error_cb: BacktraceErrorCB,
             data: ?rawptr
         ) -> ?&mut BacktraceState;
 
-        func backtrace_full(
+        proc backtrace_full(
             state: &BacktraceState, skip: int32, cb: BacktraceFullCB,
             error_cb: BacktraceErrorCB, data: rawptr
         ) -> int32;
@@ -35,32 +35,32 @@ $if !_RELEASE_ { // skip backtrace in release mode
         backtrace_create_state(ARGS[0].ptr, true, bt_error_handler, none)?
     };
 
-    func bt_print_callback(
+    proc bt_print_callback(
         _data: rawptr, _pc: int32, filename_ptr: ?[&]mut uint8, lineno: int32,
-        fn_ptr: ?[&]mut uint8
+        proc_ptr: ?[&]mut uint8
     ) -> int32 {
         unsafe {
-            if safe_fn_ptr := fn_ptr {
-                if mem.cmp(safe_fn_ptr, c"_R4core4mainF", 13) == 0 {
+            if safe_proc_ptr := proc_ptr {
+                if mem.cmp(safe_proc_ptr, c"_R4core4mainF", 13) == 0 {
                     return -1; // stop backtracing
                 }
             }
-            fn_name := if fn_ptr == none {
+            proc_name := if proc_ptr == none {
                 "???"
             } else {
-                demangle_symbol(string.from_raw(fn_ptr))
+                demangle_symbol(string.from_raw(proc_ptr))
             };
             file_name := if filename_ptr == none {
                 "???"
             } else {
                 string.from_raw(filename_ptr)
             };
-            console_ewriteln("   from {} in \"{}\":{}", fn_name, file_name, lineno);
+            console_ewriteln("   from {} in \"{}\":{}", proc_name, file_name, lineno);
         }
         return 0;
     }
 
-    func bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
+    proc bt_error_handler(data: rawptr, msg_ptr: ?[&]mut uint8, errnum: int32) {
         unsafe {
             bdata := @as(&mut BacktraceData, data);
             if !bdata.has_error {
@@ -78,7 +78,7 @@ $if !_RELEASE_ { // skip backtrace in release mode
     }
 }
 
-pub func bt_print(frames_to_skip: int32 := 0) {
+pub proc bt_print(frames_to_skip: int32 := 0) {
     $if _RELEASE_ {
         _ = frames_to_skip;
     } else {

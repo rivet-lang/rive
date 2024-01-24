@@ -9,7 +9,7 @@ var error_paths_abs := (env.get("RIVET_ERROR_PATHS") ?? "relative") == "absolute
 
 // NOTE: path_styled_for_error_messages will *always* use `/` in the error paths, no
 // matter the OS, to ensure stable compiler error output in the tests.
-pub func path_styled_for_error_messages(path_: string) -> string {
+pub proc path_styled_for_error_messages(path_: string) -> string {
 	rpath := (Path.resolve(path_) catch path_).replace("\\", "/");
 	return if error_paths_abs {
 		rpath
@@ -18,7 +18,7 @@ pub func path_styled_for_error_messages(path_: string) -> string {
 	};
 }
 
-pub func skip_bom(file_content: string) -> string {
+pub proc skip_bom(file_content: string) -> string {
    // BOM check
    if file_content.len >= 3 {
      if file_content[0] == 0xEF && file_content[1] == 0xBB && file_content[2] == 0xBF {
@@ -38,7 +38,7 @@ struct CachedFile {
 struct SourceCache {
    mut sources: []mut CachedFile;
 
-   pub func find(self, path_: string) -> ?string {
+   pub proc find(self, path_: string) -> ?string {
 	  for source in self.sources {
 		 if source.path == path_ {
 			return source.content;
@@ -47,7 +47,7 @@ struct SourceCache {
 	  return none;
    }
 
-   pub func find_line(mut self, path_: string, line: uint) -> ?string {
+   pub proc find_line(mut self, path_: string, line: uint) -> ?string {
 	  return if lines := self.find_lines(path_) {
 		 lines[line]
 	  } else {
@@ -55,7 +55,7 @@ struct SourceCache {
 	  };
    }
 
-   pub func find_lines_between(mut self, path_: string, line: uint, end_line: uint) -> ?[:]string {
+   pub proc find_lines_between(mut self, path_: string, line: uint, end_line: uint) -> ?[:]string {
 	  return if lines := self.find_lines(path_) {
 		if lines.len > 0 && lines.len >= end_line {
 			lines[line:end_line]
@@ -67,7 +67,7 @@ struct SourceCache {
 	  };
    }
 
-   pub func find_lines(mut self, path_: string) -> ?[]string {
+   pub proc find_lines(mut self, path_: string) -> ?[]string {
 	  for mut cached in self.sources {
 		 if cached.path == path_ {
 			if cached.lines.is_empty() {
@@ -83,7 +83,7 @@ struct SourceCache {
 pub var mut source_cache: SourceCache := SourceCache();
 
 #[inline]
-pub func read_file(path_: string) -> !string {
+pub proc read_file(path_: string) -> !string {
    return if res := source_cache.find(path_) {
 	  res
    } else {

@@ -24,7 +24,7 @@ var available_templates := "Available templates:
    bin          A simple binary project (default).
    lib          A simple library project.";
 
-pub func cmd_new(args: [:]string, is_init: bool) -> ! {
+pub proc cmd_new(args: [:]string, is_init: bool) -> ! {
     mut template := "";
     mut fp := flag.FlagParser.new(args);
     if is_init {
@@ -131,7 +131,7 @@ pub func cmd_new(args: [:]string, is_init: bool) -> ! {
     }
 }
 
-func check_project(mut project: build.Project) {
+proc check_project(mut project: build.Project) {
     if project.name.is_empty() {
         utils.error("project name cannot be empty");
     }
@@ -154,7 +154,7 @@ func check_project(mut project: build.Project) {
     }
 }
 
-func create_rivet_json(project: build.Project, is_init: bool) -> ! {
+proc create_rivet_json(project: build.Project, is_init: bool) -> ! {
     path_ := if is_init { "rivet.json" } else { Path.join(project.name, "rivet.json")! };
     if !Path.exists(path_) {
         utils.info("creating `rivet.json` file...");
@@ -162,7 +162,7 @@ func create_rivet_json(project: build.Project, is_init: bool) -> ! {
     }
 }
 
-func generate_rivet_json(project: build.Project) -> string {
+proc generate_rivet_json(project: build.Project) -> string {
     mut sb := strings.Builder.new();
     sb.writeln("{");
     sb.write_fmt("    \"name\": \"{}\"", project.name);
@@ -197,7 +197,7 @@ func generate_rivet_json(project: build.Project) -> string {
     return sb.to_string();
 }
 
-func create_gitattributes_file(name: string, is_init: bool) -> ! {
+proc create_gitattributes_file(name: string, is_init: bool) -> ! {
     path_ := if is_init { ".gitattributes" } else { Path.join(name, ".gitattributes")! };
     if Path.exists(path_) {
         return;
@@ -205,7 +205,7 @@ func create_gitattributes_file(name: string, is_init: bool) -> ! {
     fs.write_file(path_, templates.git_attrs_file)!;
 }
 
-func create_editorconfig_file(name: string, is_init: bool) -> ! {
+proc create_editorconfig_file(name: string, is_init: bool) -> ! {
     path_ := if is_init { ".editorconfig" } else { Path.join(name, ".editorconfig")! };
     if Path.exists(path_) {
         return;
@@ -213,7 +213,7 @@ func create_editorconfig_file(name: string, is_init: bool) -> ! {
     fs.write_file(path_, templates.editor_config_file)!;
 }
 
-func create_git_repo(dir: string) -> ! {
+proc create_git_repo(dir: string) -> ! {
     if !Path.is_directory(Path.join(dir, ".git")!) {
         utils.info("initializing git repo...");
         if res := process.execute("git init {}".fmt(dir)) {

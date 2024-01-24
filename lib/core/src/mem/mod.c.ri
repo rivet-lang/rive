@@ -6,18 +6,18 @@ import c/libc;
 
 extern (Rivet) {
     #[export("_R4core13runtime_errorF")]
-    func core_runtime_error(msg: string, args: ...string) -> never;
+    proc core_runtime_error(msg: string, args: ...string) -> never;
 }
 
 #[inline]
-func runtime_error(msg: string, args: ...string) -> never {
+proc runtime_error(msg: string, args: ...string) -> never {
     core_runtime_error(msg, args);
 }
 
 /// Fills the first `n` bytes of the memory area pointed to by `s`, with the
 /// byte `c`.
 #[inline]
-pub func set(s: rawptr, c: uint8, n: uint) {
+pub proc set(s: rawptr, c: uint8, n: uint) {
     unsafe {
         _ = libc.memset(s, @as(int32, c), n);
     }
@@ -28,7 +28,7 @@ pub func set(s: rawptr, c: uint8, n: uint) {
 /// NOTE: The memory areas *MUST NOT OVERLAP*. Use `mem.move`, if the memory
 /// areas do overlap.
 #[inline]
-pub func copy(dest: rawptr, src: rawptr, sz: uint) {
+pub proc copy(dest: rawptr, src: rawptr, sz: uint) {
     unsafe {
         _ = libc.memcpy(dest, src, sz);
     }
@@ -41,7 +41,7 @@ pub func copy(dest: rawptr, src: rawptr, sz: uint) {
 /// `src` or `dest`, and the bytes are then copied from the temporary array to
 /// `dest`.
 #[inline]
-pub func move(dest: rawptr, src: rawptr, sz: uint) {
+pub proc move(dest: rawptr, src: rawptr, sz: uint) {
     unsafe {
         _ = libc.memmove(dest, src, sz);
     }
@@ -60,9 +60,9 @@ pub func move(dest: rawptr, src: rawptr, sz: uint) {
 ///
 /// NOTE: Do NOT use `mem.cmp` to compare security critical data, such
 /// as cryptographic secrets, because the required CPU time depends on the
-/// number of equal bytes. You should use a function that performs comparisons
+/// number of equal bytes. You should use a procedure that performs comparisons
 /// in constant time for this.
 #[inline]
-pub func cmp(s1: rawptr, s2: rawptr, n: uint) -> int32 {
+pub proc cmp(s1: rawptr, s2: rawptr, n: uint) -> int32 {
     return unsafe { libc.memcmp(s1, s2, n) };
 }

@@ -15,7 +15,7 @@ pub enum Expr < traits.Stringable {
         pos: token.Pos;
         mut type: Type;
 
-        pub func clean_paren(&self) -> Expr {
+        pub proc clean_paren(&self) -> Expr {
             mut res := self.expr;
             while res is .Paren(paren) {
                 res = paren.expr;
@@ -175,7 +175,7 @@ pub enum Expr < traits.Stringable {
         mut err_handler: CallErrorHandler;
         pos: token.Pos;
         mut type: Type;
-        mut func_: Func;
+        mut proc_: Proc;
 
         mut is_closure: bool;
         mut is_constructor: bool;
@@ -183,7 +183,7 @@ pub enum Expr < traits.Stringable {
         mut is_enum_variant: bool;
         mut enum_variant_sym: TypeSym;
 
-        func has_named_args(&self) -> bool {
+        proc has_named_args(&self) -> bool {
             for arg in self.args {
                 if arg.is_named {
                     return true;
@@ -192,7 +192,7 @@ pub enum Expr < traits.Stringable {
             return false;
         }
 
-        func get_named_arg(&self, name: string) -> ?CallArg {
+        proc get_named_arg(&self, name: string) -> ?CallArg {
             for arg in self.args {
                 if arg.is_named && arg.name == name {
                     return arg;
@@ -203,7 +203,7 @@ pub enum Expr < traits.Stringable {
 
         /// Returns the number of pure arguments, that is, not named, that
         /// this call has.
-        func pure_args_count(&self) -> uint {
+        proc pure_args_count(&self) -> uint {
             mut l: uint := 0;
             for arg in self.args {
                 if !arg.is_named {
@@ -217,7 +217,7 @@ pub enum Expr < traits.Stringable {
         }
 
         #[inline]
-        func has_err_handler(&self) -> bool {
+        proc has_err_handler(&self) -> bool {
             return self.err_handler.has_expr || self.err_handler.is_propagate;
         }
     },
@@ -284,9 +284,9 @@ pub enum Expr < traits.Stringable {
         mut is_exhaustive: bool;
     },
     // Examples:
-    // - if x := optional_or_result_fn() { ... }
+    // - if x := optional_or_result_proc() { ... }
     // - while byte := reader.read() { ... }
-    // - match x := optional_or_result_fn(); x == some { ... }
+    // - match x := optional_or_result_proc(); x == some { ... }
     Guard {
         mut vars: []mut ObjectData;
         mut expr: Expr;
@@ -297,7 +297,7 @@ pub enum Expr < traits.Stringable {
     };
 
     #[inline]
-    pub func clean_paren(self) -> Self {
+    pub proc clean_paren(self) -> Self {
         return if self is .Paren(paren) {
             paren.clean_paren()
         } else {
@@ -305,7 +305,7 @@ pub enum Expr < traits.Stringable {
         };
     }
 
-    pub func position(self) -> token.Pos {
+    pub proc position(self) -> token.Pos {
         return match self {
             .Empty(empty_pos) -> empty_pos,
             .Comment(comment) -> comment.pos,
@@ -346,7 +346,7 @@ pub enum Expr < traits.Stringable {
     }
 
     #[inline]
-    pub func to_string(self) -> string {
+    pub proc to_string(self) -> string {
         return match self {
             .Empty -> "<empty-expression>",
             .Comment -> "<comment>",

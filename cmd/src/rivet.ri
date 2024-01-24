@@ -26,7 +26,7 @@ General Options:
    -h, --help       Print command-specific usage.
 ";
 
-func main() {
+proc main() {
     if process.args.len == 1 {
         console.ewriteln(help);
         utils.error("expected command argument");

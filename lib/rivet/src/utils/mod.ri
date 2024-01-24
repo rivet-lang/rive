@@ -23,7 +23,7 @@ pub var tabs_table := [
     "\t\t\t\t\t\t\t\t\t\t"
 ];
 
-pub func tabs(n: uint) -> string {
+pub proc tabs(n: uint) -> string {
     return if n < tabs_table.len {
         tabs_table[n]
     } else {
@@ -32,16 +32,16 @@ pub func tabs(n: uint) -> string {
 }
 
 #[inline]
-pub func min(a: uint, b: uint) -> uint {
+pub proc min(a: uint, b: uint) -> uint {
    return if a < b { a } else { b };
 }
 
 #[inline]
-pub func max(a: uint, b: uint) -> uint {
+pub proc max(a: uint, b: uint) -> uint {
    return if a > b { a } else { b };
 }
 
-pub func option(args: []string, param: string) -> ?string {
+pub proc option(args: []string, param: string) -> ?string {
     for i, arg in args {
         if param == arg {
             if i + 1 < args.len {
@@ -53,55 +53,55 @@ pub func option(args: []string, param: string) -> ?string {
     return none;
 }
 
-pub func error(msg: string, args: ...traits.Stringable) -> never {
+pub proc error(msg: string, args: ...traits.Stringable) -> never {
    console.ewriteln("{} {} {}", bold("rivet:"), bold(red("error:")), msg.fmt(args));
    process.exit(1);
 }
 
 #[inline]
-pub func warn(msg: string, args: ...traits.Stringable) {
+pub proc warn(msg: string, args: ...traits.Stringable) {
    console.ewriteln("{} {} {}", bold("rivet:"), bold(yellow("warning:")), msg.fmt(args));
 }
 
 #[inline]
-pub func info(msg: string, args: ...traits.Stringable) {
+pub proc info(msg: string, args: ...traits.Stringable) {
    console.ewriteln("{} {} {}", bold("rivet:"), bold(blue("info:")), msg.fmt(args));
 }
 
 #[inline]
-pub func bold(msg: string) -> string {
+pub proc bold(msg: string) -> string {
     return if support_ansi_escape_codes { styles.bold(msg) } else { msg };
 }
 
 #[inline]
-pub func red(msg: string) -> string {
+pub proc red(msg: string) -> string {
     return if support_ansi_escape_codes { styles.red(msg) } else { msg };
 }
 
 #[inline]
-pub func yellow(msg: string) -> string {
+pub proc yellow(msg: string) -> string {
     return if support_ansi_escape_codes { styles.yellow(msg) } else { msg };
 }
 
 #[inline]
-pub func cyan(msg: string) -> string {
+pub proc cyan(msg: string) -> string {
     return if support_ansi_escape_codes { styles.cyan(msg) } else { msg };
 }
 
 #[inline]
-pub func blue(msg: string) -> string {
+pub proc blue(msg: string) -> string {
     return if support_ansi_escape_codes { styles.blue(msg) } else { msg };
 }
 
 #[inline]
-pub func green(msg: string) -> string {
+pub proc green(msg: string) -> string {
     return if support_ansi_escape_codes { styles.green(msg) } else { msg };
 }
 
 /// Rounds the number `n` up to the next mult
 /// NOTE: `multiple` must be a power of 2.
 #[inline]
-pub func round_up(n: uint, multiple: uint) -> uint {
+pub proc round_up(n: uint, multiple: uint) -> uint {
     n_ := @as(int, n);
     multiple_ := @as(int, multiple);
     return @as(uint, (n_ + multiple_ - 1) & (-multiple_));

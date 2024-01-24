@@ -5,7 +5,7 @@
 import std/{ console, console/styles };
 
 #[inline]
-pub func readln(prompt: string) -> ?string {
+pub proc readln(prompt: string) -> ?string {
     prefix := styles.bold(styles.green("> "));
     return if prompt.is_empty() {
         console.readln(prefix)

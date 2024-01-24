@@ -1,5 +1,0 @@
-struct Xyz {
-    a: int;
-
-    func a() {}
-}

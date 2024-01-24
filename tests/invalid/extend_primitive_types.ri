@@ -1,7 +1,0 @@
-extend bool {
-    func my_func(self) { _ = self; }
-}
-
-extend uint {
-    func my_func(self) { _ = self; }
-}

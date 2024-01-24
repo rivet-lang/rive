@@ -3,25 +3,25 @@
 // file.
 
 extern (C) {
-	pub func access(a: [&]uint8, o: int32) -> int32;
+	pub proc access(a: [&]uint8, o: int32) -> int32;
 
-    pub func sysconf(name: int32) -> int64;
+    pub proc sysconf(name: int32) -> int64;
 
-    pub func getpid() -> uint32;
-    pub func getppid() -> uint32;
+    pub proc getpid() -> uint32;
+    pub proc getppid() -> uint32;
 
-    pub func isatty(fd: int32) -> int32;
+    pub proc isatty(fd: int32) -> int32;
 
-    pub func write(fd: int32, buf: rawptr, count: uint) -> int;
-    pub func read(fildes: int32, buf: rawptr, nbyte: uint) -> int;
+    pub proc write(fd: int32, buf: rawptr, count: uint) -> int;
+    pub proc read(fildes: int32, buf: rawptr, nbyte: uint) -> int;
 
-    pub func rmdir(path: [&]uint8) -> int32;
-    pub func chdir(path: [&]uint8) -> int32;
-    pub func getcwd(buf: [&]uint8, size: uint) -> ?[&]uint8;
+    pub proc rmdir(path: [&]uint8) -> int32;
+    pub proc chdir(path: [&]uint8) -> int32;
+    pub proc getcwd(buf: [&]uint8, size: uint) -> ?[&]uint8;
 
-    pub func readlink(path: [&]uint8, buf: [&]uint8, size: uint) -> int;
+    pub proc readlink(path: [&]uint8, buf: [&]uint8, size: uint) -> int;
 
     $if _LINUX_ {
-        pub func get_nprocs() -> int32;
+        pub proc get_nprocs() -> int32;
     }
 }

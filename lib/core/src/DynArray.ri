@@ -12,18 +12,18 @@ struct DynArray {
     mut cap: uint;
 
     #[unsafe; inline]
-    func new(elem_size: uint, cap: uint) -> Self {
+    proc new(elem_size: uint, cap: uint) -> Self {
         return Self(mem.raw_zeroed(cap * elem_size), elem_size, 0, cap);
     }
 
     #[unsafe; inline]
-    func new_with_len(elem_size: uint, len: uint, cap: uint) -> Self {
+    proc new_with_len(elem_size: uint, len: uint, cap: uint) -> Self {
         cap_ := if cap < len { len } else { cap };
         return Self(mem.raw_zeroed(cap_ * elem_size), elem_size, len, cap);
     }
 
     #[unsafe; inline]
-    func new_with_init(init: rawptr, elem_size: uint, len: uint, cap: uint) -> Self {
+    proc new_with_init(init: rawptr, elem_size: uint, len: uint, cap: uint) -> Self {
         cap_ := if cap < len { len } else { cap };
         dyn_array := Self(mem.raw_alloc(cap_ * elem_size), elem_size, len, cap);
         mut i: uint := 0;
@@ -36,23 +36,23 @@ struct DynArray {
     }
 
     #[unsafe]
-    func from_array(arr: rawptr, elem_size: uint, len: uint) -> Self {
+    proc from_array(arr: rawptr, elem_size: uint, len: uint) -> Self {
         dyn_array := Self(mem.raw_alloc(len * elem_size), elem_size, len, len);
         mem.copy(dyn_array.ptr, arr, len * elem_size);
         return dyn_array;
     }
 
     #[unsafe; inline]
-    func from_array_no_alloc(arr: rawptr, elem_size: uint, len: uint) -> Self {
+    proc from_array_no_alloc(arr: rawptr, elem_size: uint, len: uint) -> Self {
         return Self(arr, elem_size, len, len);
     }
 
     #[unsafe; inline]
-    func raw_get(self, idx: uint) -> rawptr {
+    proc raw_get(self, idx: uint) -> rawptr {
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
-    func get(self, idx: uint) -> rawptr {
+    proc get(self, idx: uint) -> rawptr {
         if idx >= self.len {
             runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -60,7 +60,7 @@ struct DynArray {
     }
 
     #[unsafe; inline]
-    func raw_set(self, idx: uint, val: rawptr) {
+    proc raw_set(self, idx: uint, val: rawptr) {
         unsafe {
             mem.copy(
                 @ptr_add(@as([&]mut uint8, self.ptr), self.elem_size * idx),
@@ -69,7 +69,7 @@ struct DynArray {
         }
     }
 
-    func set(self, idx: uint, val: rawptr) {
+    proc set(self, idx: uint, val: rawptr) {
         if idx >= self.len {
             runtime_error("dynamic array index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -81,7 +81,7 @@ struct DynArray {
         }
     }
 
-    func push(mut self, val: rawptr) {
+    proc push(mut self, val: rawptr) {
         if self.len >= self.cap {
             self.reserve(self.len + 1);
         }
@@ -93,7 +93,7 @@ struct DynArray {
 
     /// Returns the last element of the dynamic array, and removes it. If the
     /// dynamic array is empty, this will panic.
-    func pop(mut self) -> rawptr {
+    proc pop(mut self) -> rawptr {
         if self.len == 0 {
             runtime_error("DynArray.pop: dynamic array is empty");
         }
@@ -103,10 +103,10 @@ struct DynArray {
     }
 
     /// Deletes `size` elements beginning with index `i`.
-    /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
+    /// NOTE: This procedure does NOT operate in-place. Internally, it creates a copy
     /// of the dynamic array, skipping over `size` elements starting at `i`, and then
     /// points the original variable to the new memory location.
-    pub func delete(mut self, i: uint, size: uint := 1, no_slices: bool := false) {
+    pub proc delete(mut self, i: uint, size: uint := 1, no_slices: bool := false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             runtime_error(
@@ -137,22 +137,22 @@ struct DynArray {
 
     /// Trims the array length to `index` without modifying the allocated data.
     /// If `index` is greater than `len` nothing will be changed.
-    pub func trim(mut self, index: uint) {
+    pub proc trim(mut self, index: uint) {
         if index < self.len {
             self.len = index;
         }
     }
 
-    pub func clear(mut self) {
+    pub proc clear(mut self) {
         self.len = 0;
     }
 
     #[inline]
-    func is_empty(self) -> bool {
+    proc is_empty(self) -> bool {
         return self.len == 0;
     }
 
-    func ==(self, rhs: Self) -> bool {
+    proc ==(self, rhs: Self) -> bool {
         if self.len != rhs.len {
             return false;
         }
@@ -160,11 +160,11 @@ struct DynArray {
     }
 
     #[inline]
-    func !=(self, rhs: Self) -> bool {
+    proc !=(self, rhs: Self) -> bool {
         return !(self == rhs);
     }
 
-    func reserve(mut self, required: uint) {
+    proc reserve(mut self, required: uint) {
         if required <= self.cap {
             return;
         }
@@ -179,7 +179,7 @@ struct DynArray {
         self.cap = cap;
     }
 
-    func slice(self, start: uint, end: uint) -> Slice {
+    proc slice(self, start: uint, end: uint) -> Slice {
         if start > end || end > self.len {
             runtime_error(
                 "slice index [{}:{}] out of range (len: {})", start, end, self.len
@@ -196,12 +196,12 @@ struct DynArray {
     }
 
     #[inline]
-    func slice_from(self, start: uint) -> Slice {
+    proc slice_from(self, start: uint) -> Slice {
         return self.slice(start, self.len);
     }
 
     /// Returns an independent copy of `self`.
-    pub func clone(self) -> Self {
+    pub proc clone(self) -> Self {
         mut size := self.cap * self.elem_size;
         if size == 0 {
             size = 1;
@@ -211,7 +211,7 @@ struct DynArray {
         return dyn_array;
     }
 
-    func __destroy__(self) {
+    proc __destroy__(self) {
         unsafe {
             mem.raw_dealloc(self.ptr);
         }

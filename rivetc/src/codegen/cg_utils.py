@@ -46,8 +46,8 @@ def prefix_type(tt):
     return prefix
 
 def mangle_type(typ):
-    if isinstance(typ, type.Func):
-        s = "fn_"
+    if isinstance(typ, type.Proc):
+        s = "proc_"
         if typ.is_unsafe:
             s += "unsafe_"
         if typ.is_extern:
@@ -116,7 +116,7 @@ def mangle_symbol(s):
             s = s.parent
     res.insert(0, "_R")
 
-    if isinstance(root, sym.Func):
+    if isinstance(root, sym.Proc):
         if root.is_method:
             res.append("M")
         else:

@@ -11,18 +11,18 @@ pub struct OrderedDepMap {
     mut keys: []string;
     mut data: maps.MapStringArrayOfStrings; // TODO: replace with map type
 
-    pub func new() -> Self {
+    pub proc new() -> Self {
         return Self();
     }
 
-    pub func set(mut self, name: string, deps: []string) {
+    pub proc set(mut self, name: string, deps: []string) {
         if !self.data.contains(name) {
             self.keys.push(name);
         }
         self.data.set(name, deps);
     }
 
-    pub func add(mut self, name: string, deps: []string) {
+    pub proc add(mut self, name: string, deps: []string) {
         mut d := self.get(name);
         for dep in deps {
             if dep !in d {
@@ -33,7 +33,7 @@ pub struct OrderedDepMap {
     }
 
     #[inline]
-    pub func get(self, name: string) -> []string {
+    pub proc get(self, name: string) -> []string {
         return if res := self.data.get(name) {
             res
         } else {
@@ -41,7 +41,7 @@ pub struct OrderedDepMap {
         };
     }
 
-    pub func delete(mut self, name: string) {
+    pub proc delete(mut self, name: string) {
         if !self.data.contains(name) {
             process.panic("OrderedDepMap.delete: no such key: `{}`", name);
         }
@@ -54,7 +54,7 @@ pub struct OrderedDepMap {
         self.data.delete(name);
     }
 
-    pub func apply_diff(mut self, name: string, deps: []string) {
+    pub proc apply_diff(mut self, name: string, deps: []string) {
         mut diff := []string();
         deps_of_name := self.get(name);
         for dep in deps_of_name {
@@ -65,7 +65,7 @@ pub struct OrderedDepMap {
         self.set(name, diff);
     }
 
-    pub func size(self) -> uint {
+    pub proc size(self) -> uint {
         return self.data.len();
     }
 }

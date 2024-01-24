@@ -4,7 +4,7 @@
 
 import std/strings;
 
-pub func join(slice: [:]string, s: string) -> string {
+pub proc join(slice: [:]string, s: string) -> string {
     return if slice.is_empty() {
         ""
     } else {
@@ -14,7 +14,7 @@ pub func join(slice: [:]string, s: string) -> string {
     };
 }
 
-pub func index_of(slice: [:]string, value: string) -> uint {
+pub proc index_of(slice: [:]string, value: string) -> uint {
     for i, val in slice {
         if val == value {
             return i;

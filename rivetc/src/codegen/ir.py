@@ -109,7 +109,7 @@ class Array:
     def __eq__(self, other):
         return str(self) == str(other)
 
-class Function:
+class Procedure:
     def __init__(self, args, ret_typ):
         self.args = args
         self.ret_typ = ret_typ
@@ -121,7 +121,7 @@ class Function:
         return str(self)
 
     def __str__(self):
-        return f"*func({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
+        return f"*proc({', '.join([str(arg) for arg in self.args])}) {self.ret_typ}"
 
     def __eq__(self, other):
         return str(self) == str(other)
@@ -168,22 +168,22 @@ class RIRFile:
         return self.__repr__()
 
 class VTable:
-    def __init__(self, structure, name, trait_name, implement_nr, funcs):
+    def __init__(self, structure, name, trait_name, implement_nr, procs):
         self.structure = structure
         self.name = name
         self.trait_name = trait_name
         self.implement_nr = implement_nr
-        self.funcs = funcs
+        self.procs = procs
 
     def __str__(self):
         sb = utils.Builder()
         sb.writeln(f'virtual_table {self.trait_name} {{')
-        for i, ft in enumerate(self.funcs):
+        for i, ft in enumerate(self.procs):
             sb.writeln(f'  {i} {{')
             for f, impl in ft.items():
                 sb.writeln(f'    {f}: {impl}')
             sb.write("  }")
-            if i < len(self.funcs) - 1:
+            if i < len(self.procs) - 1:
                 sb.writeln(",")
             else:
                 sb.writeln()
@@ -254,7 +254,7 @@ class Local:
         self.name = name
         self.typ = typ
 
-class FuncDecl:
+class ProcDecl:
     def __init__(
         self, is_public, attrs, is_extern, name, args, is_variadic, ret_typ,
         is_never
@@ -367,7 +367,7 @@ class FuncDecl:
             sb.write("extern ")
         elif self.is_public:
             sb.write("export ")
-        sb.write(f'func {self.name}(')
+        sb.write(f'proc {self.name}(')
         for i, arg in enumerate(self.args):
             sb.write(f'%{arg.name}: {arg.typ}')
             if i < len(self.args) - 1:
@@ -494,6 +494,7 @@ class Selector:
 
 class Name: # Simple identifier, e.g. labels
     def __init__(self, name):
+        assert isinstance(name, str)
         self.name = name
 
     def __repr__(self):

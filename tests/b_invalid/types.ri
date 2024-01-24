@@ -1,5 +1,5 @@
 extern (C) {
-    func malloc(sz: uint) -> rawptr;
+    proc malloc(sz: uint) -> rawptr;
 }
 
 struct St {
@@ -13,4 +13,4 @@ struct St {
     f5: =;
 }
 
-func main() { }
+proc main() { }

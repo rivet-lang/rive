@@ -4,7 +4,7 @@
 
 import c/libc;
 
-func setup_signals_handler() {
+proc setup_signals_handler() {
     sa := libc.sigaction_t(sa_sigaction: signals_handler, sa_flags: libc.SA_SIGINFO);
     unsafe {
         _ = libc.sigaction(libc.SIGSEGV, &sa, none);
@@ -15,7 +15,7 @@ func setup_signals_handler() {
 
 /// The default signal handler for signals. It is needed to process signals and give
 /// understandable error messages along with the backtrace.
-func signals_handler(_sig: int32, info: &mut libc.siginfo_t, _context: rawptr) {
+proc signals_handler(_sig: int32, info: &mut libc.siginfo_t, _context: rawptr) {
     match info.si_signo {
 		libc.SIGSEGV, libc.SIGBUS -> segfault_handler(), // It panics on SIGSEGV and SIGBUS.
 		libc.SIGFPE -> fpe_handler(),
@@ -23,7 +23,7 @@ func signals_handler(_sig: int32, info: &mut libc.siginfo_t, _context: rawptr) {
 	}
 }
 
-func segfault_handler() {
+proc segfault_handler() {
     console_ewriteln(
         if runtime_is_started {
             "runtime error: invalid memory address or null pointer dereference"
@@ -35,7 +35,7 @@ func segfault_handler() {
     process_exit(100);
 }
 
-func fpe_handler() {
+proc fpe_handler() {
     console_ewriteln(
         if runtime_is_started {
             "runtime error: floating point exception"

@@ -17,16 +17,16 @@ pub struct DepGraph {
     pub mut nodes: []DepGraphNode;
 
     #[inline]
-    pub func new() -> Self {
+    pub proc new() -> Self {
         return Self(true, []DepGraphNode(cap: 1024));
     }
 
     #[inline]
-    pub func add(mut self, mod: string, deps: []string) {
+    pub proc add(mut self, mod: string, deps: []string) {
         self.nodes.push(DepGraphNode(mod, deps));
     }
 
-    pub func resolve(self) -> Self {
+    pub proc resolve(self) -> Self {
         mut node_names := OrderedDepMap.new();
         mut node_deps := OrderedDepMap.new();
         for node in self.nodes {
@@ -63,7 +63,7 @@ pub struct DepGraph {
         return resolved;
     }
 
-    pub func display(self) -> string {
+    pub proc display(self) -> string {
         mut out := strings.Builder.new();
         for node in self.nodes {
             for dep in node.deps {
@@ -73,7 +73,7 @@ pub struct DepGraph {
         return out.to_string();
     }
 
-    pub func display_cycles(self) -> string {
+    pub proc display_cycles(self) -> string {
         mut out := strings.Builder.new();
         mut seen := false;
         mut nn := NodeNames();
@@ -100,7 +100,7 @@ struct NodeNames {
     mut is_cycle: maps.MapStringBool;
     mut names: maps.MapStringArrayOfStrings;
 
-    func is_part_of_cycle(mut self, name: string, already_seen: []string) -> (bool, []string) {
+    proc is_part_of_cycle(mut self, name: string, already_seen: []string) -> (bool, []string) {
         mut seen := false;
         mut new_already_seen := already_seen.clone();
         if val := self.is_cycle.get(name) {

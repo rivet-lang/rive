@@ -15,7 +15,7 @@ pub struct Register {
     mut sym: ast.Sym := ast.InvalidSym();
     mut source_file: ast.SourceFile;
 
-    pub func walk_files(mut self, source_files: []ast.SourceFile) {
+    pub proc walk_files(mut self, source_files: []ast.SourceFile) {
         for sf in source_files {
             self.is_core_mod = sf.mod.is_core();
             if !self.core_is_set && self.is_core_mod {
@@ -29,7 +29,7 @@ pub struct Register {
         self.env.throwable_t = .Basic(self.env.throwable_sym);
     }
 
-    func walk_decls(mut self, mut decls: []mut ast.Decl) {
+    proc walk_decls(mut self, mut decls: []mut ast.Decl) {
         for mut decl in decls {
             old_abi := self.abi;
             old_sym := self.sym;
@@ -40,7 +40,7 @@ pub struct Register {
         }
     }
 
-    func walk_decl(mut self, mut decl: ast.Decl) {
+    proc walk_decl(mut self, mut decl: ast.Decl) {
         match decl {
             .ComptimeIf(mut comptime_if_decl) -> self.comptime_if(comptime_if_decl),
             .Import(import_decl) -> self.import_decl(&import_decl),
@@ -239,36 +239,36 @@ pub struct Register {
                     extend_decl.pos
                 );
             },
-            .Func(mut func_decl) -> func_decl.sym = self.add_sym(ast.Func(
+            .Proc(mut proc_decl) -> proc_decl.sym = self.add_sym(ast.Proc(
                 parent: self.sym,
-                abi: func_decl.abi,
-                is_public: func_decl.is_public,
-                is_extern: func_decl.is_extern,
-                is_unsafe: func_decl.is_unsafe,
-                is_method: func_decl.is_method,
-                is_special_method: func_decl.is_special_method,
-                is_variadic: func_decl.is_variadic,
-                is_main: func_decl.is_main,
-                name: func_decl.name,
-                args: func_decl.args,
-                has_named_args: func_decl.has_named_args,
-                ret_type: func_decl.ret_type,
-                has_body: func_decl.has_body,
-                self_is_mut: func_decl.self_is_mut,
-                self_is_ptr: func_decl.self_is_ptr,
-                self_pos: func_decl.self_pos,
-                pos: func_decl.pos
-            ), func_decl.pos),
+                abi: proc_decl.abi,
+                is_public: proc_decl.is_public,
+                is_extern: proc_decl.is_extern,
+                is_unsafe: proc_decl.is_unsafe,
+                is_method: proc_decl.is_method,
+                is_special_method: proc_decl.is_special_method,
+                is_variadic: proc_decl.is_variadic,
+                is_main: proc_decl.is_main,
+                name: proc_decl.name,
+                args: proc_decl.args,
+                has_named_args: proc_decl.has_named_args,
+                ret_type: proc_decl.ret_type,
+                has_body: proc_decl.has_body,
+                self_is_mut: proc_decl.self_is_mut,
+                self_is_ptr: proc_decl.self_is_ptr,
+                self_pos: proc_decl.self_pos,
+                pos: proc_decl.pos
+            ), proc_decl.pos),
             else -> {}
         }
     }
 
-    func comptime_if(mut self, mut comptime_if_decl: ast.ComptimeIf) {
+    proc comptime_if(mut self, mut comptime_if_decl: ast.ComptimeIf) {
         nodes := self.env.evalue_comptime_if(comptime_if_decl);
         self.walk_decls(ast.nodes_to_decls(nodes));
     }
 
-    func import_decl(mut self, import_decl: &ast.ImportDecl) {
+    proc import_decl(mut self, import_decl: &ast.ImportDecl) {
         if !import_decl.subimports.is_empty() {
             for &subimport in import_decl.subimports {
                 self.import_decl(subimport);
@@ -357,7 +357,7 @@ pub struct Register {
         }
     }
 
-    func add_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ast.Sym {
+    proc add_sym(mut self, sym: ast.Sym, pos: token.Pos) -> ast.Sym {
         if self.check_imported_symbol(sym.name, pos, false) {
             return self.sym.scope.add_or_get(sym) catch |err| {
                 report.error(err.to_string(), pos);
@@ -367,7 +367,7 @@ pub struct Register {
         return sym;
     }
 
-    func check_imported_symbol(self, name: string, pos: token.Pos, is_import: bool) -> bool {
+    proc check_imported_symbol(self, name: string, pos: token.Pos, is_import: bool) -> bool {
         if self.source_file.imported_symbols.exists(name) {
             if is_import {
                 mut err := report.error_builder(
@@ -396,7 +396,7 @@ pub struct Register {
         return true;
     }
 
-    func check_vis(self, sym: ast.Sym, pos: token.Pos) {
+    proc check_vis(self, sym: ast.Sym, pos: token.Pos) {
         if !sym.is_public && !self.sym.has_access_to(sym) {
             report.error("{} `{}` is private".fmt(sym.type_of(), sym.name), pos);
         }

@@ -11,7 +11,7 @@ pub struct dirent {
 }
 
 extern (C) {
-	pub func opendir(d: [&]uint8) -> ?&dirent;
-	pub func readdir(d: &dirent) -> ?&dirent;
-	pub func closedir(d: &dirent) -> int32;
+	pub proc opendir(d: [&]uint8) -> ?&dirent;
+	pub proc readdir(d: &dirent) -> ?&dirent;
+	pub proc closedir(d: &dirent) -> int32;
 }

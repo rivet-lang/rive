@@ -1,7 +1,7 @@
-pub func add_two(x: int) -> int {
+pub proc add_two(x: int) -> int {
     return x + 2;
 }
 
-pub func add_three(x: int) -> int {
+pub proc add_three(x: int) -> int {
     return x + 3;
 }

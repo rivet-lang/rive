@@ -183,10 +183,10 @@ class Register:
                     report.error(
                         f"invalid type `{decl.typ}` to extend", decl.pos
                     )
-            elif isinstance(decl, ast.FuncDecl):
+            elif isinstance(decl, ast.ProcDecl):
                 try:
                     decl.sym = self.sym.add_and_return(
-                        sym.Func(
+                        sym.Proc(
                             self.abi, decl.is_public, decl.is_extern,
                             decl.is_unsafe, decl.is_method, decl.is_variadic,
                             decl.name, decl.args, decl.ret_typ,

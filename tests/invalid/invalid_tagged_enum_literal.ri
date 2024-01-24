@@ -1,9 +1,0 @@
-enum TaggedEnum {
-    Valid,
-    Invalid(int)
-}
-
-func main() {
-    _ = TaggedEnum.Valid;
-    _ = TaggedEnum.Invalid;
-}

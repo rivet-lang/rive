@@ -1,4 +1,4 @@
-func make_tuple() -> (int32, bool) {
+proc make_tuple() -> (int32, bool) {
     return (2004, true);
 }
 

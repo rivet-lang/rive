@@ -2,8 +2,8 @@ enum MyEnum {
     Musk
 }
 
-func main() {
-    unknown_fn();
+proc main() {
+    unknown_proc();
     x := UnknownStruct();
     z := unknown_var;
     _ = MyEnum.Mark;

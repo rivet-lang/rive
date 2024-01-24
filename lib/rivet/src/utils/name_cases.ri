@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-pub func is_snake_case(name: string) -> bool {
+pub proc is_snake_case(name: string) -> bool {
     for c in name.as_bytes() {
         if c == '_' {
             continue;
@@ -14,7 +14,7 @@ pub func is_snake_case(name: string) -> bool {
     return true;
 }
 
-pub func is_camel_case(name: string) -> bool {
+pub proc is_camel_case(name: string) -> bool {
     if !name[0].is_lower() {
         return false;
     }
@@ -26,7 +26,7 @@ pub func is_camel_case(name: string) -> bool {
     return true;
 }
 
-pub func is_pascal_case(name: string) -> bool {
+pub proc is_pascal_case(name: string) -> bool {
     if !name[0].is_upper() {
         return false;
     }
@@ -38,7 +38,7 @@ pub func is_pascal_case(name: string) -> bool {
     return true;
 }
 
-pub func is_upper_case(name: string) -> bool {
+pub proc is_upper_case(name: string) -> bool {
     for c in name.as_bytes() {
         if c == '_' {
             continue;

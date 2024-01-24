@@ -51,9 +51,9 @@ quality.
 ## Features
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Named and optional arguments**: Very useful, `my_func(arg0: 5)`.
+* **Named and optional arguments**: Very useful, `my_proc(arg0: 5)`.
 * **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
-* **Easy error handling**: With result types, `func my_func() -> !T { ... }`,
+* **Easy error handling**: With result types, `proc my_proc() -> !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
     structs have internal immutability.
@@ -67,7 +67,7 @@ More features that will be added in the self-hosted compiler can be seen in the 
 ```swift
 import std/console;
 
-func main() {
+proc main() {
     console.writeln("Hello World!");
 }
 ```

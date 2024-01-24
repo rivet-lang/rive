@@ -124,7 +124,7 @@ class Resolver:
                             elif self.self_sym.kind == sym.TypeKind.Struct and self.self_sym.kind == base_sym.kind:
                                 self.self_sym.info.bases.append(base_sym)
                     self.resolve_decls(decl.decls)
-            elif isinstance(decl, ast.FuncDecl):
+            elif isinstance(decl, ast.ProcDecl):
                 if decl.is_method:
                     self_typ = type.Type(self.self_sym)
                     if decl.self_is_ptr:
@@ -529,7 +529,7 @@ class Resolver:
                 res = self.resolve_type(t)
             typ.resolve(self.comp.universe.add_or_get_tuple(typ.types))
             return res
-        elif isinstance(typ, type.Func):
+        elif isinstance(typ, type.Proc):
             res = False
             for i in range(len(typ.args)):
                 res = self.resolve_type(typ.args[i].typ)

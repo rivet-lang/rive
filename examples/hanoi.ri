@@ -4,15 +4,15 @@ import std/console;
 
 const NUM := 7;
 
-func main() {
+proc main() {
 	hanoi(NUM, "A", "B", "C");
 }
 
-func move(n: int32, a: string, b: string) {
+proc move(n: int32, a: string, b: string) {
 	console.writeln("Disc {} from {} to {}...", n, a, b);
 }
 
-func hanoi(n: int32, a: string, b: string, c: string) {
+proc hanoi(n: int32, a: string, b: string, c: string) {
 	if n == 1 {
 		move(1, a, c);
 	} else {

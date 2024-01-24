@@ -34,7 +34,7 @@ test "defer` basic 3" {
     }
 }
 
-func test_defer_call() -> int {
+proc test_defer_call() -> int {
     mut a := 1;
 
     {
@@ -51,7 +51,7 @@ test "`defer` from a call" {
     @assert(test_defer_call() == 5);
 }
 
-func test_defer_error(mut err_defer: ErrDefer, err: bool) -> ! {
+proc test_defer_error(mut err_defer: ErrDefer, err: bool) -> ! {
     defer err_defer.i += 1;
     defer(error) err_defer.i += 2;
 
@@ -71,11 +71,11 @@ test "`defer(error)` statement" {
     @assert(err_defer.i == 3);
 }
 
-func throw_error() -> ! {
+proc throw_error() -> ! {
     throw MyError();
 }
 
-func throw_and_defer_error(mut err_defer: ErrDefer) -> ! {
+proc throw_and_defer_error(mut err_defer: ErrDefer) -> ! {
     defer(error) err_defer.i = 4;
     throw_error()!;
 }
@@ -95,7 +95,7 @@ test "`defer(success)`" {
     @assert(sum == 0);
 }
 
-func throw_and_defer_success(mut err_defer: ErrDefer) -> ! {
+proc throw_and_defer_success(mut err_defer: ErrDefer) -> ! {
     // should not run, an error is thrown
     defer(success) {
         err_defer.i += 2;

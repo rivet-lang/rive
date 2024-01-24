@@ -1,21 +1,21 @@
-tests/invalid/invalid_throw_use.ri:9:5: error: `never` functions cannot use `throw` statements
+tests/invalid/invalid_throw_use.ri:9:5: error: `never` procedures cannot use `throw` statements
     9 |     throw ThrowError();
       |     ^~~~~~~~~~~~~~~~~~
-tests/invalid/invalid_throw_use.ri:8:1-10:1: error: `never` functions cannot return
+tests/invalid/invalid_throw_use.ri:8:1-10:1: error: `never` procedures cannot return
       | /~~ from here
-    8 | func throw_with_never() -> never {
+    8 | proc throw_with_never() -> never {
     9 |     throw ThrowError();
    10 | }
       | ^~~ to here
-      = note: `never` functions should end with a call to another `never`
-        function, or with a `while {}`
+      = note: `never` procedures should end with a call to another `never`
+        procedure, or with a `while {}`
 tests/invalid/invalid_throw_use.ri:14:9: error: `throw` is not allowed inside `defer` statement
    14 |         throw ThrowError();
       |         ^~~~~~~~~~~~~~~~~~
 tests/invalid/invalid_throw_use.ri:19:5: error: cannot throw errors inside `test` declaration
    19 |     throw ThrowError();
       |     ^~~~~~~~~~~~~~~~~~
-tests/invalid/invalid_throw_use.ri:23:11: error: function `invalid_throwing_function` cannot throws errors
+tests/invalid/invalid_throw_use.ri:23:11: error: procedure `invalid_throwing_procedure` cannot throws errors
    23 |     throw ThrowError();
       |           ^~~~~~~~~~~~
       = note: if you want to throw errors, add `!` in front of the return
@@ -25,5 +25,5 @@ tests/invalid/invalid_throw_use.ri:27:11: error: using an invalid value as an er
       |           ^
       = note: in order to use that value, type `comptime_int` should
         implement the `Throwable` trait
-      = note: in throw argument of function `invalid_throwing_value`
-rivet: error: function `main` was not defined on module `invalid_throw_use`
+      = note: in throw argument of procedure `invalid_throwing_value`
+rivet: error: procedure `main` was not defined on module `invalid_throw_use`

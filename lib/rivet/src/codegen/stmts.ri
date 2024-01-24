@@ -6,16 +6,16 @@ import ./mir as _;
 import ../ast;
 
 extend Codegen {
-    func gen_stmts(mut self, stmts: []ast.Stmt) {
+    proc gen_stmts(mut self, stmts: []ast.Stmt) {
         for stmt in stmts {
             self.gen_stmt(stmt);
         }
     }
 
-    func gen_stmt(mut self, stmt: ast.Stmt) {
+    proc gen_stmt(mut self, stmt: ast.Stmt) {
         match stmt {
             .Expr(expr) -> {
-                self.cur_func.cur_block.add_stmt(.Expr(self.gen_expr(expr)));
+                self.cur_proc.cur_block.add_stmt(.Expr(self.gen_expr(expr)));
             },
             else -> {}
         }

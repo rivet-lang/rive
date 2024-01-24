@@ -1,4 +1,4 @@
-func main() {
+proc main() {
     zet(white, simple, clear);
     xx("", 5, name: 5, fallout: true);
 

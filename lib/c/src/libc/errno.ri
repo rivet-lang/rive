@@ -4,7 +4,7 @@
 
 $if _LINUX_ {
     extern (C) {
-        pub func __errno_location() -> ?&mut int32;
+        pub proc __errno_location() -> ?&mut int32;
     }
 
     pub const EDOM := 33;
@@ -15,7 +15,7 @@ $if _LINUX_ {
 $if _WINDOWS_ {
     extern (C) {
         #[dllimport]
-        pub func _errno() -> &mut int32;
+        pub proc _errno() -> &mut int32;
     }
 
     pub const EDOM := 33;

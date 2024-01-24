@@ -14,7 +14,7 @@ struct RawVersion {
 
     // TODO: Rewrite using regex:
     // /(\d+)\.(\d+)\.(\d+)(?:\-([0-9A-Za-z-.]+))?(?:\+([0-9A-Za-z-]+))?/
-    func parse(input: string) -> Self {
+    proc parse(input: string) -> Self {
         mut raw_version := input;
         mut prerelease := "";
         mut metadata := "";
@@ -29,7 +29,7 @@ struct RawVersion {
         return RawVersion(prerelease, metadata, raw_version.split("."));
     }
 
-    func is_valid(&self) -> bool {
+    proc is_valid(&self) -> bool {
         if self.raw_ints.len != 3 {
             return false;
         }
@@ -40,11 +40,11 @@ struct RawVersion {
     }
 
     #[inline]
-    func is_missing(&self, typ: uint) -> bool {
+    proc is_missing(&self, typ: uint) -> bool {
         return typ >= self.raw_ints.len - 1;
     }
 
-    func coerce(&self) -> !Version {
+    proc coerce(&self) -> !Version {
         ver := self.complete();
         if !is_valid_number(self.raw_ints[VER_MAJOR]) {
             throw InvalidVersionError("invalid major version: {}".fmt(self.raw_ints[VER_MAJOR]));
@@ -52,7 +52,7 @@ struct RawVersion {
         return ver.to_version();
     }
 
-    func complete(&self) -> RawVersion {
+    proc complete(&self) -> RawVersion {
         mut raw_ints := self.raw_ints.clone();
         while raw_ints.len < 3 {
             raw_ints.push("0");
@@ -60,7 +60,7 @@ struct RawVersion {
         return RawVersion(self.prerelease, self.metadata, raw_ints);
     }
 
-    func validate(&self) -> ?Version {
+    proc validate(&self) -> ?Version {
         if !self.is_valid() {
             return none;
         }
@@ -68,7 +68,7 @@ struct RawVersion {
     }
 
     #[inline]
-    func to_version(&self) -> Version {
+    proc to_version(&self) -> Version {
         return Version(
             self.raw_ints[VER_MAJOR].to_uint() catch 0,
             self.raw_ints[VER_MINOR].to_uint() catch 0,

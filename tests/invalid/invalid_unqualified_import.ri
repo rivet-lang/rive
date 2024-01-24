@@ -1,7 +1,0 @@
-import std/fs.Path; // ok
-import std/process.*; // ok
-import std/dynlib.; // fail
-
-import std/hash.{ wyhash }; // warning
-
-func main() {}

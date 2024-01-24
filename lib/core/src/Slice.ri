@@ -10,23 +10,23 @@ struct Slice {
     len: uint;
 
     #[inline]
-    func new(ptr: rawptr, elem_size: uint) -> Self {
+    proc new(ptr: rawptr, elem_size: uint) -> Self {
         return Slice(ptr, elem_size);
     }
 
     #[unsafe; inline]
-    func from_array(arr: rawptr, elem_size: uint, len: uint) -> Self {
+    proc from_array(arr: rawptr, elem_size: uint, len: uint) -> Self {
         return Self(arr, elem_size, len);
     }
 
-    func get(&self, idx: uint) -> rawptr {
+    proc get(&self, idx: uint) -> rawptr {
         if idx >= self.len {
             runtime_error("slice index out of range (index: {}, len: {})", idx, self.len);
         }
         return unsafe { @ptr_add(@as([&]mut uint8, self.ptr), idx * self.elem_size) };
     }
 
-    func set(&self, idx: uint, val: rawptr) {
+    proc set(&self, idx: uint, val: rawptr) {
         if idx >= self.len {
             runtime_error("slice index out of range (index: {}, len: {})", idx, self.len);
         }
@@ -39,16 +39,16 @@ struct Slice {
     }
 
     #[inline]
-    func to_dynamic_array(&self) -> DynArray {
+    proc to_dynamic_array(&self) -> DynArray {
         return unsafe { DynArray.from_array(self.ptr, self.elem_size, self.len) };
     }
 
     #[inline]
-    func is_empty(&self) -> bool {
+    proc is_empty(&self) -> bool {
         return self.len == 0;
     }
 
-    func slice(self, start: uint, end: uint) -> Self {
+    proc slice(self, start: uint, end: uint) -> Self {
         if start > end || end > self.len {
             runtime_error(
                 "slice index [{}:{}] out of range (len: {})", start, end, self.len
@@ -65,11 +65,11 @@ struct Slice {
     }
 
     #[inline]
-    func slice_from(self, start: uint) -> Self {
+    proc slice_from(self, start: uint) -> Self {
         return self.slice(start, self.len);
     }
 
-    func ==(&self, rhs: &Self) -> bool {
+    proc ==(&self, rhs: &Self) -> bool {
         if self.len != rhs.len {
             return false;
         }
@@ -77,7 +77,7 @@ struct Slice {
     }
 
     #[inline]
-    func !=(&self, rhs: &Self) -> bool {
+    proc !=(&self, rhs: &Self) -> bool {
         return !(self == rhs);
     }
 }

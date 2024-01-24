@@ -16,7 +16,7 @@ pub var rivetc_lib_dir := Path.join(rivetc_dir, "lib")!;
 pub enum Backend as uint8 {
     C;
 
-    pub func from_string(name: string) -> ?Self {
+    pub proc from_string(name: string) -> ?Self {
         return match name {
             "c" -> .C,
             else -> none
@@ -78,7 +78,7 @@ pub struct Prefs {
     pub mut run_output: bool;
     pub mut run_output_args: []string;
 
-    pub func from_args(args: [:]string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
+    pub proc from_args(args: [:]string, is_test: bool, run_output: bool, is_check: bool) -> !Self {
         mut prefs := Prefs(is_test: is_test, run_output: run_output, check: is_check);
         mut fp := flag.FlagParser.new(args);
         fp.set_application_name(if is_test {
@@ -277,7 +277,7 @@ pub struct Prefs {
         return prefs;
     }
 
-    pub func set_input(mut self, input: string) {
+    pub proc set_input(mut self, input: string) {
         if !self.input.is_empty() {
             utils.error("the compiler can only receive one module");
         } else if !Path.exists(input) {
@@ -296,7 +296,7 @@ pub struct Prefs {
         }
     }
 
-    pub func load_module_info(mut self) -> ! {
+    pub proc load_module_info(mut self) -> ! {
         if self.is_test {
             self.mod_output = "_rivet_tests_runner_";
         } else if self.mod_output.is_empty() {

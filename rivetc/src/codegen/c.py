@@ -106,7 +106,7 @@ class CGen:
                         f_name = c_escape(f.name)
                         self.types.write("  ")
                         self.types.write(self.gen_type(f.typ, f_name))
-                        if not isinstance(f.typ, (ir.Array, ir.Function)):
+                        if not isinstance(f.typ, (ir.Array, ir.Procedure)):
                             self.types.write(f" {f_name}")
                         self.types.writeln(";")
                     self.types.writeln("};")
@@ -118,14 +118,14 @@ class CGen:
                     f_name = c_escape(f.name)
                     self.types.write("  ")
                     self.types.write(self.gen_type(f.typ, f_name))
-                    if not isinstance(f.typ, (ir.Array, ir.Function)):
+                    if not isinstance(f.typ, (ir.Array, ir.Procedure)):
                         self.types.write(f" {f_name}")
                     self.types.writeln(";")
                 self.types.writeln("};\n")
 
     def gen_externs(self, externs):
-        for extern_fn in externs:
-            self.gen_fn_decl(extern_fn)
+        for extern_proc in externs:
+            self.gen_proc_decl(extern_proc)
 
     def gen_globals(self, globals):
         for g in globals:
@@ -143,8 +143,8 @@ class CGen:
 
     def gen_decls(self, decls):
         for decl in decls:
-            if isinstance(decl, ir.FuncDecl):
-                self.gen_fn_decl(decl)
+            if isinstance(decl, ir.ProcDecl):
+                self.gen_proc_decl(decl)
             else:
                 self.gen_vtable(decl)
             self.writeln()
@@ -153,7 +153,7 @@ class CGen:
         self.globals.writeln(
             f"static {decl.structure} {decl.name}[{decl.implement_nr}] = {{"
         )
-        for i, ft in enumerate(decl.funcs):
+        for i, ft in enumerate(decl.procs):
             self.globals.writeln('  {')
             items = ft.items()
             for i2, (f, impl) in enumerate(items):
@@ -163,13 +163,13 @@ class CGen:
                 else:
                     self.globals.writeln()
             self.globals.write("  }")
-            if i < len(decl.funcs) - 1:
+            if i < len(decl.procs) - 1:
                 self.globals.writeln(",")
             else:
                 self.globals.writeln()
         self.globals.writeln("};")
 
-    def gen_fn_decl(self, decl):
+    def gen_proc_decl(self, decl):
         if decl.is_never:
             if not decl.is_extern:
                 self.write("RIVET_NEVER ")
@@ -183,7 +183,7 @@ class CGen:
                 self.protos.write("RIVET_LOCAL ")
         if decl.attrs.has("inline") and not decl.is_extern:
             self.write("inline ")
-        if isinstance(decl.ret_typ, ir.Function):
+        if isinstance(decl.ret_typ, ir.Procedure):
             ret_typ = self.gen_type(decl.ret_typ.ret_typ) + " (*"
         else:
             ret_typ = self.gen_type(decl.ret_typ)
@@ -200,7 +200,7 @@ class CGen:
                 self.protos.write(arg_typ)
                 if not decl.is_extern:
                     self.write(arg_typ)
-                if not isinstance(arg.typ, (ir.Array, ir.Function)):
+                if not isinstance(arg.typ, (ir.Array, ir.Procedure)):
                     self.protos.write(f" {c_escape(arg.name)}")
                     if not decl.is_extern:
                         self.write(f" {c_escape(arg.name)}")
@@ -216,7 +216,7 @@ class CGen:
                 if not decl.is_extern:
                     self.write("...")
                 self.protos.write("...")
-        if isinstance(decl.ret_typ, ir.Function):
+        if isinstance(decl.ret_typ, ir.Procedure):
             self.protos.write(")) (")
             for i, arg in enumerate(decl.ret_typ.args):
                 self.protos.write(self.gen_type(arg))
@@ -224,7 +224,7 @@ class CGen:
                     self.protos.write(", ")
         self.protos.writeln(");")
         if not decl.is_extern:
-            if isinstance(decl.ret_typ, ir.Function):
+            if isinstance(decl.ret_typ, ir.Procedure):
                 self.write(") (")
                 for i, arg in enumerate(decl.ret_typ.args):
                     self.write(self.gen_type(arg))
@@ -262,7 +262,7 @@ class CGen:
             name = inst.args[0].name
             typ = inst.args[0].typ
             self.write_type(typ, name)
-            if not isinstance(typ, (ir.Function, ir.Array)):
+            if not isinstance(typ, (ir.Procedure, ir.Array)):
                 self.write(" ")
                 self.gen_expr(inst.args[0])
             if len(inst.args) == 2:
@@ -443,15 +443,15 @@ class CGen:
         elif isinstance(typ, ir.Array):
             sizes = []
             p_typ = typ
-            is_arr_of_fns = False
+            is_arr_of_procs = False
             while isinstance(p_typ, ir.Array):
                 sizes.append(p_typ.size)
-                if isinstance(p_typ.typ, ir.Function):
-                    is_arr_of_fns = True
+                if isinstance(p_typ.typ, ir.Procedure):
+                    is_arr_of_procs = True
                     p_typ = p_typ.typ
                     break
                 p_typ = p_typ.typ
-            if is_arr_of_fns and len(sizes) > 0:
+            if is_arr_of_procs and len(sizes) > 0:
                 sizes.reverse()
                 return self.gen_type(
                     p_typ, f"{wrap}{''.join([f'[{s}]' for s in sizes])}"
@@ -462,7 +462,7 @@ class CGen:
                 sb.write(f" {wrap}")
             sb.write(f"[{typ.size}]")
             return str(sb)
-        elif isinstance(typ, ir.Function):
+        elif isinstance(typ, ir.Procedure):
             sb = utils.Builder()
             sb.write(self.gen_type(typ.ret_typ))
             sb.write(" (*")

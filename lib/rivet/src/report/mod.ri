@@ -9,32 +9,32 @@ import ../{ prefs, token, utils };
 pub var mut report_table := ReportTable();
 
 #[inline]
-pub func error(msg: string, pos: token.Pos) {
+pub proc error(msg: string, pos: token.Pos) {
     ReportBuilder(.Error, msg, pos).emit();
 }
 
 #[inline]
-pub func warn(msg: string, pos: token.Pos) {
+pub proc warn(msg: string, pos: token.Pos) {
     ReportBuilder(.Warn, msg, pos).emit();
 }
 
 #[inline]
-pub func error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
+pub proc error_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Error, msg, pos);
 }
 
 #[inline]
-pub func warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
+pub proc warn_builder(msg: string, pos: token.Pos) -> ReportBuilder {
     return ReportBuilder(.Warn, msg, pos);
 }
 
 #[inline]
-pub func total_errors() -> uint {
+pub proc total_errors() -> uint {
     return report_table.errors;
 }
 
 #[inline]
-pub func total_warns() -> uint {
+pub proc total_warns() -> uint {
     return report_table.warns;
 }
 
@@ -67,16 +67,16 @@ pub struct ReportBuilder {
     mut attributes: []Attribute;
 
     #[inline]
-    pub func add_note(mut self, msg: string, args: ...traits.Stringable) {
+    pub proc add_note(mut self, msg: string, args: ...traits.Stringable) {
         self.attributes.push(Attribute(.Note, msg.fmt(args)));
     }
 
     #[inline]
-    pub func add_help(mut self, msg: string, args: ...traits.Stringable) {
+    pub proc add_help(mut self, msg: string, args: ...traits.Stringable) {
         self.attributes.push(Attribute(.Help, msg.fmt(args)));
     }
 
-    pub func emit(mut self) {
+    pub proc emit(mut self) {
         if self.kind == .Warn {
             if report_table.prefs.hide_all_warns {
                 return;
@@ -121,7 +121,7 @@ pub struct ReportBuilder {
     }
 }
 
-func formatted_single_line(pos: token.Pos) {
+proc formatted_single_line(pos: token.Pos) {
     if line := utils.source_cache.find_line(pos.file, pos.line) {
         console.ewriteln(
             "{} {} {}", utils.bold(utils.blue("{:5}".fmt(pos.line + 1))),
@@ -143,7 +143,7 @@ func formatted_single_line(pos: token.Pos) {
     }
 }
 
-func formatted_multi_line(pos: token.Pos) {
+proc formatted_multi_line(pos: token.Pos) {
     if lines := utils.source_cache.find_lines_between(pos.file, pos.line, pos.end_line + 1) {
         mut ellipsis := false;
         max: uint := if lines.len > 8 { 4 } else { 2 };
@@ -175,7 +175,7 @@ func formatted_multi_line(pos: token.Pos) {
     }
 }
 
-func write_spaces(mut sb: strings.Builder, start_column: uint, line: string) {
+proc write_spaces(mut sb: strings.Builder, start_column: uint, line: string) {
     mut i: uint := 0;
     while i < start_column {
         b := line[i];

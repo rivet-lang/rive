@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-func is_valid_string(input: string) -> bool {
+proc is_valid_string(input: string) -> bool {
     for c in input.as_bytes() {
         if !(c.is_letter() || c.is_digit() || c == '.' || c == '-') {
             return false;
@@ -11,7 +11,7 @@ func is_valid_string(input: string) -> bool {
     return true;
 }
 
-func is_valid_number(input: string) -> bool {
+proc is_valid_number(input: string) -> bool {
     for c in input.as_bytes() {
         if !c.is_digit() {
             return false;

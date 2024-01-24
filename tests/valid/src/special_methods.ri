@@ -1,5 +1,5 @@
 struct SpecialMethods {
-    func __destroy__(self) {
+    proc __destroy__(self) {
         _ = self;
     }
 }

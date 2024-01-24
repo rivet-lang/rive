@@ -7,9 +7,9 @@ import c/libc;
 /// Allocates dynamically a `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
 ///
-/// NOTE: Unlike the `mem.raw_zeroed` function, `mem.raw_alloc` will not zero
+/// NOTE: Unlike the `mem.raw_zeroed` procedure, `mem.raw_alloc` will not zero
 /// the memory block.
-pub func raw_alloc(size: uint) -> rawptr {
+pub proc raw_alloc(size: uint) -> rawptr {
     if new := unsafe { libc.malloc(size) } {
         return new;
     }
@@ -18,7 +18,7 @@ pub func raw_alloc(size: uint) -> rawptr {
 
 /// Allocates dynamically a zeroed `size` bytes block of memory on the heap.
 /// Returns a pointer to the memory address of the allocated space.
-pub func raw_zeroed(size: uint) -> rawptr {
+pub proc raw_zeroed(size: uint) -> rawptr {
     if ptr := unsafe { libc.calloc(1, size) } {
         return ptr;
     }
@@ -28,7 +28,7 @@ pub func raw_zeroed(size: uint) -> rawptr {
 /// Allocates dynamically a `sz` bytes block of memory on the heap, then copies
 /// the contents of `src` into the allocated space and returns a pointer to
 /// the newly allocated space.
-pub func raw_dup(src: rawptr, sz: uint) -> rawptr {
+pub proc raw_dup(src: rawptr, sz: uint) -> rawptr {
     if sz == 0 {
         return raw_zeroed(1);
     }
@@ -41,7 +41,7 @@ pub func raw_dup(src: rawptr, sz: uint) -> rawptr {
 ///
 /// NOTE: The `ptr` must be a pointer to an existing memory block previously
 /// allocated with `mem.raw_alloc` or `mem.raw_zeroed`.
-pub func raw_resize(ptr: ?rawptr, sz: uint) -> rawptr {
+pub proc raw_resize(ptr: ?rawptr, sz: uint) -> rawptr {
     if sz == 0 {
         if safe_ptr := ptr {
             unsafe {
@@ -58,7 +58,7 @@ pub func raw_resize(ptr: ?rawptr, sz: uint) -> rawptr {
 
 /// Deallocates manually the memory referenced by `ptr`.
 #[unsafe; inline]
-pub func raw_dealloc(ptr: rawptr) {
+pub proc raw_dealloc(ptr: rawptr) {
     unsafe {
         libc.free(ptr);
     }

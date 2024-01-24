@@ -22,12 +22,12 @@ pub var executable_dir := Path.dir_name(executable() catch wd_at_startup);
 pub struct NotADirectoryError < Throwable {
     msg: string;
 
-    pub func to_string(self) -> string {
+    pub proc to_string(self) -> string {
         return self.msg;
     }
 }
 
-pub func set_cwd(p: string) -> ! {
+pub proc set_cwd(p: string) -> ! {
     if !Path.is_directory(p) {
         throw NotADirectoryError("`{}` is not a directory".fmt(p));
     }
@@ -43,14 +43,14 @@ struct Result {
 struct ExecutionFailedError < Throwable {
     cmd: string;
 
-    pub func to_string(self) -> string {
+    pub proc to_string(self) -> string {
         return "execution failed for `{}`".fmt(self.cmd);
     }
 }
 
 /// Starts the specified command, waits for it to complete, and returns
 /// both its output and the exit code.
-pub func execute(cmd: string) -> !Result {
+pub proc execute(cmd: string) -> !Result {
     pcmd := if cmd.contains("2>") { cmd } else { "{} 2>&1".fmt(cmd) };
     unsafe {
         if f := libc.popen(pcmd.ptr, c"r") {

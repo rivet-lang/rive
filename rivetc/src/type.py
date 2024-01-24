@@ -5,7 +5,7 @@
 import copy
 
 from . import token
-from .sym import TypeKind, Type as sym_Type, Func as sym_Func, Arg, ABI
+from .sym import TypeKind, Type as sym_Type, Proc as sym_Proc, Arg, ABI
 
 class _Ptr: # ugly hack =/
     def __init__(self, val):
@@ -19,7 +19,7 @@ class TBase:
     def symbol(self):
         if isinstance(self, (DynArray, Array, Tuple, Variadic, Slice)):
             return self.sym
-        elif isinstance(self, Func):
+        elif isinstance(self, Proc):
             return self.info()
         elif isinstance(self, Boxedptr):
             return sym_Type(False, "boxedptr", TypeKind.Void)
@@ -28,7 +28,7 @@ class TBase:
     def unalias(self):
         if isinstance(self, (Result, Option)):
             self.typ.unalias()
-        elif isinstance(self, Func):
+        elif isinstance(self, Proc):
             for i in range(len(self.args)):
                 self.args[i].typ.unalias()
             self.ret_typ.unalias()
@@ -252,7 +252,7 @@ class Tuple(TBase):
     def __str__(self):
         return f"({', '.join([str(t) for t in self.types])})"
 
-class Func(TBase):
+class Proc(TBase):
     def __init__(
         self, is_extern, abi, is_method, args, is_variadic, ret_typ,
         self_is_mut, self_is_ptr
@@ -268,7 +268,7 @@ class Func(TBase):
         self.ret_typ = ret_typ
 
     def info(self):
-        return sym_Func(
+        return sym_Proc(
             self.abi, True, self.is_extern, self.is_unsafe, self.is_method,
             self.is_variadic, self.stringify(False),
             self.args, self.ret_typ, False, not self.is_extern,
@@ -279,7 +279,7 @@ class Func(TBase):
         res = ""
         if self.is_extern:
             res += f'extern ({self.abi}) '
-        res += "func("
+        res += "proc("
         if self.is_method:
             if self.self_is_mut:
                 res += "mut "
@@ -317,7 +317,7 @@ class Func(TBase):
         return self.stringify(False)
 
     def __eq__(self, got):
-        if not isinstance(got, Func): return False
+        if not isinstance(got, Proc): return False
         if self.is_unsafe != got.is_unsafe:
             return False
         elif self.is_extern != got.is_extern:
@@ -345,7 +345,7 @@ class Option(TBase):
         self.sym = None
 
     def is_pointer(self):
-        return self.typ.__class__ in (Ptr, Func, Boxedptr) or self.typ.symbol().is_boxed()
+        return self.typ.__class__ in (Ptr, Proc, Boxedptr) or self.typ.symbol().is_boxed()
 
     def qualstr(self):
         return f"?{self.typ.qualstr()}"

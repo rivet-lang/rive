@@ -283,7 +283,7 @@ class ExtendDecl:
         self.decls = decls
         self.pos = pos
 
-class FuncDecl:
+class ProcDecl:
     def __init__(
         self, docs, attributes, is_public, is_extern, is_unsafe, name, name_pos,
         args, ret_typ, stmts, scope, has_body = False, is_method = False,
@@ -623,7 +623,7 @@ class ArrayLiteral:
 
 class GuardExpr:
     # Examples:
-    # - if x := optional_or_result_fn() { ... }
+    # - if x := optional_or_result_proc() { ... }
     # - while byte := reader.read() { ... }
     def __init__(self, vars, expr, has_cond, cond, scope, pos):
         self.vars = vars

@@ -21,7 +21,7 @@ pub struct TypeSym < Sym {
     pub mut align: uint;
     pub mut default_value: ?Expr;
 
-    pub func lookup_field(self, name: string) -> ?Field {
+    pub proc lookup_field(self, name: string) -> ?Field {
         for f in self.fields {
             if f.name == name {
                 return f;
@@ -49,12 +49,12 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func has_field(self, name: string) -> bool {
+    pub proc has_field(self, name: string) -> bool {
         return self.lookup_field(name) != none;
     }
 
     #[inline]
-    pub func lookup(self, name: string) -> ?Sym {
+    pub proc lookup(self, name: string) -> ?Sym {
         return if s := self.scope.lookup(name) {
             s
         } else {
@@ -62,7 +62,7 @@ pub struct TypeSym < Sym {
         };
     }
 
-    pub func find_in_base(self, name: string) -> ?Sym {
+    pub proc find_in_base(self, name: string) -> ?Sym {
          if self.info is .Trait(trait_info) {
             for b in trait_info.bases {
                 if s := b.scope.find(name) {
@@ -91,42 +91,42 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func find_func(self, name: string) -> ?Func {
-        return if sym := self.scope.find(name); sym is Func(func_) {
-            if self.info !is .Trait && !func_.has_body {
+    pub proc find_proc(self, name: string) -> ?Proc {
+        return if sym := self.scope.find(name); sym is Proc(proc_) {
+            if self.info !is .Trait && !proc_.has_body {
                 return none;
             }
-            func_
-        } else if sym := self.find_in_base(name); sym is Func(func_) {
-            if self.info !is .Trait && !func_.has_body {
+            proc_
+        } else if sym := self.find_in_base(name); sym is Proc(proc_) {
+            if self.info !is .Trait && !proc_.has_body {
                 return none;
             }
-            func_
+            proc_
         } else {
             none
         };
     }
 
     #[inline]
-    pub func find_method(self, name: string) -> ?Func {
-        return if func_ := self.find_func(name); func_.is_method {
-            func_
+    pub proc find_method(self, name: string) -> ?Proc {
+        return if proc_ := self.find_proc(name); proc_.is_method {
+            proc_
         } else {
             none
         };
     }
 
     #[inline]
-    pub func has_func(self, name: string) -> bool {
-        return self.find_func(name) != none;
+    pub proc has_proc(self, name: string) -> bool {
+        return self.find_proc(name) != none;
     }
 
     #[inline]
-    pub func has_method(self, name: string) -> bool {
+    pub proc has_method(self, name: string) -> bool {
         return self.find_method(name) != none;
     }
 
-    pub func full_fields(mut self) -> []Field {
+    pub proc full_fields(mut self) -> []Field {
         if !self.full_fields_.is_empty() {
             return self.full_fields_;
         }
@@ -157,7 +157,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func implement_trait(self, trait_sym: TypeSym) -> bool {
+    pub proc implement_trait(self, trait_sym: TypeSym) -> bool {
         return if trait_sym.info is .Trait(trait_info) {
             self in trait_info.implements
         } else {
@@ -165,7 +165,7 @@ pub struct TypeSym < Sym {
         };
     }
 
-    pub func update(mut self, other: TypeSym) -> !bool {
+    pub proc update(mut self, other: TypeSym) -> !bool {
         if self.info is .Placeholder {
             // update placeholder
             if other.info !is .Placeholder {
@@ -182,7 +182,7 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func is_boxed(self) -> bool {
+    pub proc is_boxed(self) -> bool {
         return match self.info {
             .String, .DynArray, .Trait -> true,
             .Struct(struct_info) -> struct_info.is_boxed,
@@ -192,17 +192,17 @@ pub struct TypeSym < Sym {
     }
 
     #[inline]
-    pub func is_primitive(self) -> bool {
+    pub proc is_primitive(self) -> bool {
         return self.info.is_primitive();
     }
 
     #[inline]
-    pub func ==(self, rhs: Self) -> bool {
+    pub proc ==(self, rhs: Self) -> bool {
         return self.id == rhs.id;
     }
 
     #[inline]
-    pub func !=(self, rhs: Self) -> bool {
+    pub proc !=(self, rhs: Self) -> bool {
         return self.id != rhs.id;
     }
 }

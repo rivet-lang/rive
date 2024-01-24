@@ -22,7 +22,7 @@ pub struct Checker {
 
     mut source_file: ast.SourceFile;
     mut sym: ast.Sym := ast.InvalidSym();
-    mut cur_func: ast.Func;
+    mut cur_proc: ast.Proc;
 
     mut inside_extern: bool;
     mut inside_test: bool;
@@ -41,7 +41,7 @@ pub struct Checker {
     mut defer_stmts_start: uint;
     mut defer_stmts: []ast.Stmt.Defer;
 
-    pub func check_files(mut self, mut source_files: []mut ast.SourceFile) {
+    pub proc check_files(mut self, mut source_files: []mut ast.SourceFile) {
         // check global variables
         for mut source_file in source_files {
             self.sym = source_file.mod;
@@ -80,13 +80,13 @@ pub struct Checker {
                     }
                 }
                 if module.name == self.env.prefs.mod_name && !self.env.prefs.is_test && !module.scope.exists("main") {
-                    utils.error("function `main` was not defined on module `{}`".fmt(self.env.prefs.mod_name));
+                    utils.error("procedure `main` was not defined on module `{}`".fmt(self.env.prefs.mod_name));
                 }
             }
         }
     }
 
-    func check_var_decl(
+    proc check_var_decl(
         mut self, mut lefts: []mut ast.ObjectData, mut right: ast.Expr, scope: ast.Scope,
         pos: token.Pos
     ) {
@@ -196,7 +196,7 @@ pub struct Checker {
         }
     }
 
-    func check_scope_vars(self, scope: ast.Scope) {
+    proc check_scope_vars(self, scope: ast.Scope) {
         if !self.inside_extern {
             for sym in scope.syms {
                 if sym is ast.Var(var_info) {
@@ -248,7 +248,7 @@ pub struct Checker {
         }
     }
 
-    func check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
+    proc check_expr_evaluated_but_not_used(self, expr_type: ast.Type, pos: token.Pos) {
         _ = self;
         if !((expr_type is .Result(res) && !res.inner.is_void())
             || (expr_type is .Option(opt) && !opt.inner.is_void())
@@ -257,7 +257,7 @@ pub struct Checker {
         }
     }
 
-    func has_return(self, mut stmts: []mut ast.Stmt, allow_throw: bool := false) -> bool {
+    proc has_return(self, mut stmts: []mut ast.Stmt, allow_throw: bool := false) -> bool {
         for mut stmt in stmts {
             if stmt is .Expr(mut expr) && self.expr_has_return(expr, allow_throw) {
                 return true;
@@ -269,7 +269,7 @@ pub struct Checker {
         return false;
     }
 
-    func expr_has_return(self, mut expr: ast.Expr, allow_throw: bool := false) -> bool {
+    proc expr_has_return(self, mut expr: ast.Expr, allow_throw: bool := false) -> bool {
         return match expr {
             .ComptimeIf(mut comptime_if) -> {
                 mut ct_expr := ast.nodes_to_exprs(self.env.evalue_comptime_if(comptime_if))[0];
@@ -303,7 +303,7 @@ pub struct Checker {
         };
     }
 
-    func inside_unsafe(mut self) -> bool {
+    proc inside_unsafe(mut self) -> bool {
         self.unsafe_operations += 1;
         return self.inside_unsafe_block;
     }

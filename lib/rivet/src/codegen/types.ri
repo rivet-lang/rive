@@ -6,7 +6,7 @@ import ../{ ast, utils, depgraph };
 import ./mir;
 
 extend Codegen {
-    func get_type_symbols(mut self, root: ast.Sym) -> []ast.TypeSym {
+    proc get_type_symbols(mut self, root: ast.Sym) -> []ast.TypeSym {
         mut ts := []ast.TypeSym();
         for sym in root.scope.syms {
             if sym is ast.TypeSym(type_sym) && !(
@@ -22,7 +22,7 @@ extend Codegen {
         return ts;
     }
 
-    func sort_type_symbols(mut self, tss: []ast.TypeSym) {
+    proc sort_type_symbols(mut self, tss: []ast.TypeSym) {
         mut dg := depgraph.DepGraph.new();
         mut type_names := []string();
         for ts in tss {
@@ -104,7 +104,7 @@ extend Codegen {
         }
     }
 
-    func type_to_mir(mut self, type: ast.Type) -> mir.Type {
+    proc type_to_mir(mut self, type: ast.Type) -> mir.Type {
         (size, _) := self.env.type_size(type, true);
         return match type {
             .Void -> .Void,
@@ -163,12 +163,12 @@ extend Codegen {
                         return .Basic(type_sym.name, size, true);
                     }
                     match type_sym.info {
-                        .Func(func_info) -> {
+                        .Proc(proc_info) -> {
                             mut args := []mir.Type();
-                            for arg in func_info.args {
+                            for arg in proc_info.args {
                                 args.push(self.type_to_mir(arg.type));
                             }
-                            .Func(args, self.type_to_mir(func_info.ret_type), size)
+                            .Proc(args, self.type_to_mir(proc_info.ret_type), size)
                         },
                         .Enum(enum_info) if !enum_info.is_tagged -> self.type_to_mir(
                             enum_info.underlying_type

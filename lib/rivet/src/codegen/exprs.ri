@@ -6,7 +6,7 @@ import ./mir;
 import ../ast;
 
 extend Codegen {
-    func gen_expr(mut self, expr: ast.Expr) -> mir.Expr {
+    proc gen_expr(mut self, expr: ast.Expr) -> mir.Expr {
         return match expr {
             .Paren(paren) -> self.gen_expr(paren.expr),
             //.Ident -> {},

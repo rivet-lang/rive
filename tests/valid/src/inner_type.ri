@@ -2,20 +2,20 @@ struct OuterStruct {
     struct InnerStruct {
         abc: int32;
 
-        func method(self) { _ = self; }
+        proc method(self) { _ = self; }
     }
 
     inner: InnerStruct;
 
-    func method(self) {
+    proc method(self) {
         self.inner.method();
     }
 
-    func associated_func() { }
+    proc associated_proc() { }
 
-    func caller(self) {
+    proc caller(self) {
         self.method();
-        OuterStruct.associated_func();
+        OuterStruct.associated_proc();
     }
 }
 
