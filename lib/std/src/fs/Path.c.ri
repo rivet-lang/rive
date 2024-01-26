@@ -220,13 +220,10 @@ pub struct Path {
             }
             result_index += 1;
         }
-        unsafe {
-            result[result_index] = 0;
-        }
         return unsafe {
-            string.from_raw_with_len(
-                @as([&]uint8, mem.boxed_resize(result, result_index)), result_index
-            )
+            res := @as([&]mut uint8, mem.boxed_resize(result, result_index));
+            res[result_index] = 0;
+            string.from_raw_with_len(res, result_index)
         };
     }
 

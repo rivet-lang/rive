@@ -225,7 +225,7 @@ pub struct Builder {
         } else {
             0
         };
-        if is_super || path.starts_with(".") {
+        if is_super || path.starts_with("./") {
             self.vlog("    searching module in local path");
             path2 := path.substr(sum + if is_super { 3 } else { 2 });
             name = if last_idx := path2.last_index_of_byte('/') {
