@@ -36,7 +36,7 @@ pub func boxed_zeroed(size: uint, dtor: ?BoxedptrDestroy := none) -> boxedptr {
 pub func boxed_resize(ptr: boxedptr, size: uint) -> boxedptr {
     old_boxed := Boxedptr.from_boxedptr(ptr);
     new_boxed := unsafe {
-        @as(&mut Boxedptr, raw_resize(@as(rawptr, ptr), BOXEDPTR_SIZE + size))
+        @as(&mut Boxedptr, raw_resize(@as(rawptr, old_boxed.value), size))
     };
     new_boxed.value = unsafe {
         @as(boxedptr, @ptr_add(@as([&]uint8, new_boxed), BOXEDPTR_SIZE))
