@@ -90,7 +90,9 @@ class Array:
         return f"{[self.size]}{self.typ}"
 
     def __eq__(self, other):
-        return isinstance(other, Array) and self.typ == other.typ and self.size == other.size
+        return isinstance(
+            other, Array
+        ) and self.typ == other.typ and self.size == other.size
 
 class Function:
     def __init__(self, args, ret_typ):

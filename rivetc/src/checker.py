@@ -1335,9 +1335,8 @@ class Checker:
                                     f"instead of using tuple indexing, use array indexing: `expr[{expr.field_name}]`"
                                 )
                 expr.left_typ = left_typ
-            if isinstance(
-                expr.left_typ, type.Ptr
-            ) and expr.left_typ.nr_level() > 1 and not expr.is_indirect:
+            if isinstance(expr.left_typ, type.Ptr) and expr.left_typ.nr_level(
+            ) > 1 and not expr.is_indirect:
                 report.error(
                     "fields of an multi-level pointer cannot be accessed directly",
                     expr.pos
