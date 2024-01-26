@@ -130,7 +130,7 @@ func formatted_single_line(pos: token.Pos) {
         start_column := utils.max(0, utils.min(pos.col, line.len));
         end_column := utils.max(0, utils.min(pos.col + utils.max(0, pos.len), line.len));
         mut sb := strings.Builder.new(line.len);
-        write_spaces(sb, start_column, line);
+        write_spaces(&mut sb, start_column, line);
         sb.write(utils.bold(utils.blue("^")));
         if pos.len > 1 {
             sb.write(
@@ -151,7 +151,7 @@ func formatted_multi_line(pos: token.Pos) {
             if line_nr + pos.line == pos.line {
                 mut sb := strings.Builder.new(line.len);
                 sb.write(utils.bold(utils.blue("      | ")));
-                write_spaces(sb, utils.max(0, utils.min(pos.col, line.len)), line);
+                write_spaces(&mut sb, utils.max(0, utils.min(pos.col, line.len)), line);
                 sb.write(utils.bold(utils.blue("/~~ from here")));
                 console.ewriteln(sb.to_string());
             }
@@ -167,7 +167,7 @@ func formatted_multi_line(pos: token.Pos) {
             if line_nr + pos.line == pos.end_line {
                 mut sb := strings.Builder.new(line.len);
                 sb.write(utils.bold(utils.blue("      | ")));
-                write_spaces(sb, utils.max(0, utils.min(pos.end_col, line.len)), line);
+                write_spaces(&mut sb, utils.max(0, utils.min(pos.end_col, line.len)), line);
                 sb.write(utils.bold(utils.blue("^~~ to here")));
                 console.ewriteln(sb.to_string());
             }
@@ -175,7 +175,7 @@ func formatted_multi_line(pos: token.Pos) {
     }
 }
 
-func write_spaces(mut sb: strings.Builder, start_column: uint, line: string) {
+func write_spaces(sb: &mut strings.Builder, start_column: uint, line: string) {
     mut i: uint := 0;
     while i < start_column {
         b := line[i];
