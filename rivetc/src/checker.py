@@ -645,7 +645,7 @@ class Checker:
                     expected_pointer = False
                     indexable_pointer = False
                 right = expr.right
-                if isinstance(right, ast.ParExpr):
+                while isinstance(right, ast.ParExpr):
                     right = right.expr
                 if isinstance(right, ast.IndexExpr):
                     if isinstance(

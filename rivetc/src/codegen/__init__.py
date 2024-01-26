@@ -1715,7 +1715,7 @@ class Codegen:
                 res = self.boxed_instance(self.ir_type(expr.right_typ), size)
                 self.cur_func.store_ptr(res, right)
                 return res
-            right = self.gen_expr_with_cast(expr.right_typ, expr.right)
+            right = self.gen_expr(expr.right)
             expr_typ = self.ir_type(expr.typ)
             if expr.op == Kind.Amp:
                 if isinstance(right.typ, ir.Ptr
