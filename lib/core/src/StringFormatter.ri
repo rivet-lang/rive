@@ -126,7 +126,6 @@ pub struct StringFormatter {
                 runtime_error("string.fmt: incomplete format string (index: {})", start);
             }
         }
-        console_writeln("{}", buf.as_string());
         fwidth := buf.as_int();
         if fwidth == 0 {
             runtime_error(

@@ -220,9 +220,14 @@ pub struct Builder {
         mut abspath := "";
         mut files := []string();
         is_super := path.starts_with("../");
-        if path.starts_with("./") || is_super {
+        sum: uint := if path.starts_with("./") || path.starts_with("/..") {
+            1
+        } else {
+            0
+        };
+        if is_super || path.starts_with(".") {
             self.vlog("    searching module in local path");
-            path2 := path.substr(if is_super { 3 } else { 2 });
+            path2 := path.substr(sum + if is_super { 3 } else { 2 });
             name = if last_idx := path2.last_index_of_byte('/') {
                 path2.substr(last_idx + 1)
             } else {
@@ -233,6 +238,9 @@ pub struct Builder {
             process.set_cwd(dir_name)!;
             if Path.is_directory(path) {
                 found = true;
+                if name.is_empty() { // path == "." || path == ".."
+                    name = Path.base_name(Path.dir_name(Path.absolute(name)!)?);
+                }
                 abspath = Path.resolve(path)!;
                 mut mod_basedir := Path.dir_name(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
