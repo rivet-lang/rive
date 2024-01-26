@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../{ ast, report, utils/maps };
+import ../{ ast, utils/{maps, report} };
 
 extend Checker {
     func check_call(^mut self, call_expr: &mut ast.Expr.Call) -> ^mut ast.Type {

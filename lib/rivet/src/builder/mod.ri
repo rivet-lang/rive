@@ -7,7 +7,7 @@ import std/{
 };
 
 import ../{
-    ast, prefs, token, parser, report, checker, resolver, utils/{self, depgraph}
+    ast, prefs, token, parser, checker, resolver, utils/{self, depgraph, report}
 };
 
 pub struct Builder {

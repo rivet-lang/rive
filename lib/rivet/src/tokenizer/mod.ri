@@ -4,7 +4,7 @@
 
 import std/{ process, strings };
 
-import ../{ ast, token, utils, report, utils.{LF, CR} };
+import ../{ ast, token, utils/{self, report}, utils.{LF, CR} };
 
 const NUM_SEP := b'_';
 

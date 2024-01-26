@@ -4,7 +4,7 @@
 
 import std/{ traits, strings, console };
 
-import ../{ prefs, token, utils };
+import ../../{ prefs, token, utils };
 
 pub var report_table := ^mut ReportTable();
 

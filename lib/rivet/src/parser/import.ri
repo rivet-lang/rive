@@ -4,7 +4,7 @@
 
 import std/strings;
 
-import ../{ ast, report, token };
+import ../{ ast, utils/report, token };
 
 extend Parser {
     #[inline]

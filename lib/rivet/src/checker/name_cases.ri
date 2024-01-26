@@ -4,7 +4,7 @@
 
 import std/traits;
 
-import ../{ token, utils, report };
+import ../{ token, utils/{self, report} };
 
 extend Checker {
     enum NameCase as uint8 < traits.Stringable {

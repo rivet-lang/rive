@@ -4,7 +4,7 @@
 
 import std/fs.Path;
 
-import ../{ ast, report, token, tokenizer };
+import ../{ ast, utils/report, token, tokenizer };
 
 #[boxed]
 pub struct Parser {

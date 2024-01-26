@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../{ ast, token, report };
+import ../{ ast, token, utils/report };
 
 extend Checker {
     func check_stmts(^mut self, stmts: []^mut ast.Stmt) {

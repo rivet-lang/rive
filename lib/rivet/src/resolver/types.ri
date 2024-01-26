@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import ../{ ast, report };
+import ../{ ast, utils/report };
 
 extend Resolver {
     func resolve_type(^mut self, type: ^mut ast.Type) -> bool {
