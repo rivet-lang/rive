@@ -2,12 +2,12 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-import std/{ 
+import std/{
     flag, semver, strings, console, process, fs.{self, Path, Directory}
 };
 import rivet/utils;
 
-import ./{templates, project.*};
+import ./{project.*, project/templates};
 
 var new_desc := "Sets up a new Rivet project and performs `git init` (if `git` is installed
 on the system).";
