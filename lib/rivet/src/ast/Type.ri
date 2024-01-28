@@ -45,7 +45,7 @@ pub enum Type < traits.Stringable {
     },
     Tuple {
         inners: []^mut Type;
-        mut sym: ^mut TypeSym;
+        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
         pos: token.Pos;
 
         func ==(&self, other: &Self) -> bool {
@@ -63,19 +63,19 @@ pub enum Type < traits.Stringable {
     Variadic {
         inner: ^mut Type;
         is_mut: bool;
-        mut sym: ^mut TypeSym;
+        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
         pos: token.Pos;
     },
     Slice {
         inner: ^mut Type;
         is_mut: bool;
-        mut sym: ^mut TypeSym;
+        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
         pos: token.Pos;
     },
     DynArray {
         inner: ^mut Type;
         is_mut: bool;
-        mut sym: ^mut TypeSym;
+        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
         pos: token.Pos;
     },
     Array {
@@ -83,7 +83,7 @@ pub enum Type < traits.Stringable {
         is_mut: bool;
         mut size: ^mut Expr;
         mut size_value: uint;
-        mut sym: ^mut TypeSym;
+        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
         pos: token.Pos;
     },
     Func {
@@ -93,7 +93,7 @@ pub enum Type < traits.Stringable {
         args: []^mut Arg;
         ret_type: ^mut Type;
         pos: token.Pos;
-        mut sym: ^mut TypeSym;
+        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
         mut has_sym: bool;
 
         #[inline]
@@ -141,7 +141,7 @@ pub enum Type < traits.Stringable {
                 slice_data.inner.unalias() ?? slice_data.inner, slice_data.is_mut, ...self.^
             ),
             .DynArray(dyn_array_data) -> ^mut .DynArray(
-                dyn_array_data.inner.unalias() ?? dyn_array_data.inner, dyn_array_data.is_mut, 
+                dyn_array_data.inner.unalias() ?? dyn_array_data.inner, dyn_array_data.is_mut,
                 ...self.^
             ),
             .Array(array_data) -> ^mut .Array(
@@ -531,8 +531,8 @@ extend Env {
         return match type.^ {
             .Result, .Option -> self.type_symbol_size(self.throwable_sym, is_raw),
             .Rawptr, .Boxedptr, .Pointer, .Func, .Boxed -> (self.pointer_size, self.pointer_size),
-            .Boxed(boxed) -> if is_raw { 
-                (self.pointer_size, self.pointer_size) 
+            .Boxed(boxed) -> if is_raw {
+                (self.pointer_size, self.pointer_size)
             } else {
                 self.type_size(boxed.type, is_raw)
             },

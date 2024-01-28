@@ -37,7 +37,7 @@ pub struct ImportListInfo {
 #[boxed]
 pub struct ImportedSymbol {
     pub name: string;
-    pub sym: ^mut Sym;
+    pub sym: ^mut Sym := INVALID_SYM;
     pub pos: token.Pos;
     pub mut is_used: bool;
 }

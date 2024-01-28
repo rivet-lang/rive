@@ -54,13 +54,15 @@ pub enum ABI as uint8 < traits.Stringable {
     }
 }
 
+pub var INVALID_SYM := ^mut InvalidSym();
+
 pub trait Sym {
     id: uint := new_sym_id();
     abi: ABI;
     mut is_public: bool;
     parent: ?^mut Sym;
     name: string;
-    mut scope: ^mut Scope;
+    mut scope: ^mut Scope := ^mut Scope();
     mut mangled_name: string;
     mut qualified_name: string;
     is_universe: bool;
