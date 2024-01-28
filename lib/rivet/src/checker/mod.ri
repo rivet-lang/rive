@@ -22,7 +22,7 @@ pub struct Checker {
 
     mut source_file: ^mut ast.SourceFile;
     sym: ^mut ast.Sym := ast.InvalidSym();
-    mut cur_func: ^mut ast.Func;
+    mut cur_func: ^mut ast.Func := ^mut ast.Func();
 
     mut inside_extern: bool;
     mut inside_test: bool;

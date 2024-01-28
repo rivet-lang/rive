@@ -54,7 +54,7 @@ pub func cmd_new(args: [:]string, is_init: bool) -> ! {
         utils.error(err_fp.to_string())
     };
 
-    mut project := Project();
+    mut project := Project(version: semver.Version.build(0, 1, 0));
     if is_init {
         project.name = Path.base_name(process.get_cwd()!);
     } else {
@@ -72,8 +72,6 @@ pub func cmd_new(args: [:]string, is_init: bool) -> ! {
             project.version = semver.Version.from_string(version) catch |err| {
                 utils.error(err.to_string())
             };
-        } else {
-            project.version = semver.Version.build(0, 1, 0);
         }
         if license := readln("License (optional):") {
             project.license = license;
