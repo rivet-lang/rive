@@ -21,7 +21,7 @@ pub struct Comment {
 }
 
 // Used in variable declarations/statements and guard expressions.
-#[boxed]
+#[boxed; default_value(^mut ObjectData())]
 pub struct ObjectData {
     pub name: string;
     pub is_mut: bool;
@@ -30,7 +30,7 @@ pub struct ObjectData {
     pub mut type: ^mut Type;
     pub level: VarLevel;
     pub pos: token.Pos;
-    pub mut sym: ^mut Var;
+    pub mut sym: ^mut Var := ^mut Var();
     pub is_extern: bool;
     pub is_global: bool;
 }

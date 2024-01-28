@@ -4,7 +4,9 @@
 
 import std/process;
 
-#[boxed]
+pub var empty_scope := ^mut Scope();
+
+#[boxed; default_value(empty_scope)]
 pub struct Scope {
     pub start: uint;
     pub mut end: uint;

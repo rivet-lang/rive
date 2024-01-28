@@ -12,7 +12,7 @@ pub struct Field {
     pub is_required: bool;
 }
 
-pub var INVALID_TYPE_SYM := ^mut TypeSym();
+pub var invalid_type_sym := ^mut TypeSym();
 
 #[boxed]
 pub struct TypeSym < Sym {

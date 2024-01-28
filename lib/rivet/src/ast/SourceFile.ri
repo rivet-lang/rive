@@ -4,11 +4,13 @@
 
 import ../token;
 
-#[boxed]
+pub var empty_source_file := ^mut SourceFile();
+
+#[boxed; default_value(empty_source_file)]
 pub struct SourceFile {
     pub path: string;
     pub decls: []^mut Decl;
-    pub mut mod: ^mut Module;
+    pub mut mod: ^mut Module := empty_module;
     pub mut imported_symbols: ImportedSymbols;
     pub pos: token.Pos;
 }

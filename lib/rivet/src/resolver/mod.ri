@@ -16,7 +16,7 @@ pub struct Resolver {
     mut env: ^mut ast.Env;
 
     sym: ^mut ast.Sym := ast.InvalidSym();
-    mut self_sym: ^mut ast.TypeSym;
+    mut self_sym: ^mut ast.TypeSym := ast.invalid_type_sym;
     mut preludes: []Prelude;
 
     mut self_sym_is_set: bool;

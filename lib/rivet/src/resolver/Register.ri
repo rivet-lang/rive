@@ -12,7 +12,7 @@ pub struct Register {
     mut is_core_mod: bool;
 
     mut abi: ast.ABI;
-    sym: ^mut ast.Sym := ast.InvalidSym();
+    sym: ^mut ast.Sym := ast.invalid_sym;
     source_file: ^mut ast.SourceFile;
 
     pub func walk_files(^mut self, source_files: []^mut ast.SourceFile) {

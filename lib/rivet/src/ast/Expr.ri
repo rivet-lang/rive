@@ -37,7 +37,7 @@ pub enum Expr < traits.Stringable {
         mut is_obj: bool;
         mut is_sym: bool;
         mut found: bool;
-        mut sym: ^mut Sym := INVALID_SYM;
+        mut sym: ^mut Sym := invalid_sym;
         mut builtin: Builtin := .Invalid;
         pos: token.Pos;
         mut type: ^mut Type;
@@ -46,13 +46,13 @@ pub enum Expr < traits.Stringable {
         scope: ^mut Scope;
         pos: token.Pos;
         mut found: bool;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
     },
     SelfLiteral {
         mut scope: ^mut Scope;
         pos: token.Pos;
         mut found: bool;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         mut obj: ^mut Var;
         mut type: ^mut Type;
     },
@@ -93,7 +93,7 @@ pub enum Expr < traits.Stringable {
         from_is_cmp: bool;
         pos: token.Pos;
         mut type: ^mut Type;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         mut variant: EnumVariant;
     },
     TupleLiteral {
@@ -121,14 +121,14 @@ pub enum Expr < traits.Stringable {
     Selector {
         mut left: ^mut Expr;
         mut left_type: ^mut Type;
-        mut left_sym: ^mut Sym := INVALID_SYM;
+        mut left_sym: ^mut Sym := invalid_sym;
         field_name: string;
         field_pos: token.Pos;
         mut field_is_mut: bool;
         mut field_type: ^mut Type;
         mut is_path: bool;
         mut found: bool;
-        mut sym: ^mut Sym := INVALID_SYM;
+        mut sym: ^mut Sym := invalid_sym;
         pos: token.Pos;
         mut type: ^mut Type;
     },
@@ -182,7 +182,7 @@ pub enum Expr < traits.Stringable {
         mut is_constructor: bool;
 
         mut is_enum_variant: bool;
-        mut enum_variant_sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut enum_variant_sym: ^mut TypeSym := invalid_type_sym;
 
         func has_named_args(&self) -> bool {
             for arg in self.args {

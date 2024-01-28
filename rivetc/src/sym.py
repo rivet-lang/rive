@@ -346,7 +346,7 @@ class Var(Sym):
 class Field:
     def __init__(
         self, name, is_mut, is_public, typ, has_def_expr = False,
-        def_expr = None
+        def_expr = None, attrs = None
     ):
         self.name = name
         self.is_mut = is_mut
@@ -354,6 +354,7 @@ class Field:
         self.typ = typ
         self.has_def_expr = has_def_expr
         self.def_expr = def_expr
+        self.attrs = None
 
 class TypeKind(Enum):
     Placeholder = auto_enum()
@@ -554,8 +555,9 @@ class StructInfo:
         self.is_enum_variant = is_enum_variant
 
 class Type(Sym):
-    def __init__(self, is_public, name, kind, fields = [], info = None):
+    def __init__(self, is_public, name, kind, fields = [], info = None, attributes=None):
         Sym.__init__(self, is_public, name)
+        self.attributes = attributes
         self.kind = kind
         self.fields = fields.copy()
         self.full_fields_ = []

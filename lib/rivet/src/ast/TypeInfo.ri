@@ -130,7 +130,7 @@ pub enum TypeInfo < traits.Stringable {
         is_boxed: bool;
         is_opaque: bool;
         is_enum_variant: bool;
-        mut parent: ^mut TypeSym; // enum type symbol if this is a enum variant
+        mut parent: ^mut TypeSym := invalid_type_sym; // enum type symbol if this is a enum variant
         mut bases: []^mut TypeSym;
         mut traits: []^mut TypeSym;
 

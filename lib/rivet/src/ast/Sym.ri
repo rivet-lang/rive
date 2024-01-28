@@ -23,38 +23,7 @@ pub struct DuplicateSymbolError < Throwable {
     }
 }
 
-pub enum ABI as uint8 < traits.Stringable {
-    Rivet,
-    C;
-
-    #[inline]
-    pub func from_string(abi: string) -> ?ABI {
-        return match abi {
-            "C" -> .C,
-            "Rivet" -> .Rivet,
-            else -> none
-        };
-    }
-
-    // TODO: remove, use `.to_lower()` instead
-    #[inline]
-    pub func lower(&self) -> string {
-        return match self.* {
-            .C -> "c",
-            .Rivet -> "rivet"
-        };
-    }
-
-    #[inline]
-    pub func to_string(&self) -> string {
-        return match self.* {
-            .C -> "C",
-            .Rivet -> "Rivet"
-        };
-    }
-}
-
-pub var INVALID_SYM := ^mut InvalidSym();
+pub var invalid_sym := ^mut InvalidSym();
 
 pub trait Sym {
     id: uint := new_sym_id();
@@ -142,10 +111,12 @@ pub struct InvalidSym < Sym {}
 
 #[boxed]
 pub struct SymRef < Sym {
-    pub mut ref: ^mut Sym;
+    pub mut ref: ^mut Sym := invalid_sym;
     pub mut ref_expr: ^mut Expr;
     pub mut ref_resolved: bool;
 }
+
+pub var empty_module := ^mut Module();
 
 #[boxed]
 pub struct Module < Sym {

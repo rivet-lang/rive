@@ -1700,6 +1700,10 @@ class Checker:
                 for f in type_fields:
                     if isinstance(f.typ, type.Option) or f.has_def_expr:
                         continue
+                    fsym = f.typ.symbol()
+                    if fsym != None and fsym.attributes != None:
+                        if fsym.attributes.has("default_value"):
+                            continue
                     if f.name not in initted_fields:
                         if (isinstance(f.typ, type.Type)
                             and f.typ.is_boxed) or isinstance(f.typ, type.Ptr):

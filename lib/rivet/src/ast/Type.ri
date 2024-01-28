@@ -4,15 +4,14 @@
 
 import std/{ traits, process, strings.Builder };
 
-import ../token;
-import ../utils;
+import ../{token, utils};
 
 #[boxed; default_value(^mut .Void)]
 pub enum Type < traits.Stringable {
     Basic {
         mut sym: ?^mut TypeSym;
         mut is_unresolved: bool;
-        mut expr: ^mut Expr;
+        mut expr: ^mut Expr := ^mut .Empty(token.no_pos);
         pos: token.Pos;
     },
     Boxed {
@@ -45,7 +44,7 @@ pub enum Type < traits.Stringable {
     },
     Tuple {
         inners: []^mut Type;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         pos: token.Pos;
 
         func ==(&self, other: &Self) -> bool {
@@ -63,19 +62,19 @@ pub enum Type < traits.Stringable {
     Variadic {
         inner: ^mut Type;
         is_mut: bool;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         pos: token.Pos;
     },
     Slice {
         inner: ^mut Type;
         is_mut: bool;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         pos: token.Pos;
     },
     DynArray {
         inner: ^mut Type;
         is_mut: bool;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         pos: token.Pos;
     },
     Array {
@@ -83,7 +82,7 @@ pub enum Type < traits.Stringable {
         is_mut: bool;
         mut size: ^mut Expr;
         mut size_value: uint;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         pos: token.Pos;
     },
     Func {
@@ -93,7 +92,7 @@ pub enum Type < traits.Stringable {
         args: []^mut Arg;
         ret_type: ^mut Type;
         pos: token.Pos;
-        mut sym: ^mut TypeSym := INVALID_TYPE_SYM;
+        mut sym: ^mut TypeSym := invalid_type_sym;
         mut has_sym: bool;
 
         #[inline]

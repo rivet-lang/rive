@@ -16,7 +16,7 @@ pub struct Parser {
     mut peek_tok: token.Token;
     mut last_err_pos: token.Pos;
 
-    mod_sym: ^mut ast.Module;
+    mod_sym: ^mut ast.Module := ast.empty_module;
     mut file_path: string;
     mut file_dir: string;
     mut scope: ^mut ast.Scope;
