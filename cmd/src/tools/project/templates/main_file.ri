@@ -9,7 +9,7 @@ func main() {
 }
 ";
 
-pub var lib_file := "pub func add(a: int32, b: int32) -> int32 {
+pub var lib_file := "pub func add(a: int, b: int) -> int {
     return a + b;
 }
 
