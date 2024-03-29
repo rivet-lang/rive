@@ -64,7 +64,7 @@ pub func boxed_release(ptr: boxedptr) {
             unsafe {
                 raw_dealloc(boxed);
             }
-            boxed.ref_count = -1;
+            //boxed.ref_count = -1;
         }
     }
 }
