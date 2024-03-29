@@ -33,7 +33,9 @@ pub struct Parser {
     mut inside_match_header: bool;
     mut inside_block: bool;
 
-    pub func parse_module(^mut self, mod_sym: ^mut ast.Module, files: []string) -> []^mut ast.SourceFile {
+    pub func parse_module(
+        ^mut self, mod_sym: ^mut ast.Module, files: []string
+    ) -> []^mut ast.SourceFile {
         self.scope = mod_sym.scope;
         self.mod_sym = mod_sym;
         return self.parse_module_files(files);

@@ -44,7 +44,7 @@ func main() {
         },
         "new", "init" -> tools.cmd_new(process.args[2:], cmd == "init")!,
         "fmt" -> tools.cmd_fmt(process.args[2:])!,
-        "version" -> {
+        "-v", "--version", "version" -> {
             console.ewriteln(utils.full_version());
             process.exit(0);
         },
