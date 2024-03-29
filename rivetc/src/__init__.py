@@ -223,9 +223,8 @@ class Compiler:
         abspath = ""
         files = []
         is_super = pathx.startswith("..")
-        sum = 1 if (pathx.startswith("./") or pathx.startswith("../")) else 0
         if is_super or pathx.startswith("."):
-            pathx2 = pathx[2 + sum if is_super else 1 + sum:]
+            pathx2 = pathx[3 if is_super else 2:]
             name = pathx2[pathx2.rfind("/") + 1:]
             dirname = path.abspath(path.dirname(file_path))
             old_wd = os.getcwd()

@@ -197,7 +197,7 @@ pub struct Builder {
                 mod.mod = if mod_mod_ := self.env.universe.scope.find(mod.full_name) {
                     @as(^mut ast.Module, mod_mod_)
                 } else {
-                    mod_sym := ^mut ast.Module(name: mod.full_name);
+                    mod_sym := ^mut ast.Module(name: mod.full_name, scope: ^mut ast.Scope());
                     self.env.universe.scope.add(mod_sym) catch |err| {
                         report.error(err.to_string(), pos)
                     };
@@ -220,14 +220,9 @@ pub struct Builder {
         mut abspath := "";
         mut files := []string();
         is_super := path.starts_with("../");
-        sum: uint := if path.starts_with("./") || path.starts_with("/..") {
-            1
-        } else {
-            0
-        };
         if is_super || path.starts_with("./") {
             self.vlog("    searching module in local path");
-            path2 := path.substr(sum + if is_super { 3 } else { 2 });
+            path2 := path.substr(if is_super { 3 } else { 2 });
             name = if last_idx := path2.last_index_of_byte('/') {
                 path2.substr(last_idx + 1)
             } else {
@@ -238,9 +233,6 @@ pub struct Builder {
             process.set_cwd(dir_name)!;
             if Path.is_directory(path) {
                 found = true;
-                if name.is_empty() { // path == "." || path == ".."
-                    name = Path.base_name(Path.dir_name(Path.absolute(name)!)?);
-                }
                 abspath = Path.resolve(path)!;
                 mut mod_basedir := Path.dir_name(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
@@ -254,9 +246,13 @@ pub struct Builder {
                 );
                 full_name = if "src" in names {
                     src_idx := utils.index_of(names[:], "src");
-                    utils.join(names[:src_idx], ".").concat(
-                        ".", utils.join(names[src_idx + 1:], ".")
-                    )
+                    if src_idx == 0 {
+                        utils.join(names[src_idx + 1:], ".")
+                    } else {
+                        utils.join(names[:src_idx], ".").concat(
+                            ".", utils.join(names[src_idx + 1:], ".")
+                        )
+                    }
                 } else {
                     utils.join(names[:], ".")
                 };
