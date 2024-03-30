@@ -43,8 +43,7 @@ pub struct OrderedDepMap {
         }
         for i, _ in self.keys {
             if self.keys[i] == name {
-                // FIXME: self.keys.delete(i, no_slices: true);
-                self.keys.delete(i);
+                self.keys.delete(i, no_slices: true);
                 break;
             }
         }
