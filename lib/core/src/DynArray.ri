@@ -105,7 +105,7 @@ struct DynArray {
     /// NOTE: This function does NOT operate in-place. Internally, it creates a copy
     /// of the dynamic array, skipping over `size` elements starting at `i`, and then
     /// points the original variable to the new memory location.
-    pub func delete(&mut self, i: uint, size: uint := 1) {
+    pub func delete(&mut self, i: uint, size: uint := 1, no_slices: bool := false) {
         if i + size > self.len {
             end_idx := if size == 1 { "..{}".fmt(i + size) } else { "" };
             runtime_error(
@@ -126,7 +126,7 @@ struct DynArray {
                 @ptr_add(@as(rawptr, old_ptr), (i + size) * self.elem_size),
                 (self.len - i - size) * self.elem_size
             );
-            // FIXME: mem.boxed_release(old_ptr);
+            if no_slices { mem.boxed_release(old_ptr); }
         }
         self.len = new_size;
         self.cap = new_cap;
