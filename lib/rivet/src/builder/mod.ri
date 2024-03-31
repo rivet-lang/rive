@@ -234,7 +234,7 @@ pub struct Builder {
             if Path.is_directory(path) {
                 found = true;
                 if name.is_empty() { // path == "." || path == ".."
-                    name = Path.base_name(Path.dir_name(Path.absolute(name)!)?);
+                    name = Path.base_name(Path.dir_name(Path.absolute(path)!)?);
                 }
                 abspath = Path.resolve(path)!;
                 mut mod_basedir := Path.dir_name(abspath) ?? abspath;
