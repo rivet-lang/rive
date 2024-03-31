@@ -233,6 +233,9 @@ pub struct Builder {
             process.set_cwd(dir_name)!;
             if Path.is_directory(path) {
                 found = true;
+                if name.is_empty() { // path == "." || path == ".."
+                    name = Path.base_name(Path.dir_name(Path.absolute(name)!)?);
+                }
                 abspath = Path.resolve(path)!;
                 mut mod_basedir := Path.dir_name(abspath) ?? abspath;
                 if mod_basedir.ends_with("/src") {
