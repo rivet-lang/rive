@@ -24,6 +24,11 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 </div>
 
+> [!NOTE]
+> The compiler is currently on a hiatus, I will soon return to continue its development,
+> in the meantime, I am focusing on other projects; I'm currently working on a compiler
+> that generates Lua code: [BlueScript](https://github.com/StunxFS/bluescript).
+
 Rivet's goal is to be a very powerful programming language and at the same time easy
 to use, with a syntax that is the result of mixing Go + Zig + C# and other languages
 such as Python, Lua, TypeScript, D, Swift, etc.
@@ -75,15 +80,14 @@ More examples in the [`examples/`](examples/) folder.
 It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
 folder.
 
-## Important note
-
-Currently the language is in alpha state, and therefore its syntax and the language
-API is not stable, and may change in the long term. Not all features are implemented.
-
-Compiler version 0.1.0 will be released when the self-hosted compiler can compile itself
-successfully.
-
-Only linux is supported for now. Windows is not well supported, and macOS is not supported
-yet. Any help to provide full support for both Windows and macOS is welcome.
-
-Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
+> [!IMPORTANT]
+> Currently the language is in alpha state, and therefore its syntax and the language
+> API is not stable, and may change in the long term. Not all features are implemented.
+> 
+> Compiler version 0.1.0 will be released when the self-hosted compiler can compile itself
+> successfully.
+> 
+> Only linux is supported for now. Windows is not well supported, and macOS is not supported
+> yet. Any help to provide full support for both Windows and macOS is welcome.
+> 
+> Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
