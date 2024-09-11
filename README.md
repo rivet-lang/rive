@@ -20,8 +20,6 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
 ![license](https://img.shields.io/github/license/rivet-lang/rivet?style=flat-square)
 
-[![](https://dcbadge.vercel.app/api/server/thCA4VsWgs)](https://discord.gg/thCA4VsWgs)
-
 </div>
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
@@ -35,6 +33,18 @@ there will be an interpreter available.
 You can find information on how to build Rivet on your computer by going to the
 [documentation](https://rivet-lang.github.io/docs).
 
+> [!IMPORTANT]
+> Currently the language is in alpha state, and therefore its syntax and the language
+> API is not stable, and may change in the long term. Not all features are implemented.
+> 
+> Compiler version 0.1.0 will be released when the self-hosted compiler can compile itself
+> successfully.
+> 
+> Only linux is supported for now. Windows is not well supported, and macOS is not supported
+> yet. Any help to provide full support for both Windows and macOS is welcome.
+> 
+> Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
+
 ## Why?
 
 There are many programming languages today, each specialized in a specific field or in
@@ -47,42 +57,29 @@ Rivet takes the best features of existing programming languages and tries  to un
 into a single programming language, so that software development has the  best possible
 quality.
 
-## Features
+## Features (WIP)
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Named and optional arguments**: Very useful, `my_func(arg0: 5)`.
+* **Named and optional arguments**: Very useful, `my_func(arg0 = 5)`.
 * **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
-* **Easy error handling**: With result types, `const my_func = function() -> !T { ... }`,
+* **Easy error handling**: With result types, `const my_func = func() -> !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
     structs have internal immutability.
 * **Polymorphism**: Traits, Embedded Structs and Tagged Enums are supported.
-* **Generics**: Specialize and reuse the same code for different types (**coming soon**).
+* **Generics**: Specialize and reuse the same code for different types.
 
 More features that will be added in the self-hosted compiler can be seen in the [roadmap](ROADMAP.md).
 
 ## Example: The classic `Hello World!`
 
 ```zig
-import std/console;
+import "std/console";
 
-const main = function() {
+const main = func() {
     console.log("Hello World!");
 };
 ```
 
-More examples in the [`examples/`](examples/) folder.
-It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
-folder.
-
-> [!IMPORTANT]
-> Currently the language is in alpha state, and therefore its syntax and the language
-> API is not stable, and may change in the long term. Not all features are implemented.
-> 
-> Compiler version 0.1.0 will be released when the self-hosted compiler can compile itself
-> successfully.
-> 
-> Only linux is supported for now. Windows is not well supported, and macOS is not supported
-> yet. Any help to provide full support for both Windows and macOS is welcome.
-> 
-> Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
+<!-- It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
+folder. -->
