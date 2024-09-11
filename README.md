@@ -24,14 +24,8 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 
 </div>
 
-> [!NOTE]
-> The compiler is currently on a hiatus, I will soon return to continue its development,
-> in the meantime, I am focusing on other projects; I'm currently working on a compiler
-> that generates Lua code: [BlueScript](https://github.com/StunxFS/bluescript).
-
 Rivet's goal is to be a very powerful programming language and at the same time easy
-to use, with a syntax that is the result of mixing Go + Zig + C# and other languages
-such as Python, Lua, TypeScript, D, Swift, etc.
+to use, whose syntax is inspired by Go, Zig and C# and other programming languages.
 
 Currently, Rivet uses C as the only backend and generates C99 code that is compiled using
 a C compiler (by default, gcc or clang). The idea is that in the long term there will be
@@ -58,7 +52,7 @@ quality.
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
 * **Named and optional arguments**: Very useful, `my_func(arg0: 5)`.
 * **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
-* **Easy error handling**: With result types, `func my_func() -> !T { ... }`,
+* **Easy error handling**: With result types, `const my_func = function() -> !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
     structs have internal immutability.
@@ -69,13 +63,14 @@ More features that will be added in the self-hosted compiler can be seen in the 
 
 ## Example: The classic `Hello World!`
 
-```swift
+```zig
 import std/console;
 
-func main() {
-    console.writeln("Hello World!");
-}
+const main = function() {
+    console.log("Hello World!");
+};
 ```
+
 More examples in the [`examples/`](examples/) folder.
 It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
 folder.

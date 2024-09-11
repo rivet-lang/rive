@@ -1,5 +1,0 @@
-import std/console;
-
-func main() {
-    console.writeln("Hello World!");
-}

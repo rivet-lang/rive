@@ -1,4 +1,0 @@
-tests/invalid/missing_function_return_type.ri:3:12: error: expected return type declaration
-    3 | func ret() -> { }
-      |            ^~
-rivet: error: could not compile module `missing_function_return_type`, aborting due to previous error

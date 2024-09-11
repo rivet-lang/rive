@@ -1,5 +1,0 @@
-func main() {
-    x: ?int := none;
-    _ = x == none; // ok
-    _ = x == 1; // fail
-}

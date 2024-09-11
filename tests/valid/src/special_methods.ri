@@ -1,5 +1,0 @@
-struct SpecialMethods {
-    func __destroy__(self) {
-        _ = self;
-    }
-}

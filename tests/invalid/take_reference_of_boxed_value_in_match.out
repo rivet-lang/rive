@@ -1,7 +1,0 @@
-tests/invalid/take_reference_of_boxed_value_in_match.ri:9:17: error: cannot take the address of a boxed value
-    9 |         .String(&str) -> _ = str, // fail
-      |                 ^~~~
-tests/invalid/take_reference_of_boxed_value_in_match.ri:13:28: error: cannot take the address of a boxed value
-   13 |     @assert(val is .String(&str2) && str2.* == "Abc"); // fail
-      |                            ^~~~~
-rivet: error: could not compile module `take_reference_of_boxed_value_in_match`, aborting due to 2 previous errors

@@ -1,4 +1,0 @@
-tests/invalid/directly_call_a_special_method.ri:9:5: error: cannot call a special method directly
-    9 |     d.__destroy__();
-      |     ^~~~~~~~~~~~~~~
-rivet: error: could not compile module `directly_call_a_special_method`, aborting due to previous error

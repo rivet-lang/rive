@@ -1,8 +1,0 @@
-// Copyright (C) 2023-present Jose Mendoza - All rights reserved. Use of this
-// source code is governed by an MIT license that can be found in the LICENSE
-// file.
-
-import core;
-
-pub alias Stringable := core.Stringable;
-pub alias Hashable := core.Hashable;

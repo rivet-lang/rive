@@ -1,9 +1,0 @@
-tests/invalid/invalid_unqualified_import.ri:3:8: error: invalid syntax for unqualified import
-    3 | import std/dynlib.; // fail
-      |        ^~~~~~~~~~
-      = note: expected a single name, a list of names or `*`
-tests/invalid/invalid_unqualified_import.ri:5:17: warning: unnecessary use of braces
-    5 | import std/hash.{ wyhash }; // warning
-      |                 ^~~~~~~~~~
-      = help: consider removing those braces
-rivet: error: could not compile module `invalid_unqualified_import`, aborting due to previous error; 1 warning emitted

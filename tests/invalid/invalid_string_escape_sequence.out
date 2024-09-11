@@ -1,4 +1,0 @@
-tests/invalid/invalid_string_escape_sequence.ri:2:14: error: unknown escape sequence `_`
-    2 |     _ = "abc\_def";
-      |              ^
-rivet: error: could not compile module `invalid_string_escape_sequence`, aborting due to previous error
