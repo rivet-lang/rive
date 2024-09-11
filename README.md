@@ -60,26 +60,24 @@ quality.
 ## Features (WIP)
 
 * **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Named and optional arguments**: Very useful, `my_func(arg0 = 5)`.
+* **Named and Default arguments**: Very useful, `my_func(arg0 = 5)`.
 * **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
-* **Easy error handling**: With result types, `const my_func = func() -> !T { ... }`,
+* **Easy error handling**: With result types, `fn my_func() !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
     structs have internal immutability.
-* **Polymorphism**: Traits, Embedded Structs and Tagged Enums are supported.
+* **Polymorphism**: Traits, Embedded Records and Unions are supported.
 * **Generics**: Specialize and reuse the same code for different types.
-
-More features that will be added in the self-hosted compiler can be seen in the [roadmap](ROADMAP.md).
 
 ## Example: The classic `Hello World!`
 
 ```zig
 import "std/console";
 
-const main = func() {
+fn main() {
     console.log("Hello World!");
-};
+}
 ```
 
-<!-- It is also possible to find valid code examples in the  [`tests/valid`](tests/valid)
+<!-- It is also possible to find valid code examples in the [`tests/valid`](tests/valid)
 folder. -->
