@@ -11,10 +11,6 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 [Documentation](https://rivet-lang.github.io/docs)
 •
 [Roadmap](ROADMAP.md)
-•
-[Changelogs](changelogs/)
-•
-[Examples](examples/)
 
 ![issues](https://img.shields.io/github/issues/rivet-lang/rivet?style=flat-square)
 ![status](https://img.shields.io/badge/status-alpha-blue?style=flat-square)
@@ -71,8 +67,8 @@ quality.
 
 ## Example: The classic `Hello World!`
 
-```zig
-import "std/console";
+```v
+import std/console;
 
 fn main() {
     console.log("Hello World!");
