@@ -2,8 +2,6 @@ name: Compiler Tests
 
 on:
   push:
-    branches:
-      - 'main'
     paths: ['lib/**.ri', 'ric/**.py', 'tests/**']
   pull_request:
     paths: ['lib/**.ri', 'ric/**.py', 'tests/**']
