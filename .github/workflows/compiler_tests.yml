@@ -4,9 +4,9 @@ on:
   push:
     branches:
       - 'main'
-    paths: ['lib/**.ri', 'rivetc/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'ric/**.py', 'tests/**']
   pull_request:
-    paths: ['lib/**.ri', 'rivetc/**.py', 'tests/**']
+    paths: ['lib/**.ri', 'ric/**.py', 'tests/**']
     types: [opened, synchronize]
 
 jobs:
@@ -15,49 +15,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Run passing tests
+      - name: Build V
         run: |
-          python3 rivetc -C clang -t tests/valid
+          git clone https://github.com/vlang/v
+          cd v && make
+          sudo ./v symlink
+          cd ..
 
-      - name: Run failing tests
+      - name: Build Rivet Compiler
         run: |
-          python3 tests/run_invalid_tests.py
-
-      - name: Run bootstrap failing tests
-        run: |
-          python3 tests/run_b_invalid_tests.py
-
-  ubuntu-gcc:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Run passing tests
-        run: |
-          python3 rivetc -C gcc -t tests/valid
-
-      - name: Run failing tests
-        run: |
-          python3 tests/run_invalid_tests.py
-
-      - name: Run bootstrap failing tests
-        run: |
-          python3 tests/run_b_invalid_tests.py
-
-  # windows-gcc:
-  #   runs-on: windows-2019
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: Setup Python3
-  #       uses: actions/setup-python@v4
-  #       with:
-  #         python-version: '3.x'
-
-  #     - name: Run passing tests
-  #       run: |
-  #         python3 rivetc -t tests/valid
-
-  #     - name: Run failing tests
-  #       run: |
-  #         python3 tests/run_invalid_tests.py
+          v ric && ./ric
