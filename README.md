@@ -61,7 +61,7 @@ quality.
 * **Easy error handling**: With result types, `fn my_func() !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
-    structs have internal immutability.
+    Records have internal immutability.
 * **Polymorphism**: Traits, Embedded Records and Unions are supported.
 * **Generics**: Specialize and reuse the same code for different types.
 
