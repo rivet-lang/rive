@@ -22,12 +22,20 @@ Rivet's goal is to be a very powerful programming language and at the same time 
 to use, whose syntax is inspired by Go, Zig and C# and other programming languages.
 
 Currently, Rivet uses C as the only backend and generates C99 code that is compiled using
-a C compiler (by default, gcc or clang). The idea is that in the long term there will be
+a C compiler (by default, GCC or Clang). The idea is that in the long term there will be
 other backends available for code generation, such as LLVM or WebAssembly, and also that
 there will be an interpreter available.
 
 You can find information on how to build Rivet on your computer by going to the
 [documentation](https://rivet-lang.github.io/docs).
+
+```v
+import std.console;
+
+fn main() {
+    console.writeln("Hello World!");
+}
+```
 
 > [!IMPORTANT]
 > Currently the language is in alpha state, and therefore its syntax and the language
@@ -61,19 +69,9 @@ quality.
 * **Easy error handling**: With result types, `fn my_func() !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
-    structs have internal immutability.
-* **Polymorphism**: Traits, Embedded Records and Unions are supported.
-* **Generics**: Specialize and reuse the same code for different types.
-
-## Example: The classic `Hello World!`
-
-```v
-import std/console;
-
-fn main() {
-    console.log("Hello World!");
-}
-```
+    Records have internal immutability.
+<!-- * **Polymorphism**: Traits, Embedded Records and Unions are supported. -->
+<!-- * **Generics**: Specialize and reuse the same code for different types. -->
 
 <!-- It is also possible to find valid code examples in the [`tests/valid`](tests/valid)
 folder. -->
