@@ -69,9 +69,18 @@ quality.
 * **Easy error handling**: With result types, `fn my_func() !T { ... }`,
     `throw` and `catch`.
 * **Immutable values**: Variables and fields are immutable by default.
-    Records have internal immutability.
-<!-- * **Polymorphism**: Traits, Embedded Records and Unions are supported. -->
-<!-- * **Generics**: Specialize and reuse the same code for different types. -->
+* **Polymorphism**: Traits, Embedded Records and Unions are supported.
+* **Generics**: Specialize and reuse the same code for different types.
+
+## Example: The classic `Hello World!`
+
+```v
+import std/console;
+
+fn main() {
+    console.log("Hello World!");
+}
+```
 
 <!-- It is also possible to find valid code examples in the [`tests/valid`](tests/valid)
 folder. -->
