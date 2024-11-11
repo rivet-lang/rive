@@ -1,0 +1,13 @@
+// Copyright (C) 2024-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+public class Prefs {
+    public static Prefs# ParseArgs(List<string> args) {
+        Prefs# prefs = new Prefs();
+        foreach (string arg in args) {
+            Console.WriteLine(arg);
+        }
+        return prefs;
+    }
+}

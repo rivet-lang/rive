@@ -1,9 +1,4 @@
-__pycache__
-bindgen
-*.o
-*.exe
-
 # Local files
-*.mir
-main
-main.ri
+fut-out/*.h
+fut-out/*.c
+ric

@@ -1,0 +1,13 @@
+// Copyright (C) 2024-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+public static class Main {
+    public static void Main(string[] args) {
+        List<string>() args_;
+        foreach (string arg in args) {
+            args_.Add(arg);
+        }
+        Prefs# prefs = Prefs.ParseArgs(args_);
+    }
+}
