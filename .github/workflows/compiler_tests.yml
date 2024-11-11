@@ -13,13 +13,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build V
+      - name: Build Rivet compiler
         run: |
-          git clone https://github.com/vlang/v
-          cd v && make
-          sudo ./v symlink
-          cd ..
-
-      - name: Build Rivet Compiler
-        run: |
-          v ric && ./ric
+          sudo apt install libgtk-4-dev
+          make
