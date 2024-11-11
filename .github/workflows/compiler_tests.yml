@@ -19,4 +19,4 @@ jobs:
           sudo dpkg -i fut_3.2.7-1_amd64.deb
           sudo apt install libgtk-4-dev
           make
-          ./ric -h
+          ./rivetc -h

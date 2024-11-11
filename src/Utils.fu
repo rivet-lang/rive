@@ -4,7 +4,7 @@
 
 static class Utils {
     public static void Error(string msg) {
-        Console.WriteLine($"RIC Error: {msg}");
+        Console.WriteLine($"[rivetc error] {msg}");
     }
 
     public static string GetCompilerVersion() {
@@ -12,7 +12,7 @@ static class Utils {
     }
 
     public static string() GetHelpText() {
-        return $"ric - The Rivet programming language compiler v{GetCompilerVersion()}\n\n"+
-            "    ric [OPTIONS] INPUT";
+        return $"rivetc - The Rivet programming language compiler v{GetCompilerVersion()}\n\n"+
+            "    rivetc [OPTIONS] INPUT";
     }
 }
