@@ -1,0 +1,18 @@
+// Copyright (C) 2024-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+static class Utils {
+    public static void Error(string msg) {
+        Console.WriteLine($"RIC Error: {msg}");
+    }
+
+    public static string GetCompilerVersion() {
+        return "0.1.0";
+    }
+
+    public static string() GetHelpText() {
+        return $"ric - The Rivet programming language compiler v{GetCompilerVersion()}\n\n"+
+            "    ric [OPTIONS] INPUT";
+    }
+}
