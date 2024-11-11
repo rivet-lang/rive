@@ -2,9 +2,9 @@ name: Compiler Tests
 
 on:
   push:
-    paths: ['lib/**.ri', 'ric/**.py', 'tests/**']
+    paths: ['src/**.fu', '.github/workflows/compiler_tests.yml']
   pull_request:
-    paths: ['lib/**.ri', 'ric/**.py', 'tests/**']
+    paths: ['src/**.fu', '.github/workflows/compiler_tests.yml']
     types: [opened, synchronize]
 
 jobs:
