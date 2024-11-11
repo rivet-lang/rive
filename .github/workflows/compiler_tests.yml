@@ -8,7 +8,7 @@ on:
     types: [opened, synchronize]
 
 jobs:
-  ubuntu-clang:
+  ubuntu-gcc:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
