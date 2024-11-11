@@ -2,11 +2,22 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-public class Prefs {
+class Prefs {
     public static Prefs# ParseArgs(List<string> args) {
         Prefs# prefs = new Prefs();
         foreach (string arg in args) {
-            Console.WriteLine(arg);
+            switch (arg) {
+            case "-h":
+            case "--help":
+                Console.WriteLine(Utils.GetHelpText());
+                break;
+            
+            default:
+                if (arg.StartsWith("-")) {
+                    Utils.Error($"unknown option {arg}");
+                }
+                break;
+            }
         }
         return prefs;
     }
