@@ -7,5 +7,5 @@ module main
 import util
 
 fn main() {
-	util.ic_error("hello")
+	util.ic_error('hello')
 }

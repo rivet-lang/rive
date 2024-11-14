@@ -17,16 +17,16 @@ enum MsgLevel {
 fn format_msg(msg string, level MsgLevel) string {
 	return match level {
 		.note {
-			"${term.bold('rivetc: ')}${term.bold(term.cyan('error:'))} ${msg}"
+			'${term.bold('rivetc: ')}${term.bold(term.cyan('error:'))} ${msg}'
 		}
 		.warn {
-			"${term.bold('rivetc: ')}${term.bold(term.yellow('error:'))} ${msg}"
+			'${term.bold('rivetc: ')}${term.bold(term.yellow('error:'))} ${msg}'
 		}
 		.error {
-			"${term.bold('rivetc: ')}${term.bold(term.red('error:'))} ${msg}"
+			'${term.bold('rivetc: ')}${term.bold(term.red('error:'))} ${msg}'
 		}
 		.ice {
-			"${term.bold('rivetc: ')}${term.bold(term.red('internal compiler error:'))} ${msg}"
+			'${term.bold('rivetc: ')}${term.bold(term.red('internal compiler error:'))} ${msg}'
 		}
 	}
 }
