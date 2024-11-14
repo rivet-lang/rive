@@ -30,7 +30,8 @@ You can find information on how to build Rivet on your computer by going to the
 [documentation](https://rivet-lang.github.io/docs).
 
 ```v
-import std.console;
+const std = $import("std");
+const console = std.console;
 
 fn main() {
     console.writeln("Hello World!");
@@ -48,26 +49,3 @@ fn main() {
 > yet. Any help to provide full support for both Windows and macOS is welcome.
 > 
 > Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
-
-## Why?
-
-There are many programming languages today, each specialized in a specific field or in
-solving a certain problem.
-
-Rivet is the materialization of my thinking about what a  perfect, secure, fast, readable,
-powerful, simple and multi-platform programming language  would be like.
-
-Rivet takes the best features of existing programming languages and tries  to unify them
-into a single programming language, so that software development has the  best possible
-quality.
-
-## Features (WIP)
-
-* **Easy-to-learn syntax**: A syntax without overload of unnecessary elements.
-* **Named and Default arguments**: Very useful, `my_func(arg0 = 5)`.
-* **Not NULL values by default**: This is only possible with option types (`?T`) and `none`.
-* **Easy error handling**: With result types, `fn my_func() !T { ... }`,
-    `throw` and `catch`.
-* **Immutable values**: Variables and fields are immutable by default.
-<!-- * **Polymorphism**: Traits, Embedded Records and Unions are supported.
-* **Generics**: Specialize and reuse the same code for different types. -->
