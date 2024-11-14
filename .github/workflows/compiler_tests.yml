@@ -19,4 +19,4 @@ jobs:
           cd v && make
           sudo ./v symlink
           cd ..
-          v . -o rivetc && ./rivetc
+          v . -o rivetc && ./rivetc test.ri
