@@ -6,7 +6,6 @@ module prefs
 
 import os
 import flag
-import util
 
 @[footer: 'The compiler expects an input, either file or directory (if directory, it must contain a file entry `src/main.ri`).']
 @[xdoc: 'The Rivet programming language compiler']
@@ -20,7 +19,7 @@ mut:
 }
 
 @[inline]
-pub fn parse_args(args []string) !Prefs {
+pub fn parse_args(args []string) !&Prefs {
 	mut prefs, remaining := flag.to_struct[Prefs](args)!
 
 	if prefs.show_help {
@@ -43,19 +42,19 @@ pub fn parse_args(args []string) !Prefs {
 					if os.exists(main_ri) {
 						prefs.input = main_ri
 					} else {
-						util.error("'${input}' is not a valid input, no file '${main_ri}' found")
+						return error('`${input}` is not a valid input, no file `${main_ri}` found')
 					}
 				}
 			}
 			else {
-				util.error("'${input}' is not a valid input, expected file")
+				return error('`${input}` is not a valid input, expected file')
 			}
 		}
 	} else if remaining.len == 0 {
-		util.error('at least one input was expected')
+		return error('at least one input was expected')
 	} else {
-		util.error('only one input is expected')
+		return error('only one input is expected')
 	}
 
-	return prefs
+	return &prefs
 }

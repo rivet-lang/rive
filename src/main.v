@@ -5,8 +5,9 @@
 module main
 
 import os
-import prefs
+import builder
 
 fn main() {
-	_ = prefs.parse_args(os.args[1..])!
+	mut b := builder.new(os.args[1..])
+	b.run()
 }

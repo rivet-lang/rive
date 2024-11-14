@@ -30,8 +30,7 @@ You can find information on how to build Rivet on your computer by going to the
 [documentation](https://rivet-lang.github.io/docs).
 
 ```v
-const std = $import("std");
-const console = std.console;
+const console = @import("std").console;
 
 fn main() {
     console.writeln("Hello World!");
