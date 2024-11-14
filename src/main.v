@@ -4,8 +4,9 @@
 
 module main
 
-import util
+import os
+import prefs
 
 fn main() {
-	util.ic_error('hello')
+	_ = prefs.parse_args(os.args[1..])!
 }

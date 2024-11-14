@@ -47,6 +47,5 @@ pub fn error(msg string) {
 
 @[noreturn]
 pub fn ic_error(msg string) {
-	eprintln(format_msg(msg, .ice))
-	exit(102)
+	panic(format_msg(msg, .ice))
 }
