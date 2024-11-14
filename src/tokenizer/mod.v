@@ -139,6 +139,24 @@ fn (t &Tokenizer) look_ahead(pos int) u8 {
 	}
 }
 
+fn (mut t Tokenizer) next() token.Token {
+	for {
+		cidx := t.tidx
+		t.tidx++
+		if cidx >= t.all_tokens.len {
+			return token.Token{
+				kind: .eof
+				pos:  t.current_pos()
+			}
+		}
+		return t.all_tokens[cidx]
+	}
+	return token.Token{
+		kind: .eof
+		pos:  t.current_pos()
+	}
+}
+
 fn (mut t Tokenizer) internal_next() token.Token {
 	return token.Token{}
 }

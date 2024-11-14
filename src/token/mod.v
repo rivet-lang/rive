@@ -5,22 +5,20 @@
 module token
 
 pub struct Pos {
-	file string
-	line int
-	col  int
-	pos  int
+	file    string
+	line_nr int // the line number in the source where the token occurred
+	col     int // the column in the source where the token occurred
+	pos     int // the position of the token in scanner text
+	len     int // length of the literal
 }
 
 @[minify]
 pub struct Token {
 pub:
-	kind    Kind   // the token number/enum; for quick comparisons
-	lit     string // literal representation of the token
-	line_nr int    // the line number in the source where the token occurred
-	col     int    // the column in the source where the token occurred
-	pos     int    // the position of the token in scanner text
-	len     int    // length of the literal
-	tidx    int    // the index of the token
+	kind Kind   // the token number/enum; for quick comparisons
+	lit  string // literal representation of the token
+	tidx int    // the index of the token
+	pos  Pos
 }
 
 pub enum Kind {
