@@ -124,10 +124,7 @@ fn (t &Tokenizer) matches(want string, start_pos int) bool {
 fn (t &Tokenizer) peek_token(n int) token.Token {
 	idx := t.tidx + n
 	if idx >= t.all_tokens.len {
-		return token.Token{
-			kind: .eof
-			pos:  t.current_pos()
-		}
+		return t.token_eof()
 	}
 	return t.all_tokens[idx]
 }
@@ -182,7 +179,7 @@ fn (nm NumberMode) str() string {
 	}
 }
 
-fn (mut t Tokenizer) read_number_(mode NumberMode) string {
+fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 	start := t.pos
 	if mode != .dec {
 		t.pos += 2 // skip '0x', '0b', '0o'
@@ -305,7 +302,7 @@ fn (mut t Tokenizer) read_number_(mode NumberMode) string {
 }
 
 fn (mut t Tokenizer) read_number() string {
-	return t.read_number_(match true {
+	return t.read_number_mode(match true {
 		t.matches('0b', t.pos) { .bin }
 		t.matches('0o', t.pos) { .oct }
 		t.matches('0x', t.pos) { .hex }
@@ -394,13 +391,15 @@ fn (mut t Tokenizer) next() token.Token {
 		cidx := t.tidx
 		t.tidx++
 		if cidx >= t.all_tokens.len {
-			return token.Token{
-				kind: .eof
-				pos:  t.current_pos()
-			}
+			return t.token_eof()
 		}
 		return t.all_tokens[cidx]
 	}
+	return t.token_eof()
+}
+
+@[inline]
+fn (t &Tokenizer) token_eof() token.Token {
 	return token.Token{
 		kind: .eof
 		pos:  t.current_pos()
@@ -408,5 +407,59 @@ fn (mut t Tokenizer) next() token.Token {
 }
 
 fn (mut t Tokenizer) internal_next() token.Token {
-	return token.Token{}
+	for {
+		if t.is_started {
+			t.pos++
+		} else {
+			t.is_started = true
+		}
+		t.skip_whitespace()
+		if t.pos >= t.text.len {
+			return t.token_eof()
+		}
+		pos := t.current_pos()
+		ch := t.current_char()
+		nextc := t.look_ahead(1)
+		if util.is_valid_name(ch) {
+			lit := t.read_ident()
+			return token.Token{
+				lit:  lit
+				kind: token.lookup(lit)
+				pos:  pos
+			}
+		} else if ch.is_digit() {
+			// decimals with 0 prefix = error
+			if ch == `0` && nextc.is_digit() {
+				report.error('leading zeros in decimal integer literals are not permitted',
+					t.current_pos())
+				report.help('use an `0o` prefix for octal integers')
+			}
+			return token.Token{
+				lit:  t.read_number().replace('_', '')
+				kind: .number
+				pos:  pos
+			}
+		}
+		match ch {
+			`'` {
+				return token.Token{
+					lit:  t.read_char()
+					kind: .char
+					pos:  pos
+				}
+			}
+			`"` {
+				return token.Token{
+					lit:  t.read_string()
+					kind: .string
+					pos:  pos
+				}
+			}
+			else {
+				report.error('invalid character `${ch}`', pos)
+				break
+			}
+		}
+	}
+	return t.token_eof()
 }

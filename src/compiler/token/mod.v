@@ -223,6 +223,15 @@ fn build_token_str() []string {
 }
 
 @[inline]
+pub fn lookup(key string) Kind {
+	return if kind := keywords[key] {
+		kind
+	} else {
+		.ident
+	}
+}
+
+@[inline]
 pub fn is_key(key string) bool {
 	return int(keywords[key]) > 0
 }
