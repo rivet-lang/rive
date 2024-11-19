@@ -243,7 +243,7 @@ pub fn (t Kind) str() string {
 
 @[inline]
 pub fn (t Token) is_next_to(pre_token Token) bool {
-	return t.pos - pre_token.pos == pre_token.len
+	return t.pos.pos - pre_token.pos.pos == pre_token.pos.len
 }
 
 pub fn (t Token) str() string {

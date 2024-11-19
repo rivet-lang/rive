@@ -4,6 +4,7 @@
 
 module context
 
+@[heap]
 pub struct CContext {
 pub mut:
 	options &Options

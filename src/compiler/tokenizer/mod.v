@@ -34,9 +34,9 @@ mut:
 	tidx       int = -1
 }
 
-pub fn from_file(options_ &options.Options, path string) &Tokenizer {
+pub fn from_file(ctx  &context.CContext, path string) &Tokenizer {
 	mut t := &Tokenizer{
-		options: unsafe { options_ }
+		ctx: ctx
 		text:    util.read_file(path)
 	}
 	t.file = path
@@ -61,7 +61,7 @@ fn (t &Tokenizer) current_char() u8 {
 
 @[inline]
 fn (t &Tokenizer) current_pos() token.Pos {
-	return token.Pos{t.file, t.line, int_max(1, t.current_column()), self.pos}
+	return token.Pos{t.file, t.line, int_max(1, t.current_column()), t.pos, 0}
 }
 
 @[inline]
