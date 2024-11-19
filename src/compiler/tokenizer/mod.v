@@ -4,9 +4,9 @@
 
 module tokenizer
 
-import math
-import prefs
-import token
+import compiler.prefs
+import compiler.token
+import compiler.util
 
 const lf = 10
 const cr = 13
@@ -61,7 +61,7 @@ fn (t &Tokenizer) current_char() u8 {
 
 @[inline]
 fn (t &Tokenizer) current_pos() token.Pos {
-	return token.Pos{t.file, t.line, math.max(1, t.current_column()), self.pos}
+	return token.Pos{t.file, t.line, int_max(1, t.current_column()), self.pos}
 }
 
 @[inline]
@@ -80,7 +80,7 @@ fn (mut t Tokenizer) eat_to_end_of_line() {
 }
 
 fn (mut t Tokenizer) inc_line_number() {
-	t.last_nl_pos = math.min(t.text.len - 1, t.pos)
+	t.last_nl_pos = int_min(t.text.len - 1, t.pos)
 	if t.is_cr_lf {
 		t.last_nl_pos++
 	}

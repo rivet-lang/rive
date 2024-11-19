@@ -5,9 +5,8 @@
 module main
 
 import os
-import builder
+import compiler
 
 fn main() {
-	mut b := builder.new(os.args[1..])
-	b.run()
+	compiler.run(os.args[1..])
 }

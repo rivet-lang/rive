@@ -5,6 +5,7 @@
 module token
 
 pub struct Pos {
+pub:
 	file    string
 	line_nr int // the line number in the source where the token occurred
 	col     int // the column in the source where the token occurred
