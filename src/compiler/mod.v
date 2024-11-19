@@ -6,10 +6,19 @@ module compiler
 
 import compiler.context
 import compiler.report
-import compiler.tokenizer as _
+import compiler.tokenizer
 
 pub fn run(args []string) {
 	mut c_ctx := &context.CContext{
 		options: context.parse_args(args) or { report.ic_fatal(err.msg()) }
+	}
+	mut t := tokenizer.from_file(c_ctx, c_ctx.options.input)
+	mut tok := t.next()
+	for {
+		println('${tok} - ${tok.pos}')
+		tok = t.next()
+		if tok.kind == .eof {
+			break
+		}
 	}
 }

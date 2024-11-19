@@ -24,21 +24,23 @@ pub struct Tokenizer {
 	text string
 mut:
 	file        string
-	line        int = -1
-	last_nl_pos int = -1
+	line        int
+	last_nl_pos int
 	pos         int = -1
 
 	is_started bool
 	is_cr_lf   bool
 
 	all_tokens []token.Token
-	tidx       int = -1
+	tidx       int
 }
 
 pub fn from_file(ctx &context.CContext, path string) &Tokenizer {
+	text := util.read_file(path)
 	mut t := &Tokenizer{
-		ctx:  ctx
-		text: util.read_file(path)
+		ctx:        ctx
+		text:       text
+		all_tokens: []token.Token{cap: text.len / 3}
 	}
 	t.file = path
 	t.tokenize_remaining_text()
@@ -386,7 +388,15 @@ fn (mut t Tokenizer) read_string() string {
 	return lit
 }
 
-fn (mut t Tokenizer) next() token.Token {
+@[inline]
+fn (t &Tokenizer) token_eof() token.Token {
+	return token.Token{
+		kind: .eof
+		pos:  t.current_pos()
+	}
+}
+
+pub fn (mut t Tokenizer) next() token.Token {
 	for {
 		cidx := t.tidx
 		t.tidx++
@@ -398,21 +408,9 @@ fn (mut t Tokenizer) next() token.Token {
 	return t.token_eof()
 }
 
-@[inline]
-fn (t &Tokenizer) token_eof() token.Token {
-	return token.Token{
-		kind: .eof
-		pos:  t.current_pos()
-	}
-}
-
 fn (mut t Tokenizer) internal_next() token.Token {
 	for {
-		if t.is_started {
-			t.pos++
-		} else {
-			t.is_started = true
-		}
+		t.pos++
 		t.skip_whitespace()
 		if t.pos >= t.text.len {
 			return t.token_eof()

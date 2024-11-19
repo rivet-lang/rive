@@ -12,7 +12,7 @@ import flag
 @[name: 'rivetc']
 @[version: '0.1.0']
 pub struct Options {
-mut:
+pub mut:
 	input string @[ignore]
 
 	show_help bool @[long: help; short: h; xdoc: 'Print help information.']
