@@ -6,11 +6,10 @@ module compiler
 
 import compiler.context
 import compiler.report
-
 import compiler.tokenizer as _
 
 pub fn run(args []string) {
 	mut c_ctx := &context.CContext{
-		options: context.parse_args(args) or { report.error(err.msg()) }
+		options: context.parse_args(args) or { report.ic_fatal(err.msg()) }
 	}
 }

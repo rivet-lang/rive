@@ -2,3 +2,4 @@
 fut-out/*.h
 fut-out/*.c
 rivetc
+tokenizer.py
