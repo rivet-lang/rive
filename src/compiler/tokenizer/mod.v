@@ -313,6 +313,39 @@ fn (mut t Tokenizer) read_number() string {
 	})
 }
 
+fn (mut t Tokenizer) read_char() string {
+	start := t.pos
+	is_bytelit := t.pos > 0 && t.text[t.pos - 1] == `b`
+
+	mut len := 0
+	for {
+		t.pos++
+		if t.pos >= t.text.len {
+			break
+		}
+		if t.current_char() != backslash {
+			len++
+		}
+		double_slash := t.matches('\\\\', t.pos - 2)
+		if t.current_char() == `'` && (t.text[t.pos - 1] != backslash || double_slash) {
+			if double_slash {
+				len++
+			}
+			break
+		}
+	}
+	len--
+
+	ch := t.text[start + 1..t.pos]
+	if len == 0 {
+		report.error('empty character literal', t.current_pos())
+	} else if len != 1 {
+		report.error('character literal may only contain one codepoint', t.current_pos())
+		report.help('if you meant to write a string literal, use double quotes')
+	}
+	return ch
+}
+
 fn (mut t Tokenizer) next() token.Token {
 	for {
 		cidx := t.tidx
