@@ -14,7 +14,7 @@ pub fn is_valid_name(c u8) bool {
 
 pub fn read_file(path string) string {
 	return skip_bom(os.read_file(path) or {
-		// we use `ic_error` because this should not happen
+		// we use `ic_fatal` because this should not happen
 		report.ic_fatal(err.msg())
 	})
 }

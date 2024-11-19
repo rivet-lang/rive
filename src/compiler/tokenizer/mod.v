@@ -315,7 +315,7 @@ fn (mut t Tokenizer) read_number() string {
 
 fn (mut t Tokenizer) read_char() string {
 	start := t.pos
-	is_bytelit := t.pos > 0 && t.text[t.pos - 1] == `b`
+	// is_bytelit := t.pos > 0 && t.text[t.pos - 1] == `b`
 
 	mut len := 0
 	for {
@@ -344,6 +344,49 @@ fn (mut t Tokenizer) read_char() string {
 		report.help('if you meant to write a string literal, use double quotes')
 	}
 	return ch
+}
+
+fn (mut t Tokenizer) read_string() string {
+	start_pos := t.current_pos()
+	start := t.pos
+	start_char := t.current_char()
+	is_raw := t.pos > 0 && t.text[t.pos - 1] == `r`
+	// is_cstr := t.pos > 0 && t.text[t.pos - 1] == `c`
+	mut backslash_count := if start_char == backslash { 1 } else { 0 }
+	mut n_cr_chars := 0
+	for {
+		t.pos++
+		if t.pos >= t.text.len {
+			t.pos = start
+			report.error('unfinished string literal', start_pos)
+			return ''
+		}
+		c := t.current_char()
+		if c == backslash {
+			backslash_count++
+		}
+		// end of string
+		if c == `"` && (is_raw || backslash_count & 1 == 0) {
+			break // handle `\\` at the end
+		}
+		if c == cr {
+			n_cr_chars++
+		}
+		if c == lf {
+			t.inc_line_number()
+		}
+		if c != backslash_count {
+			backslash_count = 0
+		}
+	}
+	mut lit := ''
+	if start <= t.pos {
+		lit = t.text[start + 1..t.pos]
+		if n_cr_chars > 0 {
+			lit = lit.replace('\r', '')
+		}
+	}
+	return lit
 }
 
 fn (mut t Tokenizer) next() token.Token {
