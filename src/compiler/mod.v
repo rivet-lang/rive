@@ -4,16 +4,11 @@
 
 module compiler
 
-import compiler.prefs
+import compiler.context
 import compiler.report
 
-pub struct Compiler {
-pub mut:
-	prefs &prefs.Prefs
-}
-
 pub fn run(args []string) {
-	mut c := Compiler{
-		prefs: prefs.parse_args(args) or { report.error(err.msg()) }
+	mut c_ctx := &context.CContext{
+		options: context.parse_args(args) or { report.error(err.msg()) }
 	}
 }

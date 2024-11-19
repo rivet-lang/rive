@@ -4,7 +4,7 @@
 
 module tokenizer
 
-import compiler.prefs
+import compiler.context
 import compiler.token
 import compiler.util
 
@@ -19,8 +19,8 @@ fn is_new_line(ch u8) bool {
 
 @[minify]
 pub struct Tokenizer {
-	prefs &prefs.Prefs
-	text  string
+	ctx  &context.CContext
+	text string
 mut:
 	file        string
 	line        int = -1
@@ -34,10 +34,10 @@ mut:
 	tidx       int = -1
 }
 
-pub fn from_file(prefs_ &prefs.Prefs, path string) &Tokenizer {
+pub fn from_file(options_ &options.Options, path string) &Tokenizer {
 	mut t := &Tokenizer{
-		prefs: unsafe { prefs_ }
-		text:  util.read_file(path)
+		options: unsafe { options_ }
+		text:    util.read_file(path)
 	}
 	t.file = path
 	t.tokenize_remaining_text()

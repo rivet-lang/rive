@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-module prefs
+module context
 
 import os
 import flag
@@ -11,7 +11,7 @@ import flag
 @[xdoc: 'The Rivet programming language compiler']
 @[name: 'rivetc']
 @[version: '0.1.0']
-pub struct Prefs {
+pub struct Options {
 mut:
 	input string @[ignore]
 
@@ -19,11 +19,11 @@ mut:
 }
 
 @[inline]
-pub fn parse_args(args []string) !&Prefs {
-	mut prefs, remaining := flag.to_struct[Prefs](args)!
+pub fn parse_args(args []string) !&Options {
+	mut options, remaining := flag.to_struct[Options](args)!
 
-	if prefs.show_help {
-		eprintln(flag.to_doc[Prefs]()!)
+	if options.show_help {
+		eprintln(flag.to_doc[Options]()!)
 		exit(0)
 	}
 
@@ -31,16 +31,16 @@ pub fn parse_args(args []string) !&Prefs {
 		input := remaining[0]
 		match true {
 			os.is_file(input) {
-				prefs.input = input
+				options.input = input
 			}
 			os.is_dir(input) {
 				mut main_ri := os.join_path(input, 'main.ri')
 				if os.exists(main_ri) {
-					prefs.input = main_ri
+					options.input = main_ri
 				} else {
 					main_ri = os.join_path(input, 'src', 'main.ri')
 					if os.exists(main_ri) {
-						prefs.input = main_ri
+						options.input = main_ri
 					} else {
 						return error('`${input}` is not a valid input, no file `${main_ri}` found')
 					}
@@ -56,5 +56,5 @@ pub fn parse_args(args []string) !&Prefs {
 		return error('only one input is expected')
 	}
 
-	return &prefs
+	return &options
 }
