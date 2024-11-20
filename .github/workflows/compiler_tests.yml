@@ -16,7 +16,7 @@ jobs:
       - name: Build Rivet compiler
         run: |
           git clone https://github.com/vlang/v
-          cd v && make
+          cd v && make && sudo ./v symlink
           cd ..
-          ./v/v test .
-          ./v/v . -o rivetc && ./rivetc test.ri
+          v test .
+          v . -o rivetc && ./rivetc test.ri
