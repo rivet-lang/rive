@@ -238,6 +238,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 								report.error('number has unsuitable digit `${c}`', t.current_pos())
 							}
 						}
+						t.pos++
 					}
 				} else if t.text[t.pos] == `.` {
 					// 4.. a range
