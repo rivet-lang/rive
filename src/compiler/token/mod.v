@@ -86,29 +86,29 @@ pub enum Kind {
 	ellipsis // ...
 
 	keyword_beg
-	key_as
-	key_break
-	key_const
-	key_continue
-	key_defer
-	key_else
-	key_enum
-	key_false
-	key_for
-	key_fn
-	key_if
-	key_in
-	key_is
-	key_match
-	key_mut
-	key_none
-	key_record
-	key_return
-	key_trait
-	key_true
-	key_union
-	key_pub
-	key_unsafe
+	kw_as
+	kw_break
+	kw_const
+	kw_continue
+	kw_defer
+	kw_else
+	kw_enum
+	kw_false
+	kw_for
+	kw_fn
+	kw_if
+	kw_in
+	kw_is
+	kw_match
+	kw_mut
+	kw_none
+	kw_record
+	kw_return
+	kw_trait
+	kw_true
+	kw_union
+	kw_pub
+	kw_unsafe
 	keyword_end
 
 	_end_
@@ -192,29 +192,29 @@ fn build_token_str() []string {
 	s[Kind.right_shift] = '>>'
 	s[Kind.dollar] = '$'
 	s[Kind.at] = '@'
-	s[Kind.key_if] = 'if'
-	s[Kind.key_else] = 'else'
-	s[Kind.key_record] = 'record'
-	s[Kind.key_return] = 'return'
-	s[Kind.key_const] = 'const'
-	s[Kind.key_mut] = 'mut'
-	s[Kind.key_for] = 'for'
-	s[Kind.key_fn] = 'fn'
-	s[Kind.key_trait] = 'trait'
-	s[Kind.key_true] = 'true'
-	s[Kind.key_false] = 'false'
-	s[Kind.key_continue] = 'continue'
-	s[Kind.key_break] = 'break'
-	s[Kind.key_unsafe] = 'unsafe'
-	s[Kind.key_enum] = 'enum'
-	s[Kind.key_pub] = 'pub'
-	s[Kind.key_in] = 'in'
-	s[Kind.key_union] = 'union'
-	s[Kind.key_as] = 'as'
-	s[Kind.key_defer] = 'defer'
-	s[Kind.key_match] = 'match'
-	s[Kind.key_none] = 'none'
-	s[Kind.key_is] = 'is'
+	s[Kind.kw_if] = 'if'
+	s[Kind.kw_else] = 'else'
+	s[Kind.kw_record] = 'record'
+	s[Kind.kw_return] = 'return'
+	s[Kind.kw_const] = 'const'
+	s[Kind.kw_mut] = 'mut'
+	s[Kind.kw_for] = 'for'
+	s[Kind.kw_fn] = 'fn'
+	s[Kind.kw_trait] = 'trait'
+	s[Kind.kw_true] = 'true'
+	s[Kind.kw_false] = 'false'
+	s[Kind.kw_continue] = 'continue'
+	s[Kind.kw_break] = 'break'
+	s[Kind.kw_unsafe] = 'unsafe'
+	s[Kind.kw_enum] = 'enum'
+	s[Kind.kw_pub] = 'pub'
+	s[Kind.kw_in] = 'in'
+	s[Kind.kw_union] = 'union'
+	s[Kind.kw_as] = 'as'
+	s[Kind.kw_defer] = 'defer'
+	s[Kind.kw_match] = 'match'
+	s[Kind.kw_none] = 'none'
+	s[Kind.kw_is] = 'is'
 	// The following kinds are not for tokens returned by the Rivet tokenizer,
 	// they are used just for organization/ease of checking:
 	s[Kind.keyword_beg] = 'keyword_beg'

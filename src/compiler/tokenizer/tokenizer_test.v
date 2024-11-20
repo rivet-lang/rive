@@ -12,7 +12,7 @@ struct ExpectedToken {
 
 const source = 'fn main 123 123.0 0b0101 0o12345678 0x123456ABCDEF'
 const expected_tokens = [
-	ExpectedToken{.key_fn, 'fn'},
+	ExpectedToken{.kw_fn, 'fn'},
 	ExpectedToken{.ident, 'main'},
 	ExpectedToken{.number, '123'},
 	ExpectedToken{.number, '123.0'},
