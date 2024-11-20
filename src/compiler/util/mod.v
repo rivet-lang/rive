@@ -9,7 +9,7 @@ import compiler.report
 
 @[inline]
 pub fn is_valid_name(c u8) bool {
-	return c == `_` || c.is_alnum()
+	return c == `_` || c.is_letter()
 }
 
 pub fn read_file(path string) string {
