@@ -12,7 +12,7 @@ pub fn run(args []string) {
 	mut c_ctx := &context.CContext{
 		options: context.parse_args(args) or { report.ic_fatal(err.msg()) }
 	}
-	mut t := tokenizer.from_file(c_ctx, c_ctx.options.input)
+	mut t := tokenizer.new(c_ctx)
 	mut tok := t.next()
 	for {
 		println('${tok} - ${tok.pos}')

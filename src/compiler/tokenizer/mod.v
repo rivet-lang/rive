@@ -35,14 +35,25 @@ mut:
 	tidx       int
 }
 
-pub fn from_file(ctx &context.CContext, path string) &Tokenizer {
-	text := util.read_file(path)
+pub fn new(ctx &context.CContext) &Tokenizer {
+	content := util.read_file(ctx.options.input)
 	mut t := &Tokenizer{
 		ctx:        ctx
+		file:       ctx.options.input
+		text:       content
+		all_tokens: []token.Token{cap: content.len / 3}
+	}
+	t.tokenize_remaining_text()
+	return t
+}
+
+pub fn from_memory(ctx &context.CContext, text string) &Tokenizer {
+	mut t := &Tokenizer{
+		ctx:        ctx
+		file:       '<in-memory>'
 		text:       text
 		all_tokens: []token.Token{cap: text.len / 3}
 	}
-	t.file = path
 	t.tokenize_remaining_text()
 	return t
 }
