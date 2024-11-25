@@ -19,11 +19,11 @@ pub mut:
 }
 
 @[inline]
-pub fn parse_args(args []string) !&Options {
-	mut options, remaining := flag.to_struct[Options](args)!
+pub fn parse_args(args []string) &Options {
+	mut options, remaining := flag.to_struct[Options](args) or { ic_error(err.msg()) }
 
 	if options.show_help {
-		eprintln(flag.to_doc[Options]()!)
+		eprintln(flag.to_doc[Options]() or { ic_error(err.msg()) })
 		exit(0)
 	}
 
@@ -42,18 +42,18 @@ pub fn parse_args(args []string) !&Options {
 					if os.exists(main_ri) {
 						options.input = main_ri
 					} else {
-						return error('`${input}` is not a valid input, no file `${main_ri}` found')
+						ic_error('`${input}` is not a valid input, no file `${main_ri}` found')
 					}
 				}
 			}
 			else {
-				return error('`${input}` is not a valid input, expected file')
+				ic_error('`${input}` is not a valid input, expected file')
 			}
 		}
 	} else if remaining.len == 0 {
-		return error('at least one input was expected')
+		ic_error('at least one input was expected')
 	} else {
-		return error('only one input is expected')
+		ic_error('only one input is expected')
 	}
 
 	return &options

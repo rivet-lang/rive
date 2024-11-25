@@ -5,13 +5,14 @@
 module compiler
 
 import compiler.context
-import compiler.report
 import compiler.tokenizer
 
 pub fn run(args []string) {
 	mut c_ctx := &context.CContext{
-		options: context.parse_args(args) or { report.ic_fatal(err.msg()) }
+		options: unsafe { nil }
 	}
+	context.push(c_ctx)
+	c_ctx.options = context.parse_args(args)
 	mut t := tokenizer.new(c_ctx)
 	mut tok := t.next()
 	for {
@@ -21,4 +22,5 @@ pub fn run(args []string) {
 			break
 		}
 	}
+	context.pop()
 }

@@ -7,7 +7,6 @@ module tokenizer
 import compiler.context
 import compiler.token
 import compiler.util
-import compiler.report
 
 const lf = 10
 const cr = 13
@@ -50,7 +49,7 @@ pub fn new(ctx &context.CContext) &Tokenizer {
 pub fn from_memory(ctx &context.CContext, text string) &Tokenizer {
 	mut t := &Tokenizer{
 		ctx:        ctx
-		file:       '<in-memory>'
+		file:       '<memory>'
 		text:       text
 		all_tokens: []token.Token{cap: text.len / 3}
 	}
@@ -200,13 +199,13 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		t.pos += 2 // skip '0x', '0b', '0o'
 	}
 	if t.pos < t.text.len && t.current_char() == num_sep {
-		report.error('separator `_` is only valid between digits in a numeric literal',
+		context.error('separator `_` is only valid between digits in a numeric literal',
 			t.current_pos())
 	}
 	for t.pos < t.text.len {
 		ch := t.current_char()
 		if ch == num_sep && t.text[t.pos - 1] == num_sep {
-			report.error('cannot use `_` consecutively in a numeric literal', t.current_pos())
+			context.error('cannot use `_` consecutively in a numeric literal', t.current_pos())
 		}
 		if !mode.is_valid(ch) && ch != num_sep {
 			if mode == .dec && (!ch.is_letter() || ch in [`e`, `E`]) {
@@ -214,18 +213,18 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 			} else if !ch.is_digit() && !ch.is_letter() {
 				break
 			}
-			report.error('${mode} number has unsuitable digit `{self.current_char()}`',
+			context.error('${mode} number has unsuitable digit `{self.current_char()}`',
 				t.current_pos())
 		}
 		t.pos++
 	}
 	if t.text[t.pos - 1] == num_sep {
 		t.pos--
-		report.error('cannot use `_` at the end of a numeric literal', t.current_pos())
+		context.error('cannot use `_` at the end of a numeric literal', t.current_pos())
 	}
 	if mode != .dec && start + 2 == t.pos {
 		t.pos--
-		report.error('number part of this ${mode} is not provided', t.current_pos())
+		context.error('number part of this ${mode} is not provided', t.current_pos())
 		t.pos++
 	}
 	if mode == .dec {
@@ -248,7 +247,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 								}
 								break
 							} else {
-								report.error('number has unsuitable digit `${c}`', t.current_pos())
+								context.error('number has unsuitable digit `${c}`', t.current_pos())
 							}
 						}
 						t.pos++
@@ -266,10 +265,10 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 				} else {
 					// 5.
 					t.pos--
-					report.error('float literals should have a digit after the decimal point',
+					context.error('float literals should have a digit after the decimal point',
 						t.current_pos())
 					fl := t.text[start..t.pos]
-					report.help('use `${fl}.0` instead of `${fl}`')
+					context.help('use `${fl}.0` instead of `${fl}`')
 					t.pos++
 				}
 			}
@@ -292,7 +291,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 						}
 						break
 					} else {
-						report.error('this number has unsuitable digit `${c}`', t.current_pos())
+						context.error('this number has unsuitable digit `${c}`', t.current_pos())
 					}
 				}
 				t.pos++
@@ -300,14 +299,14 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		}
 		if t.text[t.pos - 1] in [`e`, `E`] {
 			t.pos--
-			report.error('exponent has no digits', t.current_pos())
+			context.error('exponent has no digits', t.current_pos())
 			t.pos++
 		} else if t.pos < t.text.len && t.text[t.pos] == `.` && !is_range && !call_method {
 			t.pos--
 			if has_exp {
-				report.error('exponential part should be integer', t.current_pos())
+				context.error('exponential part should be integer', t.current_pos())
 			} else {
-				report.error('too many decimal points in number', t.current_pos())
+				context.error('too many decimal points in number', t.current_pos())
 			}
 			t.pos++
 		}
@@ -351,10 +350,10 @@ fn (mut t Tokenizer) read_char() string {
 
 	ch := t.text[start + 1..t.pos]
 	if len == 0 {
-		report.error('empty character literal', t.current_pos())
+		context.error('empty character literal', t.current_pos())
 	} else if len != 1 {
-		report.error('character literal may only contain one codepoint', t.current_pos())
-		report.help('if you meant to write a string literal, use double quotes')
+		context.error('character literal may only contain one codepoint', t.current_pos())
+		context.help('if you meant to write a string literal, use double quotes')
 	}
 	return ch
 }
@@ -371,7 +370,7 @@ fn (mut t Tokenizer) read_string() string {
 		t.pos++
 		if t.pos >= t.text.len {
 			t.pos = start
-			report.error('unfinished string literal', start_pos)
+			context.error('unfinished string literal', start_pos)
 			return ''
 		}
 		c := t.current_char()
@@ -442,9 +441,9 @@ fn (mut t Tokenizer) internal_next() token.Token {
 		} else if ch.is_digit() {
 			// decimals with 0 prefix = error
 			if ch == `0` && nextc.is_digit() {
-				report.error('leading zeros in decimal integer literals are not permitted',
+				context.error('leading zeros in decimal integer literals are not permitted',
 					t.current_pos())
-				report.help('use an `0o` prefix for octal integers')
+				context.help('use an `0o` prefix for octal integers')
 			}
 			return token.Token{
 				lit:  t.read_number().replace('_', '')
@@ -466,7 +465,7 @@ fn (mut t Tokenizer) internal_next() token.Token {
 						if t.pos >= t.text.len - 1 {
 							old_pos := t.pos
 							t.pos = start_pos
-							report.error('unterminated multiline comment', t.current_pos())
+							context.error('unterminated multiline comment', t.current_pos())
 							t.pos = old_pos
 						}
 						if t.text[t.pos] == lf {
@@ -500,7 +499,7 @@ fn (mut t Tokenizer) internal_next() token.Token {
 				}
 			}
 			else {
-				report.error('invalid character `${ch.ascii_str()}`', pos)
+				context.error('invalid character `${ch.ascii_str()}`', pos)
 				break
 			}
 		}

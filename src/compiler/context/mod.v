@@ -8,4 +8,29 @@ module context
 pub struct CContext {
 pub mut:
 	options &Options
+	report  Report
+}
+
+const stack = []&CContext{}
+
+pub fn push(ctx &CContext) {
+	unsafe {
+		stack << ctx
+	}
+}
+
+pub fn get() &CContext {
+	if stack == [] {
+		panic('empty ccontext stack')
+	}
+	return stack.last()
+}
+
+pub fn pop() {
+	if stack == [] {
+		panic('empty ccontext stack')
+	}
+	unsafe {
+		_ = stack.pop()
+	}
 }
