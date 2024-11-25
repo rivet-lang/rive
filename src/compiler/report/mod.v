@@ -53,9 +53,15 @@ pub fn ic_fatal(msg string) {
 	panic(format_msg(msg, .ice))
 }
 
-pub fn error(msg string, pos token.Pos) {}
+@[inline]
+pub fn error(msg string, pos token.Pos) {
+	eprintln(term.bold('${pos}: ${term.red('error:')} ${msg}'))
+}
 
-pub fn warn(msg string, pos token.Pos) {}
+@[inline]
+pub fn warn(msg string, pos token.Pos) {
+	eprintln(term.bold('${pos}: ${term.yellow('warning:')} ${msg}'))
+}
 
 pub fn note(msg string) {}
 

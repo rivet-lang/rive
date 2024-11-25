@@ -13,6 +13,10 @@ pub:
 	len     int // length of the literal
 }
 
+fn (pos Pos) str() string {
+	return '${pos.file}:${pos.line_nr + 1}:${pos.col}'
+}
+
 @[minify]
 pub struct Token {
 pub:

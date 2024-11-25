@@ -458,7 +458,6 @@ fn (mut t Tokenizer) internal_next() token.Token {
 					t.ignore_line()
 					continue
 				} else if nextc == `*` {
-					println('multiline comment')
 					start_pos := t.pos
 					mut nest_count := 1
 					t.pos++
@@ -501,7 +500,7 @@ fn (mut t Tokenizer) internal_next() token.Token {
 				}
 			}
 			else {
-				report.error('invalid character `${ch}`', pos)
+				report.error('invalid character `${ch.ascii_str()}`', pos)
 				break
 			}
 		}
