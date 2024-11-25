@@ -39,14 +39,15 @@ const expected_tokens = [
 ]
 
 fn test_tokenizer_next() {
-	mut c_ctx := &context.CContext{
-		options: unsafe { nil }
-	}
+	mut c_ctx := &context.CContext{}
 	context.push(c_ctx)
 	defer { context.pop() }
+
 	mut t := tokenizer.from_memory(c_ctx, source)
-	mut tokens := t.get_all_tokens()
+	tokens := t.get_all_tokens()
+
 	assert tokens.len == expected_tokens.len, tokens.str()
+
 	for i, tok in tokens {
 		expected_tok := expected_tokens[i]
 		assert expected_tok.kind == tok.kind

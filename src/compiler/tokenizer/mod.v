@@ -224,7 +224,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 	}
 	if mode != .dec && start + 2 == t.pos {
 		t.pos--
-		context.error('number part of this ${mode} is not provided', t.current_pos())
+		context.error('number part of this ${mode} literal is not provided', t.current_pos())
 		t.pos++
 	}
 	if mode == .dec {

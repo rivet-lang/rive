@@ -42,7 +42,7 @@ struct ReportParams {
 const backtick = `\``
 
 @[direct_array_access]
-fn (r Report) print_highlighted_message(msg string, mut sb strings.Builder) {
+fn print_highlighted_message(msg string, mut sb strings.Builder) {
 	mut start := 0
 	mut cur := 0
 
@@ -61,7 +61,7 @@ fn (r Report) print_highlighted_message(msg string, mut sb strings.Builder) {
 				start = cur
 			} else {
 				cur++
-				sb.write_string(term.bold(msg[start..cur]))
+				sb.write_string(term.cyan(msg[start..cur]))
 				start = cur
 			}
 		} else {
@@ -83,7 +83,7 @@ fn (r Report) print_message(params ReportParams) {
 	sb.write_string(term.bold(params.type.colorize()))
 	sb.write_u8(` `)
 
-	r.print_highlighted_message(params.msg, mut sb)
+	print_highlighted_message(params.msg, mut sb)
 	if params.do_report_source {
 		sb.write_u8(`\n`)
 	}

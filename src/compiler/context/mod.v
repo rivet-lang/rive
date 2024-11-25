@@ -7,7 +7,7 @@ module context
 @[heap]
 pub struct CContext {
 pub mut:
-	options &Options
+	options Options
 	report  Report
 }
 

@@ -19,7 +19,7 @@ pub mut:
 }
 
 @[inline]
-pub fn parse_args(args []string) &Options {
+pub fn parse_args(args []string) Options {
 	mut options, remaining := flag.to_struct[Options](args) or { ic_error(err.msg()) }
 
 	if options.show_help {
@@ -56,5 +56,5 @@ pub fn parse_args(args []string) &Options {
 		ic_error('only one input is expected')
 	}
 
-	return &options
+	return options
 }
