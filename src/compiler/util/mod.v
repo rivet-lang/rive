@@ -5,7 +5,6 @@
 module util
 
 import os
-import compiler.context
 
 @[inline]
 pub fn is_valid_name(c u8) bool {
@@ -14,8 +13,8 @@ pub fn is_valid_name(c u8) bool {
 
 pub fn read_file(path string) string {
 	return skip_bom(os.read_file(path) or {
-		// we use `ic_fatal` because this should not happen
-		context.ic_fatal(err.msg())
+		// we use `panic` because this should not happen
+		panic(err.msg())
 	})
 }
 

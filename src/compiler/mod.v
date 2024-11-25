@@ -5,7 +5,7 @@
 module compiler
 
 import compiler.context
-import compiler.tokenizer
+import compiler.parser
 
 pub fn run(args []string) {
 	mut c_ctx := &context.CContext{}
@@ -15,13 +15,6 @@ pub fn run(args []string) {
 
 	c_ctx.options = context.parse_args(args)
 
-	mut t := tokenizer.new(c_ctx)
-	mut tok := t.next()
-	for {
-		println('${tok} - ${tok.pos}')
-		tok = t.next()
-		if tok.kind == .eof {
-			break
-		}
-	}
+	mut p := parser.new(c_ctx)
+	p.parse()
 }

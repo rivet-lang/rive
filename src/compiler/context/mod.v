@@ -4,12 +4,7 @@
 
 module context
 
-@[heap]
-pub struct CContext {
-pub mut:
-	options Options
-	report  Report
-}
+import ast
 
 const stack = []&CContext{}
 
@@ -33,4 +28,17 @@ pub fn pop() {
 	unsafe {
 		_ = stack.pop()
 	}
+}
+
+@[heap]
+pub struct CContext {
+pub mut:
+	options Options
+	report  Report
+
+	source_files []&ast.SourceFile
+}
+
+pub fn (mut ctx CContext) load_input() {
+	ctx.source_files << ast.SourceFile.new(ctx.options.input)
 }

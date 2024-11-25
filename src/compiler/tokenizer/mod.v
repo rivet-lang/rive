@@ -4,6 +4,7 @@
 
 module tokenizer
 
+import compiler.ast
 import compiler.context
 import compiler.token
 import compiler.util
@@ -19,10 +20,9 @@ fn is_new_line(ch u8) bool {
 
 @[minify]
 pub struct Tokenizer {
-	ctx  &context.CContext
-	text string
+	ctx &context.CContext = unsafe { nil }
 mut:
-	file        string
+	source_file &ast.SourceFile = unsafe { nil }
 	line        int
 	last_nl_pos int
 	pos         int = -1
@@ -34,13 +34,11 @@ mut:
 	tidx       int
 }
 
-pub fn new(ctx &context.CContext) &Tokenizer {
-	content := util.read_file(ctx.options.input)
+pub fn from_source_file(ctx &context.CContext, source_file &ast.SourceFile) &Tokenizer {
 	mut t := &Tokenizer{
-		ctx:        ctx
-		file:       ctx.options.input
-		text:       content
-		all_tokens: []token.Token{cap: content.len / 3}
+		ctx:         ctx
+		source_file: source_file
+		all_tokens:  []token.Token{cap: source_file.content.len / 3}
 	}
 	t.tokenize_remaining_text()
 	return t
@@ -48,10 +46,9 @@ pub fn new(ctx &context.CContext) &Tokenizer {
 
 pub fn from_memory(ctx &context.CContext, text string) &Tokenizer {
 	mut t := &Tokenizer{
-		ctx:        ctx
-		file:       '<memory>'
-		text:       text
-		all_tokens: []token.Token{cap: text.len / 3}
+		ctx:         ctx
+		source_file: ast.SourceFile.from_memory(text)
+		all_tokens:  []token.Token{cap: text.len / 3}
 	}
 	t.tokenize_remaining_text()
 	return t
@@ -69,12 +66,12 @@ fn (mut t Tokenizer) tokenize_remaining_text() {
 
 @[inline]
 fn (t &Tokenizer) current_char() u8 {
-	return t.text[t.pos]
+	return t.source_file.content[t.pos]
 }
 
 @[inline]
 fn (t &Tokenizer) current_pos() token.Pos {
-	return token.Pos{t.file, t.line, int_max(1, t.current_column()), t.pos, 0}
+	return token.Pos{t.source_file.file, t.line, int_max(1, t.current_column()), t.pos, 0}
 }
 
 @[inline]
@@ -89,13 +86,13 @@ fn (mut t Tokenizer) ignore_line() {
 
 @[inline]
 fn (mut t Tokenizer) eat_to_end_of_line() {
-	for t.pos < t.text.len && t.text[t.pos] != lf {
+	for t.pos < t.source_file.content.len && t.source_file.content[t.pos] != lf {
 		t.pos++
 	}
 }
 
 fn (mut t Tokenizer) inc_line_number() {
-	t.last_nl_pos = int_min(t.text.len - 1, t.pos)
+	t.last_nl_pos = int_min(t.source_file.content.len - 1, t.pos)
 	if t.is_cr_lf {
 		t.last_nl_pos++
 	}
@@ -103,7 +100,7 @@ fn (mut t Tokenizer) inc_line_number() {
 }
 
 fn (mut t Tokenizer) skip_whitespace() {
-	for t.pos < t.text.len {
+	for t.pos < t.source_file.content.len {
 		c := t.current_char()
 		if c == 8 {
 			t.pos++
@@ -112,10 +109,11 @@ fn (mut t Tokenizer) skip_whitespace() {
 		if !(c == 32 || (c > 8 && c < 14) || c == 0x85 || c == 0xA0) {
 			return
 		}
-		if t.pos + 1 < t.text.len && c == cr && t.text[t.pos + 1] == lf {
+		if t.pos + 1 < t.source_file.content.len && c == cr
+			&& t.source_file.content[t.pos + 1] == lf {
 			t.is_cr_lf = true
 		}
-		if is_new_line(c) && !(t.pos > 0 && t.text[t.pos - 1] == cr && c == lf) {
+		if is_new_line(c) && !(t.pos > 0 && t.source_file.content[t.pos - 1] == cr && c == lf) {
 			t.inc_line_number()
 		}
 		t.pos++
@@ -124,11 +122,12 @@ fn (mut t Tokenizer) skip_whitespace() {
 
 fn (t &Tokenizer) matches(want string, start_pos int) bool {
 	end_pos := start_pos + want.len
-	if start_pos < 0 || end_pos < 0 || start_pos >= t.text.len || end_pos > t.text.len {
+	if start_pos < 0 || end_pos < 0 || start_pos >= t.source_file.content.len
+		|| end_pos > t.source_file.content.len {
 		return false
 	}
 	for pos in start_pos .. end_pos {
-		if t.text[pos] != want[pos - start_pos] {
+		if t.source_file.content[pos] != want[pos - start_pos] {
 			return false
 		}
 	}
@@ -144,8 +143,8 @@ fn (t &Tokenizer) peek_token(n int) token.Token {
 }
 
 fn (t &Tokenizer) look_ahead(pos int) u8 {
-	return if t.pos + pos < t.text.len {
-		t.text[t.pos + pos]
+	return if t.pos + pos < t.source_file.content.len {
+		t.source_file.content[t.pos + pos]
 	} else {
 		0
 	}
@@ -153,15 +152,15 @@ fn (t &Tokenizer) look_ahead(pos int) u8 {
 
 fn (mut t Tokenizer) read_ident() string {
 	start := t.pos
-	for t.pos < t.text.len {
-		c := t.text[t.pos]
+	for t.pos < t.source_file.content.len {
+		c := t.source_file.content[t.pos]
 		if util.is_valid_name(c) || c.is_digit() {
 			t.pos++
 			continue
 		}
 		break
 	}
-	lit := t.text[start..t.pos]
+	lit := t.source_file.content[start..t.pos]
 	t.pos--
 	return lit
 }
@@ -198,13 +197,13 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 	if mode != .dec {
 		t.pos += 2 // skip '0x', '0b', '0o'
 	}
-	if t.pos < t.text.len && t.current_char() == num_sep {
+	if t.pos < t.source_file.content.len && t.current_char() == num_sep {
 		context.error('separator `_` is only valid between digits in a numeric literal',
 			t.current_pos())
 	}
-	for t.pos < t.text.len {
+	for t.pos < t.source_file.content.len {
 		ch := t.current_char()
-		if ch == num_sep && t.text[t.pos - 1] == num_sep {
+		if ch == num_sep && t.source_file.content[t.pos - 1] == num_sep {
 			context.error('cannot use `_` consecutively in a numeric literal', t.current_pos())
 		}
 		if !mode.is_valid(ch) && ch != num_sep {
@@ -218,7 +217,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		}
 		t.pos++
 	}
-	if t.text[t.pos - 1] == num_sep {
+	if t.source_file.content[t.pos - 1] == num_sep {
 		t.pos--
 		context.error('cannot use `_` at the end of a numeric literal', t.current_pos())
 	}
@@ -231,18 +230,18 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		mut call_method := false // `true` for, e.g., 5.method(), 5.5.method(), 5e5.method()
 		mut is_range := false // `true` for, e.g., 5..10
 		// fractional part
-		if t.pos < t.text.len && t.text[t.pos] == `.` {
+		if t.pos < t.source_file.content.len && t.source_file.content[t.pos] == `.` {
 			t.pos++
-			if t.pos < t.text.len {
+			if t.pos < t.source_file.content.len {
 				// 16.6, 16.6.str()
-				if t.text[t.pos].is_digit() {
-					for t.pos < t.text.len {
-						c := t.text[t.pos]
+				if t.source_file.content[t.pos].is_digit() {
+					for t.pos < t.source_file.content.len {
+						c := t.source_file.content[t.pos]
 						if !c.is_digit() {
 							if !c.is_letter() || c in [`e`, `E`] {
 								// 16.6.str()
-								if c == `.` && t.pos + 1 < t.text.len
-									&& t.text[t.pos + 1].is_letter() {
+								if c == `.` && t.pos + 1 < t.source_file.content.len
+									&& t.source_file.content[t.pos + 1].is_letter() {
 									call_method = true
 								}
 								break
@@ -252,13 +251,13 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 						}
 						t.pos++
 					}
-				} else if t.text[t.pos] == `.` {
+				} else if t.source_file.content[t.pos] == `.` {
 					// 4.. a range
 					is_range = true
 					t.pos--
-				} else if t.text[t.pos] in [`e`, `E`] {
+				} else if t.source_file.content[t.pos] in [`e`, `E`] {
 					// 6.e6
-				} else if t.text[t.pos].is_letter() {
+				} else if t.source_file.content[t.pos].is_letter() {
 					// 16.str()
 					call_method = true
 					t.pos--
@@ -267,7 +266,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 					t.pos--
 					context.error('float literals should have a digit after the decimal point',
 						t.current_pos())
-					fl := t.text[start..t.pos]
+					fl := t.source_file.content[start..t.pos]
 					context.help('use `${fl}.0` instead of `${fl}`')
 					t.pos++
 				}
@@ -275,18 +274,19 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		}
 		// exponential part
 		mut has_exp := false
-		if t.pos < t.text.len && t.text[t.pos] in [`e`, `E`] {
+		if t.pos < t.source_file.content.len && t.source_file.content[t.pos] in [`e`, `E`] {
 			has_exp = true
 			t.pos++
-			if t.pos < t.text.len && t.text[t.pos] in [`-`, `+`] {
+			if t.pos < t.source_file.content.len && t.source_file.content[t.pos] in [`-`, `+`] {
 				t.pos++
 			}
-			for t.pos < t.text.len {
-				c := t.text[t.pos]
+			for t.pos < t.source_file.content.len {
+				c := t.source_file.content[t.pos]
 				if !c.is_digit() {
 					if !c.is_letter() {
 						// 6e6.str()
-						if c == `.` && t.pos + 1 < t.text.len && t.text[t.pos + 1].is_letter() {
+						if c == `.` && t.pos + 1 < t.source_file.content.len
+							&& t.source_file.content[t.pos + 1].is_letter() {
 							call_method = true
 						}
 						break
@@ -297,11 +297,12 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 				t.pos++
 			}
 		}
-		if t.text[t.pos - 1] in [`e`, `E`] {
+		if t.source_file.content[t.pos - 1] in [`e`, `E`] {
 			t.pos--
 			context.error('exponent has no digits', t.current_pos())
 			t.pos++
-		} else if t.pos < t.text.len && t.text[t.pos] == `.` && !is_range && !call_method {
+		} else if t.pos < t.source_file.content.len && t.source_file.content[t.pos] == `.`
+			&& !is_range && !call_method {
 			t.pos--
 			if has_exp {
 				context.error('exponential part should be integer', t.current_pos())
@@ -311,7 +312,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 			t.pos++
 		}
 	}
-	lit := t.text[start..t.pos]
+	lit := t.source_file.content[start..t.pos]
 	t.pos-- // fix pos
 	return lit
 }
@@ -327,19 +328,20 @@ fn (mut t Tokenizer) read_number() string {
 
 fn (mut t Tokenizer) read_char() string {
 	start := t.pos
-	// is_bytelit := t.pos > 0 && t.text[t.pos - 1] == `b`
+	// is_bytelit := t.pos > 0 && t.source_file.content[t.pos - 1] == `b`
 
 	mut len := 0
 	for {
 		t.pos++
-		if t.pos >= t.text.len {
+		if t.pos >= t.source_file.content.len {
 			break
 		}
 		if t.current_char() != backslash {
 			len++
 		}
 		double_slash := t.matches('\\\\', t.pos - 2)
-		if t.current_char() == `'` && (t.text[t.pos - 1] != backslash || double_slash) {
+		if t.current_char() == `'`
+			&& (t.source_file.content[t.pos - 1] != backslash || double_slash) {
 			if double_slash {
 				len++
 			}
@@ -348,7 +350,7 @@ fn (mut t Tokenizer) read_char() string {
 	}
 	len--
 
-	ch := t.text[start + 1..t.pos]
+	ch := t.source_file.content[start + 1..t.pos]
 	if len == 0 {
 		context.error('empty character literal', t.current_pos())
 	} else if len != 1 {
@@ -362,13 +364,13 @@ fn (mut t Tokenizer) read_string() string {
 	start_pos := t.current_pos()
 	start := t.pos
 	start_char := t.current_char()
-	is_raw := t.pos > 0 && t.text[t.pos - 1] == `r`
-	// is_cstr := t.pos > 0 && t.text[t.pos - 1] == `c`
+	is_raw := t.pos > 0 && t.source_file.content[t.pos - 1] == `r`
+	// is_cstr := t.pos > 0 && t.source_file.content[t.pos - 1] == `c`
 	mut backslash_count := if start_char == backslash { 1 } else { 0 }
 	mut n_cr_chars := 0
 	for {
 		t.pos++
-		if t.pos >= t.text.len {
+		if t.pos >= t.source_file.content.len {
 			t.pos = start
 			context.error('unfinished string literal', start_pos)
 			return ''
@@ -393,7 +395,7 @@ fn (mut t Tokenizer) read_string() string {
 	}
 	mut lit := ''
 	if start <= t.pos {
-		lit = t.text[start + 1..t.pos]
+		lit = t.source_file.content[start + 1..t.pos]
 		if n_cr_chars > 0 {
 			lit = lit.replace('\r', '')
 		}
@@ -429,7 +431,7 @@ fn (mut t Tokenizer) internal_next() token.Token {
 	for {
 		t.pos++
 		t.skip_whitespace()
-		if t.pos >= t.text.len {
+		if t.pos >= t.source_file.content.len {
 			return t.token_eof()
 		}
 		pos := t.current_pos()
@@ -464,19 +466,19 @@ fn (mut t Tokenizer) internal_next() token.Token {
 					start_pos := t.pos
 					mut nest_count := 1
 					t.pos++
-					for nest_count > 0 && t.pos < t.text.len - 1 {
+					for nest_count > 0 && t.pos < t.source_file.content.len - 1 {
 						t.pos++
-						if t.pos >= t.text.len - 1 {
+						if t.pos >= t.source_file.content.len - 1 {
 							old_pos := t.pos
 							t.pos = start_pos
 							context.error('unterminated multiline comment', t.current_pos())
 							t.pos = old_pos
 						}
-						if t.text[t.pos] == lf {
+						if t.source_file.content[t.pos] == lf {
 							t.inc_line_number()
 							continue
 						}
-						if t.matches('/*', t.pos) && t.text[t.pos + 2] != `/` {
+						if t.matches('/*', t.pos) && t.source_file.content[t.pos + 2] != `/` {
 							nest_count++
 							continue
 						}
