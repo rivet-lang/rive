@@ -451,6 +451,30 @@ fn (mut t Tokenizer) internal_next() token.Token {
 			}
 		}
 		match ch {
+			`/` {
+				if nextc == `/` {
+					t.ignore_line()
+					continue
+				} else if nextc == `*` {
+					start_pos := t.pos
+					t.pos++
+					for t.pos < t.text.len - 1 {
+						t.pos++
+						if t.current_char() == lf {
+							t.inc_line_number()
+							continue
+						} else if t.matches('*/', t.pos) {
+							t.pos++
+							break
+						}
+					}
+					if t.pos >= t.text.len {
+						t.pos = start_pos
+						report.error('comment not terminated', t.current_pos())
+					}
+					continue
+				}
+			}
 			`'` {
 				return token.Token{
 					lit:  t.read_char()
