@@ -155,7 +155,7 @@ fn (mut t Tokenizer) read_ident() string {
 	start := t.pos
 	for t.pos < t.text.len {
 		c := t.text[t.pos]
-		if util.is_valid_name(c) {
+		if util.is_valid_name(c) || c.is_digit() {
 			t.pos++
 			continue
 		}
@@ -407,6 +407,10 @@ fn (t &Tokenizer) token_eof() token.Token {
 		kind: .eof
 		pos:  t.current_pos()
 	}
+}
+
+pub fn (t &Tokenizer) get_all_tokens() []token.Token {
+	return t.all_tokens
 }
 
 pub fn (mut t Tokenizer) next() token.Token {

@@ -12,6 +12,7 @@ pub fn run(args []string) {
 		options: unsafe { nil }
 	}
 	context.push(c_ctx)
+	defer { context.pop() }
 	c_ctx.options = context.parse_args(args)
 	mut t := tokenizer.new(c_ctx)
 	mut tok := t.next()
@@ -22,5 +23,4 @@ pub fn run(args []string) {
 			break
 		}
 	}
-	context.pop()
 }
