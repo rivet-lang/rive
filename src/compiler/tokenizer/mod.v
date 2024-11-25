@@ -90,7 +90,9 @@ fn (mut t Tokenizer) ignore_line() {
 
 @[inline]
 fn (mut t Tokenizer) eat_to_end_of_line() {
-	for ; t.pos < t.text.len && t.current_char() != lf; t.pos++ {}
+	for t.pos < t.text.len && t.text[t.pos] != lf {
+		t.pos++
+	}
 }
 
 fn (mut t Tokenizer) inc_line_number() {
@@ -456,22 +458,31 @@ fn (mut t Tokenizer) internal_next() token.Token {
 					t.ignore_line()
 					continue
 				} else if nextc == `*` {
+					println('multiline comment')
 					start_pos := t.pos
+					mut nest_count := 1
 					t.pos++
-					for t.pos < t.text.len - 1 {
+					for nest_count > 0 && t.pos < t.text.len - 1 {
 						t.pos++
-						if t.current_char() == lf {
+						if t.pos >= t.text.len - 1 {
+							old_pos := t.pos
+							t.pos = start_pos
+							report.error('unterminated multiline comment', t.current_pos())
+							t.pos = old_pos
+						}
+						if t.text[t.pos] == lf {
 							t.inc_line_number()
 							continue
-						} else if t.matches('*/', t.pos) {
-							t.pos++
-							break
+						}
+						if t.matches('/*', t.pos) && t.text[t.pos + 2] != `/` {
+							nest_count++
+							continue
+						}
+						if t.matches('*/', t.pos) {
+							nest_count--
 						}
 					}
-					if t.pos >= t.text.len {
-						t.pos = start_pos
-						report.error('comment not terminated', t.current_pos())
-					}
+					t.pos++
 					continue
 				}
 			}
