@@ -3,7 +3,6 @@ fn main 123 123.0 0x123abc 0b10101 0o1234
 // Test file
 
 fn main
-()
 /* multi-line comment
     usb - pc - laptop
 */
