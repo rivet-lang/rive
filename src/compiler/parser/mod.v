@@ -13,12 +13,12 @@ pub struct Parser {
 mut:
 	ctx &context.CContext
 
-	source_file &ast.SourceFile = unsafe { nil }
+	file &ast.File = unsafe { nil }
 
 	tokenizer tokenizer.Tokenizer
 	prev_tok  token.Token
 	tok       token.Token
-	peek_tok  token.Token
+	next_tok  token.Token
 }
 
 pub fn new(ctx &context.CContext) &Parser {
@@ -32,17 +32,17 @@ pub fn (mut p Parser) parse() {
 }
 
 fn (mut p Parser) parse_file(file string) {
-	p.source_file = ast.SourceFile.new(file)
-	p.tokenizer = tokenizer.from_source_file(p.ctx, p.source_file)
+	p.file = ast.File.new(file)
+	p.tokenizer = tokenizer.from_file(p.ctx, p.file)
 	p.advance(3)
 
-	p.ctx.source_files << p.source_file
+	p.ctx.files << p.file
 }
 
 fn (mut p Parser) next() {
 	p.prev_tok = p.tok
-	p.tok = p.peek_tok
-	p.peek_tok = p.tokenizer.next()
+	p.tok = p.next_tok
+	p.next_tok = p.tokenizer.next()
 }
 
 fn (mut p Parser) advance(n int) {

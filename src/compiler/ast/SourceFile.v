@@ -7,7 +7,7 @@ module ast
 import compiler.util
 
 @[heap]
-pub struct SourceFile {
+pub struct File {
 pub:
 	file    string
 	content string
@@ -15,22 +15,22 @@ pub mut:
 	lines ?[]string
 }
 
-pub fn SourceFile.new(file string) &SourceFile {
+pub fn File.new(file string) &File {
 	content := util.read_file(file)
-	return &SourceFile{
+	return &File{
 		file:    file
 		content: content
 	}
 }
 
-pub fn SourceFile.from_memory(content string) &SourceFile {
-	return &SourceFile{
+pub fn File.from_memory(content string) &File {
+	return &File{
 		file:    '<memory>'
 		content: content
 	}
 }
 
-pub fn (mut sf SourceFile) get_lines() []string {
+pub fn (mut sf File) get_lines() []string {
 	if sf.lines != none {
 		return sf.lines
 	}

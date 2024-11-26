@@ -36,9 +36,9 @@ pub mut:
 	options Options
 	report  Report
 
-	source_files []&ast.SourceFile
+	files []&ast.File
 }
 
 pub fn (mut ctx CContext) load_input() {
-	ctx.source_files << ast.SourceFile.new(ctx.options.input)
+	ctx.files << ast.File.new(ctx.options.input)
 }
