@@ -39,6 +39,11 @@ pub fn (mut file File) get_lines() []string {
 	return lines
 }
 
+pub fn (mut file File) get_line(line int) ?string {
+	lines := file.get_lines()
+	return lines[line] or { none }
+}
+
 pub fn read_file(path string) string {
 	return skip_bom(os.read_file(path) or {
 		// we use `panic` because this should not happen

@@ -33,10 +33,10 @@ pub fn (mut p Parser) parse() {
 
 fn (mut p Parser) parse_file(file string) {
 	p.file = ast.File.new(file)
+	p.ctx.files << p.file
+
 	p.tokenizer = tokenizer.from_file(p.ctx, p.file)
 	p.advance(3)
-
-	p.ctx.files << p.file
 }
 
 fn (mut p Parser) next() {

@@ -10,7 +10,8 @@ pub:
 	line_nr int // the line number in the source where the token occurred
 	col     int // the column in the source where the token occurred
 	pos     int // the position of the token in scanner text
-	len     int // length of the literal
+pub mut:
+	len int // length of the literal
 }
 
 pub fn (pos Pos) str() string {

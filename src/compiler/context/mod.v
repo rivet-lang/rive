@@ -39,6 +39,11 @@ pub mut:
 	files []&ast.File
 }
 
-pub fn (mut ctx CContext) load_input() {
-	ctx.files << ast.File.new(ctx.options.input)
+pub fn (ctx CContext) get_file(filename string) ?&ast.File {
+	for file in ctx.files {
+		if file.file == filename {
+			return file
+		}
+	}
+	return none
 }

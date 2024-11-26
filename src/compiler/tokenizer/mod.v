@@ -74,7 +74,7 @@ fn (t &Tokenizer) current_char() u8 {
 
 @[inline]
 fn (t &Tokenizer) current_pos() token.Pos {
-	return token.Pos{t.file.file, t.line, int_max(1, t.current_column()), t.pos, 0}
+	return token.Pos{t.file.file, t.line, int_max(1, t.current_column()), t.pos, 1}
 }
 
 @[inline]
@@ -202,6 +202,14 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		context.error('separator `_` is only valid between digits in a numeric literal',
 			t.current_pos())
 	}
+	// decimal literals starting with 0 are invalid, an octal literal should be used instead
+	if mode == .dec && t.pos < t.text.len && t.current_char() == `0` {
+		context.error('zeros are not allowed at the beginning of a decimal literal', t.current_pos(),
+			context.Hint{
+			kind: .note
+			msg:  'use the prefix `0o` to denote an octal number'
+		})
+	}
 	for t.pos < t.text.len {
 		ch := t.current_char()
 		if ch == num_sep && t.text[t.pos - 1] == num_sep {
@@ -224,7 +232,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 	}
 	if mode != .dec && start + 2 == t.pos {
 		t.pos--
-		context.error('number part of this ${mode} literal is not provided', t.current_pos())
+		context.error('number part of this ${mode} number is not provided', t.current_pos())
 		t.pos++
 	}
 	if mode == .dec {
@@ -265,10 +273,12 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 				} else {
 					// 5.
 					t.pos--
-					context.error('float literals should have a digit after the decimal point',
-						t.current_pos())
 					fl := t.text[start..t.pos]
-					context.help('use `${fl}.0` instead of `${fl}`')
+					context.error('float literals should have a digit after the decimal point',
+						t.current_pos(), context.Hint{
+						kind: .help
+						msg:  'use `${fl}.0` instead of `${fl}`'
+					})
 					t.pos++
 				}
 			}
@@ -352,8 +362,11 @@ fn (mut t Tokenizer) read_char() string {
 	if len == 0 {
 		context.error('empty character literal', t.current_pos())
 	} else if len != 1 {
-		context.error('character literal may only contain one codepoint', t.current_pos())
-		context.help('if you meant to write a string literal, use double quotes')
+		context.error('character literal may only contain one codepoint', t.current_pos(),
+			context.Hint{
+			kind: .help
+			msg:  'if you meant to write a string literal, use double quotes'
+		})
 	}
 	return ch
 }
@@ -432,25 +445,22 @@ fn (mut t Tokenizer) internal_next() token.Token {
 		if t.pos >= t.text.len {
 			return t.token_eof()
 		}
-		pos := t.current_pos()
+		mut pos := t.current_pos()
 		ch := t.current_char()
 		nextc := t.look_ahead(1)
 		if util.is_valid_name(ch) {
 			lit := t.read_ident()
+			pos.len = lit.len
 			return token.Token{
 				lit:  lit
 				kind: token.lookup(lit)
 				pos:  pos
 			}
 		} else if ch.is_digit() {
-			// decimals with 0 prefix = error
-			if ch == `0` && nextc.is_digit() {
-				context.error('leading zeros in decimal integer literals are not permitted',
-					t.current_pos())
-				context.help('use an `0o` prefix for octal integers')
-			}
+			lit := t.read_number()
+			pos.len = lit.len
 			return token.Token{
-				lit:  t.read_number().replace('_', '')
+				lit:  lit.replace('_', '')
 				kind: .number
 				pos:  pos
 			}
@@ -484,20 +494,23 @@ fn (mut t Tokenizer) internal_next() token.Token {
 							nest_count--
 						}
 					}
-					t.pos++
 					continue
 				}
 			}
 			`'` {
+				lit := t.read_char()
+				pos.len = lit.len
 				return token.Token{
-					lit:  t.read_char()
+					lit:  lit
 					kind: .char
 					pos:  pos
 				}
 			}
 			`"` {
+				lit := t.read_string()
+				pos.len = lit.len
 				return token.Token{
-					lit:  t.read_string()
+					lit:  lit
 					kind: .string
 					pos:  pos
 				}
