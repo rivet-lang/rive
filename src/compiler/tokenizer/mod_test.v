@@ -21,6 +21,9 @@ fn other
 */
 
 fn other2
+
+"my string :)\nhello!"
+\'a\' \'b\'
 '
 
 const expected_tokens = [
@@ -35,6 +38,9 @@ const expected_tokens = [
 	ExpectedToken{.ident, 'other'},
 	ExpectedToken{.kw_fn, 'fn'},
 	ExpectedToken{.ident, 'other2'},
+	ExpectedToken{.string, 'my string :)\nhello!'},
+	ExpectedToken{.char, 'a'},
+	ExpectedToken{.char, 'b'},
 	ExpectedToken{.eof, ''},
 ]
 
