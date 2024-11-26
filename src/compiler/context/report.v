@@ -85,51 +85,6 @@ fn report_source(pos token.Pos, prefix string, mut sb strings.Builder) {
 	}
 }
 
-/** Pretty-print the actual line of offending code if possible.
-private void report_source (SourceReference source) {
-	for (int idx = source.begin.line; idx <= source.end.line; idx++) {
-		string? offending_line = source.file.get_source_line (idx);
-		if (offending_line == null) {
-			break;
-		}
-		printerr ("%5d | %s\n", idx, offending_line);
-		printerr ("      | ");
-		stderr.puts (caret_color_start);
-		for (int jdx = 0; jdx < offending_line.length; jdx++) {
-			if (offending_line[jdx] == '\t') {
-				stderr.putc ('\t');
-				continue;
-			}
-			bool caret = false;
-			unowned SourceLocation begin = source.begin;
-			unowned SourceLocation end = source.end;
-			if (begin.line == idx && end.line == idx) {
-				if (begin.column <= jdx + 1 <= end.column) {
-					caret = true;
-				}
-			} else if (begin.line == idx && begin.column <= jdx + 1) {
-				caret = true;
-			} else if (begin.line < idx < end.line) {
-				caret = true;
-			} else if (end.line == idx && end.column >= jdx + 1) {
-				caret = true;
-			}
-			if (caret) {
-				if (begin.line == idx && begin.column == jdx + 1) {
-					stderr.putc ('^');
-				} else {
-					stderr.putc ('~');
-				}
-			} else {
-				stderr.putc (' ');
-			}
-		}
-		stderr.puts (caret_color_end);
-		stderr.putc ('\n');
-	}
-}
-*/
-
 @[direct_array_access]
 fn print_highlighted_message(msg string, mut sb strings.Builder) {
 	mut start := 0
@@ -196,7 +151,7 @@ fn (r Report) print_message(params ReportParams) {
 	if params.type == .fatal {
 		panic(s)
 	} else {
-		eprintln(s)
+		eprint(s)
 	}
 }
 
