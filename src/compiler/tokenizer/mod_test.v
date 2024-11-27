@@ -10,7 +10,7 @@ struct ExpectedToken {
 }
 
 const source = '
-fn main 123 123.0 0b0101 0o12345678 0x123456ABCDEF
+fn main 123 123.0 0b0101 0o1234567 0x123456ABCDEF
 // inline comment
 
 fn other
@@ -31,7 +31,7 @@ const expected_tokens = [
 	ExpectedToken{.number, '123'},
 	ExpectedToken{.number, '123.0'},
 	ExpectedToken{.number, '0b0101'},
-	ExpectedToken{.number, '0o12345678'},
+	ExpectedToken{.number, '0o1234567'},
 	ExpectedToken{.number, '0x123456ABCDEF'},
 	ExpectedToken{.kw_fn, 'fn'},
 	ExpectedToken{.ident, 'other'},

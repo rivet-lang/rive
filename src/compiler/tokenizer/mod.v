@@ -69,9 +69,11 @@ fn (mut t Tokenizer) tokenize_remaining_text() {
 
 @[inline]
 fn (t &Tokenizer) current_pos() ast.FilePos {
+	cur_loc := t.current_loc()
 	return ast.FilePos{
 		file:  t.file
-		begin: t.current_loc()
+		begin: cur_loc
+		end:   cur_loc
 	}
 }
 
@@ -114,7 +116,7 @@ fn (mut t Tokenizer) inc_line_number() {
 fn (mut t Tokenizer) skip_whitespace() {
 	for t.pos < t.text.len {
 		c := t.text[t.pos]
-		if c == 9 {
+		if c == 8 {
 			t.pos++
 			continue
 		}
@@ -228,10 +230,10 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		if !mode.is_valid(ch) && ch != num_sep {
 			if mode == .dec && (!ch.is_letter() || ch in [`e`, `E`]) {
 				break
-			} else if !ch.is_digit() && !ch.is_letter() {
+			} else if mode != .dec && (!ch.is_digit() && !ch.is_letter()) {
 				break
 			}
-			context.error('${mode} number has unsuitable digit `{self.current_char()}`',
+			context.error('${mode} number has unsuitable digit `${t.text[t.pos].ascii_str()}`',
 				t.current_pos())
 		}
 		t.pos++
@@ -265,7 +267,8 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 								}
 								break
 							} else {
-								context.error('number has unsuitable digit `${c}`', t.current_pos())
+								context.error('number has unsuitable digit `${c.ascii_str()}`',
+									t.current_pos())
 							}
 						}
 						t.pos++
@@ -311,7 +314,8 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 						}
 						break
 					} else {
-						context.error('this number has unsuitable digit `${c}`', t.current_pos())
+						context.error('this number has unsuitable digit `${c.ascii_str()}`',
+							t.current_pos())
 					}
 				}
 				t.pos++
@@ -469,9 +473,9 @@ fn (mut t Tokenizer) internal_next() Token {
 		if t.pos >= t.text.len {
 			return t.end_of_file()
 		}
-		mut pos := t.current_pos()
 		ch := t.text[t.pos]
 		nextc := t.look_ahead(1)
+		mut pos := t.current_pos()
 		if util.is_valid_name(ch) {
 			lit := t.read_ident()
 			pos.end = t.current_loc()
@@ -518,6 +522,7 @@ fn (mut t Tokenizer) internal_next() Token {
 							nest_count--
 						}
 					}
+					t.pos++
 					continue
 				}
 			}

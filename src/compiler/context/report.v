@@ -61,25 +61,75 @@ const backtick = `\``
 const border = term.bold(term.blue('      | '))
 
 fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
-	if offending_line := pos.file.get_line(pos.begin.line) {
-		sb.writeln(border)
-		sb.write_string(term.bold(term.blue('${pos.begin.line + 1:5d} | ')))
-		sb.writeln(offending_line)
-		sb.write_string(border)
-		for jdx in 0 .. offending_line.len {
-			if offending_line[jdx] == `\t` {
-				sb.write_string('\t')
-				continue
+	for idx := pos.begin.line; idx <= pos.end.line; idx++ {
+		if offending_line := pos.file.get_line(idx) {
+			sb.writeln(border)
+			sb.write_string(term.bold(term.blue('${pos.begin.line + 1:5d} | ')))
+			sb.writeln(offending_line)
+			sb.write_string(border)
+			for jdx in 0 .. offending_line.len {
+				if offending_line[jdx] == `\t` {
+					sb.write_u8(`\t`)
+					continue
+				}
+				/*
+				println("${jdx} == ${pos.begin.col}")
+				if jdx == pos.begin.col-1 {
+					sb.write_string(term.green(term.bold('^')))
+				} else if jdx > pos.begin.col-1 && jdx < pos.end.col-1 {
+					sb.write_string(term.green(term.bold('~')))
+				} else {
+					sb.write_string(' ')
+				}
+				
+				
+				bool caret = false;
+				unowned SourceLocation begin = source.begin;
+				unowned SourceLocation end = source.end;
+				if (begin.line == idx && end.line == idx) {
+					if (begin.column <= jdx + 1 <= end.column) {
+						caret = true;
+					}
+				} else if (begin.line == idx && begin.column <= jdx + 1) {
+					caret = true;
+				} else if (begin.line < idx < end.line) {
+					caret = true;
+				} else if (end.line == idx && end.column >= jdx + 1) {
+					caret = true;
+				}
+				if (caret) {
+					if (begin.line == idx && begin.column == jdx + 1) {
+						stderr.putc ('^');
+					} else {
+						stderr.putc ('~');
+					}
+				} else {
+					stderr.putc (' ');
+				}*/
+				mut caret := false
+				if pos.begin.line == idx && pos.end.line == idx {
+					if pos.begin.col <= jdx + 1 && jdx + 1 <= pos.end.col {
+						caret = true
+					}
+				} else if pos.begin.line == idx && pos.begin.col <= jdx + 1 {
+					caret = true
+				} else if pos.begin.line < idx && idx < pos.end.line {
+					caret = true
+				} else if pos.end.line == idx && pos.end.col >= jdx + 1 {
+					caret = true
+				}
+				if caret {
+					if pos.begin.line == idx && pos.begin.col == jdx + 1 {
+						sb.write_string(term.green(term.bold('^')))
+					} else {
+						sb.write_string(term.green(term.bold('~')))
+					}
+				} else {
+					sb.write_u8(` `)
+				}
 			}
-			if jdx == pos.begin.col {
-				sb.write_string(term.green(term.bold('^')))
-			} else if jdx > pos.begin.col && jdx < pos.end.col {
-				sb.write_string(term.green(term.bold('~')))
-			} else {
-				sb.write_string(' ')
-			}
+			sb.write_u8(`\n`)
 		}
-		sb.write_u8(`\n`)
 	}
 }
 

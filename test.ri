@@ -1,9 +1,13 @@
-fn
-fn main 123 123.0 0x123abc 0b10101 0o1234 ()
+fn main 123 123.0 0b0101 0o1234567 0x123456ABCDEF
+// inline comment
 
-fn main
-/* multi-line comment
-    usb - pc - laptop
+fn other
+
+/*
+	multiline comment
 */
 
-fn set_current_dir
+fn other2
+
+"my string :)\nhello!"
+'a' 'b'
