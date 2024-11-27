@@ -72,40 +72,7 @@ fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
 					sb.write_u8(`\t`)
 					continue
 				}
-				/*
-				println("${jdx} == ${pos.begin.col}")
-				if jdx == pos.begin.col-1 {
-					sb.write_string(term.green(term.bold('^')))
-				} else if jdx > pos.begin.col-1 && jdx < pos.end.col-1 {
-					sb.write_string(term.green(term.bold('~')))
-				} else {
-					sb.write_string(' ')
-				}
-				
-				
-				bool caret = false;
-				unowned SourceLocation begin = source.begin;
-				unowned SourceLocation end = source.end;
-				if (begin.line == idx && end.line == idx) {
-					if (begin.column <= jdx + 1 <= end.column) {
-						caret = true;
-					}
-				} else if (begin.line == idx && begin.column <= jdx + 1) {
-					caret = true;
-				} else if (begin.line < idx < end.line) {
-					caret = true;
-				} else if (end.line == idx && end.column >= jdx + 1) {
-					caret = true;
-				}
-				if (caret) {
-					if (begin.line == idx && begin.column == jdx + 1) {
-						stderr.putc ('^');
-					} else {
-						stderr.putc ('~');
-					}
-				} else {
-					stderr.putc (' ');
-				}*/
+
 				mut caret := false
 				if pos.begin.line == idx && pos.end.line == idx {
 					if pos.begin.col <= jdx + 1 && jdx + 1 <= pos.end.col {
@@ -118,6 +85,7 @@ fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
 				} else if pos.end.line == idx && pos.end.col >= jdx + 1 {
 					caret = true
 				}
+
 				if caret {
 					if pos.begin.line == idx && pos.begin.col == jdx + 1 {
 						sb.write_string(term.green(term.bold('^')))
