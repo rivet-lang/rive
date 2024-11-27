@@ -6,7 +6,7 @@ module context
 
 import term
 import strings
-import compiler.token
+import compiler.ast
 
 pub struct Report {
 mut:
@@ -46,12 +46,12 @@ pub struct Hint {
 pub:
 	kind HintKind
 	msg  string
-	pos  ?token.Pos
+	pos  ?ast.FilePos
 }
 
 @[params]
 struct ReportParams {
-	pos   ?token.Pos
+	pos   ?ast.FilePos
 	msg   string
 	type  ReportType
 	hints []Hint
@@ -60,28 +60,26 @@ struct ReportParams {
 const backtick = `\``
 const border = term.bold(term.blue('      | '))
 
-fn report_source(pos token.Pos, prefix string, mut sb strings.Builder) {
-	if mut file := get().get_file(pos.file) {
-		if offending_line := file.get_line(pos.line_nr) {
-			sb.writeln(border)
-			sb.write_string(term.bold(term.blue('${pos.line_nr + 1:5d} | ')))
-			sb.writeln(offending_line)
-			sb.write_string(border)
-			for jdx in 0 .. offending_line.len {
-				if offending_line[jdx] == `\t` {
-					sb.write_string('\t')
-					continue
-				}
-				if jdx == pos.col {
-					sb.write_string(term.green(term.bold('^')))
-				} else if jdx > pos.col && jdx < pos.col + pos.len {
-					sb.write_string(term.green(term.bold('~')))
-				} else {
-					sb.write_string(' ')
-				}
+fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
+	if offending_line := pos.file.get_line(pos.begin.line) {
+		sb.writeln(border)
+		sb.write_string(term.bold(term.blue('${pos.begin.line + 1:5d} | ')))
+		sb.writeln(offending_line)
+		sb.write_string(border)
+		for jdx in 0 .. offending_line.len {
+			if offending_line[jdx] == `\t` {
+				sb.write_string('\t')
+				continue
 			}
-			sb.write_u8(`\n`)
+			if jdx == pos.begin.col {
+				sb.write_string(term.green(term.bold('^')))
+			} else if jdx > pos.begin.col && jdx < pos.end.col {
+				sb.write_string(term.green(term.bold('~')))
+			} else {
+				sb.write_string(' ')
+			}
 		}
+		sb.write_u8(`\n`)
 	}
 }
 
@@ -129,10 +127,10 @@ fn (r Report) print_message(params ReportParams) {
 	sb.write_string(term.bold(params.type.colorize()))
 	sb.write_u8(` `)
 
-	// `invalid character literal`
+	// invalid character `\`
 	print_highlighted_message(params.msg, mut sb)
 
-	// 8 | /
+	// 8 | '\'
 	if params.pos != none {
 		sb.write_u8(`\n`)
 		report_source(params.pos, '', mut sb)
@@ -177,12 +175,12 @@ fn (mut r Report) ic_fatal(msg string) {
 	for {}
 }
 
-fn (mut r Report) warn(msg string, pos token.Pos, hints ...Hint) {
+fn (mut r Report) warn(msg string, pos ast.FilePos, hints ...Hint) {
 	r.warnings++
 	r.print_message(pos: pos, msg: msg, type: .warn, hints: hints)
 }
 
-fn (mut r Report) error(msg string, pos token.Pos, hints ...Hint) {
+fn (mut r Report) error(msg string, pos ast.FilePos, hints ...Hint) {
 	r.errors++
 	r.print_message(pos: pos, msg: msg, type: .error, hints: hints)
 }
@@ -214,13 +212,13 @@ pub fn ic_fatal(msg string) {
 }
 
 @[inline]
-pub fn error(msg string, pos token.Pos, hints ...Hint) {
+pub fn error(msg string, pos ast.FilePos, hints ...Hint) {
 	mut r := get().report
 	r.error(msg, pos, ...hints)
 }
 
 @[inline]
-pub fn warn(msg string, pos token.Pos, hints ...Hint) {
+pub fn warn(msg string, pos ast.FilePos, hints ...Hint) {
 	mut r := get().report
 	r.warn(msg, pos, ...hints)
 }

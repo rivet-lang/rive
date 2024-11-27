@@ -5,7 +5,6 @@
 module parser
 
 import compiler.ast
-import compiler.token
 import compiler.context
 import compiler.tokenizer
 
@@ -16,9 +15,9 @@ mut:
 	file &ast.File = unsafe { nil }
 
 	tokenizer tokenizer.Tokenizer
-	prev_tok  token.Token
-	tok       token.Token
-	next_tok  token.Token
+	prev_tok  tokenizer.Token
+	tok       tokenizer.Token
+	next_tok  tokenizer.Token
 }
 
 pub fn new(ctx &context.CContext) &Parser {

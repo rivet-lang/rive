@@ -9,37 +9,73 @@ import os
 @[heap]
 pub struct File {
 pub:
-	file    string
-	content string
-pub mut:
+	filename string
+	content  string
+mut:
 	lines ?[]string
+}
+
+pub struct FilePos {
+pub mut:
+	file  &File = unsafe { nil }
+	begin FileLoc
+	end   FileLoc
+}
+
+pub fn (fp &FilePos) contains(loc &FileLoc) bool {
+	if loc.line > fp.begin.line && loc.line < fp.end.line {
+		return true
+	} else if loc.line == fp.begin.line && loc.line == fp.end.line {
+		return loc.col >= fp.begin.col && loc.col <= fp.end.col
+	} else if loc.line == fp.begin.line {
+		return loc.col >= fp.begin.col
+	} else if loc.line == fp.end.line {
+		return loc.col <= fp.end.col
+	}
+	return false
+}
+
+pub fn (fp &FilePos) str() string {
+	if fp.begin.line == fp.end.line {
+		return '${fp.file.filename}:${fp.begin.line + 1}:${fp.begin.col}'
+	}
+	return '${fp.file.filename}:${fp.begin.line + 1}:${fp.begin.col}-${fp.end.line + 1}:${fp.end.col}'
+}
+
+pub struct FileLoc {
+pub:
+	pos  int
+	line int
+	col  int
 }
 
 pub fn File.new(file string) &File {
 	content := read_file(file)
 	return &File{
-		file:    file
-		content: content
+		filename: file
+		content:  content
 	}
 }
 
 pub fn File.from_memory(content string) &File {
 	return &File{
-		file:    '<memory>'
-		content: content
+		filename: '<memory>'
+		content:  content
 	}
 }
 
-pub fn (mut file File) get_lines() []string {
+pub fn (file &File) get_lines() []string {
 	if file.lines != none {
 		return file.lines
 	}
 	lines := file.content.split_into_lines()
-	file.lines = lines
+	unsafe {
+		file.lines = lines
+	}
 	return lines
 }
 
-pub fn (mut file File) get_line(line int) ?string {
+pub fn (file &File) get_line(line int) ?string {
 	lines := file.get_lines()
 	return lines[line] or { none }
 }

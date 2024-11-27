@@ -41,7 +41,7 @@ pub mut:
 
 pub fn (ctx CContext) get_file(filename string) ?&ast.File {
 	for file in ctx.files {
-		if file.file == filename {
+		if file.filename == filename {
 			return file
 		}
 	}

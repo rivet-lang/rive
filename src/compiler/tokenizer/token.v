@@ -2,21 +2,9 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-module token
+module tokenizer
 
-pub struct Pos {
-pub:
-	file    string
-	line_nr int // the line number in the source where the token occurred
-	col     int // the column in the source where the token occurred
-	pos     int // the position of the token in scanner text
-pub mut:
-	len int // length of the literal
-}
-
-pub fn (pos Pos) str() string {
-	return '${pos.file}:${pos.line_nr + 1}:${pos.col}'
-}
+import compiler.ast
 
 @[minify]
 pub struct Token {
@@ -24,7 +12,7 @@ pub:
 	kind Kind   // the token number/enum; for quick comparisons
 	lit  string // literal representation of the token
 	tidx int    // the index of the token
-	pos  Pos
+	pos  ast.FilePos
 }
 
 pub enum Kind {
@@ -253,11 +241,6 @@ pub fn (t Kind) str() string {
 		return 'unknown'
 	}
 	return token_str[idx]
-}
-
-@[inline]
-pub fn (t Token) is_next_to(pre_token Token) bool {
-	return t.pos.pos - pre_token.pos.pos == pre_token.pos.len
 }
 
 pub fn (t Token) str() string {
