@@ -200,6 +200,9 @@ fn (mut r Report) warn(msg string, pos ast.FilePos, hints ...Hint) {
 
 fn (mut r Report) error(msg string, pos ast.FilePos, hints ...Hint) {
 	r.errors++
+	unsafe {
+		pos.file.errors++
+	}
 	r.print_message(pos: pos, msg: msg, type: .error, hints: hints)
 }
 

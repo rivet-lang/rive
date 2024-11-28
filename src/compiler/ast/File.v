@@ -11,6 +11,8 @@ pub struct File {
 pub:
 	filename string
 	content  string
+pub mut:
+	errors int
 mut:
 	lines ?[]string
 }

@@ -20,6 +20,7 @@ mut:
 	next_tok  tokenizer.Token
 }
 
+@[inline]
 pub fn new(ctx &context.CContext) &Parser {
 	return &Parser{
 		ctx: ctx
@@ -30,11 +31,16 @@ pub fn (mut p Parser) parse() {
 	p.parse_file(p.ctx.options.input)
 }
 
-fn (mut p Parser) parse_file(file string) {
-	p.file = ast.File.new(file)
+fn (mut p Parser) parse_file(filename string) {
+	p.file = ast.File.new(filename)
 	p.ctx.files << p.file
 
 	p.tokenizer = tokenizer.from_file(p.ctx, p.file)
+	if p.file.errors > 0 {
+		// if the tokenizer found errors in the file, let's skip it
+		return
+	}
+
 	p.advance(3)
 }
 
