@@ -10,4 +10,4 @@ fn other
 fn other2
 
 "my string :)\nhello!"
-'a' 'b'
+'a' 'b' () {} [] ¿

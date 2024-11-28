@@ -11,8 +11,15 @@ pub struct Token {
 pub:
 	kind Kind   // the token number/enum; for quick comparisons
 	lit  string // literal representation of the token
-	tidx int    // the index of the token
 	pos  ast.FilePos
+}
+
+@[inline]
+pub fn Token.no_lit(kind Kind, pos ast.FilePos) Token {
+	return Token{
+		kind: kind
+		pos:  pos
+	}
 }
 
 pub enum Kind {
@@ -36,6 +43,7 @@ pub enum Kind {
 	bang                        // !
 	bit_not                     // ~
 	question                    // ?
+	or_else                     // ??
 	comma                       // ,
 	semicolon                   // ;
 	colon                       // :
@@ -52,7 +60,7 @@ pub enum Kind {
 	plus_assign                 // +=
 	minus_assign                // -=
 	div_assign                  // /=
-	mult_assign                 // *=
+	mul_assign                  // *=
 	xor_assign                  // ^=
 	mod_assign                  // %=
 	or_assign                   // |=
@@ -62,12 +70,12 @@ pub enum Kind {
 	unsigned_right_shift_assign // >>>=
 	boolean_and_assign          // &&=
 	boolean_or_assign           // ||=
-	lcbr                        // {
-	rcbr                        // }
-	lpar                        // (
-	rpar                        // )
-	lsbr                        // [
-	rsbr                        // ]
+	lbrace                      // {
+	rbrace                      // }
+	lparen                      // (
+	rparen                      // )
+	lbracket                    // [
+	rbracket                    // ]
 	eq       // ==
 	ne       // !=
 	gt       // >
@@ -110,7 +118,7 @@ pub enum Kind {
 pub const token_str = build_token_str()
 pub const keywords = build_keys()
 
-pub const assign_tokens = [Kind.assign, .decl_assign, .plus_assign, .minus_assign, .mult_assign,
+pub const assign_tokens = [Kind.assign, .decl_assign, .plus_assign, .minus_assign, .mul_assign,
 	.div_assign, .xor_assign, .mod_assign, .or_assign, .and_assign, .right_shift_assign,
 	.left_shift_assign, .unsigned_right_shift_assign, .boolean_and_assign, .boolean_or_assign]
 
@@ -157,7 +165,7 @@ fn build_token_str() []string {
 	s[Kind.decl_assign] = ':='
 	s[Kind.plus_assign] = '+='
 	s[Kind.minus_assign] = '-='
-	s[Kind.mult_assign] = '*='
+	s[Kind.mul_assign] = '*='
 	s[Kind.div_assign] = '/='
 	s[Kind.xor_assign] = '^='
 	s[Kind.mod_assign] = '%='
@@ -168,12 +176,12 @@ fn build_token_str() []string {
 	s[Kind.left_shift_assign] = '<<='
 	s[Kind.boolean_or_assign] = '||='
 	s[Kind.boolean_and_assign] = '&&='
-	s[Kind.lcbr] = '{'
-	s[Kind.rcbr] = '}'
-	s[Kind.lpar] = '('
-	s[Kind.rpar] = ')'
-	s[Kind.lsbr] = '['
-	s[Kind.rsbr] = ']'
+	s[Kind.lbrace] = '{'
+	s[Kind.rbrace] = '}'
+	s[Kind.lparen] = '('
+	s[Kind.rparen] = ')'
+	s[Kind.lbracket] = '['
+	s[Kind.rbracket] = ']'
 	s[Kind.eq] = '=='
 	s[Kind.ne] = '!='
 	s[Kind.gt] = '>'
@@ -181,6 +189,7 @@ fn build_token_str() []string {
 	s[Kind.ge] = '>='
 	s[Kind.le] = '<='
 	s[Kind.question] = '?'
+	s[Kind.or_else] = '??'
 	s[Kind.left_shift] = '<<'
 	s[Kind.right_shift] = '>>'
 	s[Kind.dollar] = '$'

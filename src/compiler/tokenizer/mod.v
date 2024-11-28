@@ -231,6 +231,27 @@ fn (mut t Tokenizer) internal_next() Token {
 			}
 		}
 		match ch {
+			`+` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.plus_assign, pos)
+				}
+				return Token.no_lit(.plus, pos)
+			}
+			`-` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.minus_assign, pos)
+				}
+				return Token.no_lit(.minus, pos)
+			}
+			`*` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.mul_assign, pos)
+				}
+				return Token.no_lit(.mul, pos)
+			}
 			`/` {
 				if nextc == `/` {
 					t.ignore_line()
@@ -261,7 +282,139 @@ fn (mut t Tokenizer) internal_next() Token {
 					}
 					t.pos++
 					continue
+				} else if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.div_assign, pos)
 				}
+				return Token.no_lit(.div, pos)
+			}
+			`%` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.mod_assign, pos)
+				}
+				return Token.no_lit(.mod, pos)
+			}
+			`@` {
+				return Token.no_lit(.at, pos)
+			}
+			`$` {
+				return Token.no_lit(.dollar, pos)
+			}
+			`=` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.eq, pos)
+				}
+				return Token.no_lit(.assign, pos)
+			}
+			`<` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.le, pos)
+				}
+				return Token.no_lit(.lt, pos)
+			}
+			`>` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.ge, pos)
+				}
+				return Token.no_lit(.gt, pos)
+			}
+			`.` {
+				if nextc == `.` && t.look_ahead(2) == `.` {
+					t.pos += 2
+					return Token.no_lit(.ellipsis, pos)
+				} else if nextc == `.` {
+					t.pos++
+					return Token.no_lit(.dotdot, pos)
+				}
+				return Token.no_lit(.dot, pos)
+			}
+			`,` {
+				return Token.no_lit(.comma, pos)
+			}
+			`:` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.decl_assign, pos)
+				}
+				return Token.no_lit(.colon, pos)
+			}
+			`;` {
+				return Token.no_lit(.semicolon, pos)
+			}
+			`?` {
+				if nextc == `?` {
+					t.pos++
+					return Token.no_lit(.or_else, pos)
+				}
+				return Token.no_lit(.question, pos)
+			}
+			`#` {
+				return Token.no_lit(.hash, pos)
+			}
+			`&` {
+				if nextc == `&` {
+					t.pos++
+					return Token.no_lit(.log_and, pos)
+				} else if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.and_assign, pos)
+				}
+				return Token.no_lit(.amp, pos)
+			}
+			`|` {
+				if nextc == `|` {
+					t.pos++
+					return Token.no_lit(.log_or, pos)
+				} else if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.or_assign, pos)
+				}
+				return Token.no_lit(.pipe, pos)
+			}
+			`!` {
+				if t.matches('is ', t.pos + 1) {
+					t.pos += 2
+					return Token.no_lit(.not_is, pos)
+				} else if t.matches('in ', t.pos + 1) {
+					t.pos += 2
+					return Token.no_lit(.not_in, pos)
+				} else if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.ne, pos)
+				}
+				return Token.no_lit(.bang, pos)
+			}
+			`~` {
+				return Token.no_lit(.bit_not, pos)
+			}
+			`^` {
+				if nextc == `=` {
+					t.pos++
+					return Token.no_lit(.xor_assign, pos)
+				}
+				return Token.no_lit(.xor, pos)
+			}
+			`{` {
+				return Token.no_lit(.lbrace, pos)
+			}
+			`}` {
+				return Token.no_lit(.rbrace, pos)
+			}
+			`[` {
+				return Token.no_lit(.lbracket, pos)
+			}
+			`]` {
+				return Token.no_lit(.rbracket, pos)
+			}
+			`(` {
+				return Token.no_lit(.lparen, pos)
+			}
+			`)` {
+				return Token.no_lit(.rparen, pos)
 			}
 			`'` {
 				lit := t.read_char()
@@ -283,8 +436,21 @@ fn (mut t Tokenizer) internal_next() Token {
 			}
 			else {}
 		}
-		context.error('invalid character `${ch.ascii_str()}`', pos)
+		t.invalid_character()
 		break
 	}
 	return t.end_of_file()
+}
+
+@[direct_array_access]
+fn (mut t Tokenizer) invalid_character() {
+	pos := t.current_pos()
+	ch := t.text[t.pos]
+	ch_len := rune(ch).length_in_bytes()
+	s := if ch_len == 1 {
+		ch.ascii_str()
+	} else {
+		t.text[t.pos..t.pos + ch_len]
+	}
+	context.error('invalid character `${s}`', pos)
 }
