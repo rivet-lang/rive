@@ -19,9 +19,9 @@ fn other
 	multiline comment
 */
 
-fn other2
+fn other2() {}
 
-"my string :)\nhello!"
+"my string :)\nhello!"[0]
 \'a\' \'b\'
 '
 
@@ -37,7 +37,14 @@ const expected_tokens = [
 	ExpectedToken{.ident, 'other'},
 	ExpectedToken{.kw_fn, 'fn'},
 	ExpectedToken{.ident, 'other2'},
+	ExpectedToken{.lparen, ''},
+	ExpectedToken{.rparen, ''},
+	ExpectedToken{.lbrace, ''},
+	ExpectedToken{.rbrace, ''},
 	ExpectedToken{.string, 'my string :)\nhello!'},
+	ExpectedToken{.lbracket, ''},
+	ExpectedToken{.number, '0'},
+	ExpectedToken{.rbracket, ''},
 	ExpectedToken{.char, 'a'},
 	ExpectedToken{.char, 'b'},
 	ExpectedToken{.eof, ''},
