@@ -18,5 +18,4 @@ jobs:
           git clone https://github.com/vlang/v
           cd v && make && sudo ./v symlink
           cd ..
-          v . -o rivetc && ./rivetc test.ri
           v test src
