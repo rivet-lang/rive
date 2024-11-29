@@ -1,0 +1,48 @@
+// Copyright (C) 2024-present Jose Mendoza - All rights reserved. Use of this
+// source code is governed by an MIT license that can be found in the LICENSE
+// file.
+
+import os
+import term
+
+// test.err.ri -> test.err.out
+// test.ok.ri -> test.ok.out
+
+if !os.exists('rivetc') {
+	panic('rivetc executable not found')
+}
+
+mut passed := 0
+mut failed := 0
+
+files := os.walk_ext('tests/', '.ri')
+if files.len == 0 {
+	return
+}
+for i, file in files {
+	print(term.bold(term.cyan('  [${i + 1}/${files.len}] ')))
+	print(file)
+	mut test_passed := true
+	is_err_out := file.ends_with('.err.ri')
+	out_content := os.read_file(file#[..-3] + '.out')!
+	res := os.execute('./rivetc ${file}')
+	out_is_diff := res.exit_code != 0 && res.output != out_content
+	if is_err_out {
+		if res.exit_code == 0 {
+			test_passed = false
+		} else if out_is_diff {
+			test_passed = false
+		}
+	}
+	if test_passed {
+		println(term.bold(term.green(' .. PASSED')))
+		passed++
+	} else {
+		println(term.bold(term.red(' .. FAILED')))
+		failed++
+		if out_is_diff {
+			println('Expected:\n${out_content}\n')
+			println('Got:\n${res.output}')
+		}
+	}
+}

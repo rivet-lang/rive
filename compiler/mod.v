@@ -17,4 +17,5 @@ pub fn run(args []string) {
 
 	mut p := parser.new(c_ctx)
 	p.parse()
+	c_ctx.abort_if_errors()
 }

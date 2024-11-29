@@ -1,0 +1,5 @@
+tests/tokenizer/invalid_string_literal.err.ri:1:1: error: unfinished string literal
+      | 
+    1 | "unfinished string literal
+      | ^                         
+error: could not compile source code, aborting due to previous error

@@ -1,0 +1,22 @@
+0b010101 // ok
+0xabcdef // ok
+0o1234567 // ok
+
+0b // fail
+0o // fail
+0x // fail
+
+123eg // fail
+123.e // fail
+123. // fail
+123e // fail
+123.abc // fail
+123.1.3 // fail
+
+0x_abc // fail
+1__00 // fail
+0123 // fail
+0b01210101 // fail
+0xhabc // fail
+0o91234 // fail
+123_ // fail

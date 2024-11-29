@@ -19,3 +19,4 @@ jobs:
           cd v && make && sudo ./v symlink
           cd ..
           v test compiler
+          v tests/run_tests.vsh

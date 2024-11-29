@@ -39,11 +39,13 @@ pub mut:
 	files []&ast.File
 }
 
-pub fn (ctx CContext) get_file(filename string) ?&ast.File {
-	for file in ctx.files {
-		if file.filename == filename {
-			return file
+pub fn (ctx &CContext) abort_if_errors() {
+	if ctx.report.errors > 0 {
+		reason := if ctx.report.errors == 1 {
+			'aborting due to previous error'
+		} else {
+			'aborting due to ${ctx.report.errors} previous errors'
 		}
+		ic_error('could not compile source code, ${reason}')
 	}
-	return none
 }

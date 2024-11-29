@@ -10,8 +10,51 @@ import compiler.ast
 
 pub struct Report {
 mut:
-	errors   int
-	warnings int
+	errors          int
+	warnings        int
+	colorize_output bool = term.can_show_color_on_stderr()
+}
+
+fn bold(s string) string {
+	if get().report.colorize_output {
+		return term.bold(s)
+	}
+	return s
+}
+
+fn blue(s string) string {
+	if get().report.colorize_output {
+		return term.blue(s)
+	}
+	return s
+}
+
+fn cyan(s string) string {
+	if get().report.colorize_output {
+		return term.cyan(s)
+	}
+	return s
+}
+
+fn green(s string) string {
+	if get().report.colorize_output {
+		return term.green(s)
+	}
+	return s
+}
+
+fn yellow(s string) string {
+	if get().report.colorize_output {
+		return term.yellow(s)
+	}
+	return s
+}
+
+fn red(s string) string {
+	if get().report.colorize_output {
+		return term.red(s)
+	}
+	return s
 }
 
 enum ReportType {
@@ -23,10 +66,10 @@ enum ReportType {
 
 fn (rt ReportType) colorize() string {
 	return match rt {
-		.fatal { term.red('fatal:') }
-		.error { term.red('error:') }
-		.warn { term.yellow('warning:') }
-		.note { term.cyan('note:') }
+		.fatal { red('fatal:') }
+		.error { red('error:') }
+		.warn { yellow('warning:') }
+		.note { cyan('note:') }
 	}
 }
 
@@ -36,9 +79,9 @@ pub enum HintKind {
 }
 
 fn (hk HintKind) colorize() string {
-	return term.bold(match hk {
-		.note { term.cyan('note:') }
-		.help { term.green('help:') }
+	return bold(match hk {
+		.note { cyan('note:') }
+		.help { green('help:') }
 	})
 }
 
@@ -58,13 +101,13 @@ struct ReportParams {
 }
 
 const backtick = `\``
-const border = term.bold(term.blue('      | '))
 
 fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
+	border := bold(blue('      | '))
 	for idx := pos.begin.line; idx <= pos.end.line; idx++ {
 		if offending_line := pos.file.get_line(idx) {
 			sb.writeln(border)
-			sb.write_string(term.bold(term.blue('${pos.begin.line + 1:5d} | ')))
+			sb.write_string(bold(blue('${pos.begin.line + 1:5d} | ')))
 			sb.writeln(offending_line)
 			sb.write_string(border)
 			for jdx in 0 .. offending_line.len {
@@ -88,15 +131,14 @@ fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
 
 				if caret {
 					if pos.begin.line == idx && pos.begin.col == jdx + 1 {
-						sb.write_string(term.green(term.bold('^')))
+						sb.write_string(green(bold('^')))
 					} else {
-						sb.write_string(term.green(term.bold('~')))
+						sb.write_string(green(bold('~')))
 					}
 				} else {
 					sb.write_u8(` `)
 				}
 			}
-			sb.write_u8(`\n`)
 		}
 	}
 }
@@ -121,7 +163,7 @@ fn print_highlighted_message(msg string, mut sb strings.Builder) {
 				start = cur
 			} else {
 				cur++
-				sb.write_string(term.cyan(msg[start..cur]))
+				sb.write_string(cyan(msg[start..cur]))
 				start = cur
 			}
 		} else {
@@ -132,17 +174,17 @@ fn print_highlighted_message(msg string, mut sb strings.Builder) {
 	sb.write_string(msg[start..])
 }
 
-fn (r Report) print_message(params ReportParams) {
+fn (r &Report) print_message(params ReportParams) {
 	mut sb := strings.new_builder(params.msg.len)
 
 	// file:line:column
 	if params.pos != none {
-		sb.write_string(term.bold(params.pos.str() + ':'))
+		sb.write_string(bold(params.pos.str() + ':'))
 		sb.write_u8(` `)
 	}
 
 	// error:|warn:|note:|help:
-	sb.write_string(term.bold(params.type.colorize()))
+	sb.write_string(bold(params.type.colorize()))
 	sb.write_u8(` `)
 
 	// invalid character `\`
@@ -156,8 +198,9 @@ fn (r Report) print_message(params ReportParams) {
 
 	// help: remove invalid character
 	for hint in params.hints {
-		eq := term.bold(term.blue('='))
-		sb.writeln('${' ':6}${eq} ${hint.kind.colorize()} ${hint.msg}')
+		sb.write_u8(`\n`)
+		eq := bold(blue('='))
+		sb.write_string('${' ':6}${eq} ${hint.kind.colorize()} ${hint.msg}')
 		if hint.pos != none {
 			// report_source()
 		}
@@ -167,7 +210,7 @@ fn (r Report) print_message(params ReportParams) {
 	if params.type == .fatal {
 		panic(s)
 	} else {
-		eprint(s)
+		eprintln(s)
 	}
 }
 
@@ -210,36 +253,36 @@ fn (mut r Report) error(msg string, pos ast.FilePos, hints ...Hint) {
 
 @[inline]
 pub fn ic_note(msg string) {
-	mut r := get().report
+	mut r := &get().report
 	r.ic_note(msg)
 }
 
 @[inline]
 pub fn ic_warn(msg string) {
-	mut r := get().report
+	mut r := &get().report
 	r.ic_warn(msg)
 }
 
 @[noreturn]
 pub fn ic_error(msg string) {
-	mut r := get().report
+	mut r := &get().report
 	r.ic_error(msg)
 }
 
 @[noreturn]
 pub fn ic_fatal(msg string) {
-	mut r := get().report
+	mut r := &get().report
 	r.ic_fatal(msg)
 }
 
 @[inline]
 pub fn error(msg string, pos ast.FilePos, hints ...Hint) {
-	mut r := get().report
+	mut r := &get().report
 	r.error(msg, pos, ...hints)
 }
 
 @[inline]
 pub fn warn(msg string, pos ast.FilePos, hints ...Hint) {
-	mut r := get().report
+	mut r := &get().report
 	r.warn(msg, pos, ...hints)
 }
