@@ -13,10 +13,17 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Build Rivet compiler
+      - name: Build V
         run: |
           git clone https://github.com/vlang/v
           cd v && make && sudo ./v symlink
           cd ..
+
+      - name: Build Rivet compiler
+        run: |
+          v -o rivetc cmd/
+
+      - name: Run Rivet compiler tests
+        run: |
           v test compiler
           v tests/run_tests.vsh
