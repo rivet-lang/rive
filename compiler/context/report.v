@@ -174,7 +174,7 @@ fn print_highlighted_message(msg string, mut sb strings.Builder) {
 	sb.write_string(msg[start..])
 }
 
-fn (r &Report) print_message(params ReportParams) {
+fn print_message(params ReportParams) {
 	mut sb := strings.new_builder(params.msg.len)
 
 	// file:line:column
@@ -215,30 +215,30 @@ fn (r &Report) print_message(params ReportParams) {
 }
 
 @[inline]
-fn (mut r Report) ic_note(msg string) {
-	r.print_message(msg: msg, type: .note)
+fn (r &Report) ic_note(msg string) {
+	print_message(msg: msg, type: .note)
 }
 
 @[inline]
-fn (mut r Report) ic_warn(msg string) {
-	r.print_message(msg: msg, type: .warn)
+fn (r &Report) ic_warn(msg string) {
+	print_message(msg: msg, type: .warn)
 }
 
 @[noreturn]
-fn (mut r Report) ic_error(msg string) {
-	r.print_message(msg: msg, type: .error)
+fn (r &Report) ic_error(msg string) {
+	print_message(msg: msg, type: .error)
 	exit(101)
 }
 
 @[noreturn]
-fn (mut r Report) ic_fatal(msg string) {
-	r.print_message(msg: msg, type: .fatal)
+fn (r &Report) ic_fatal(msg string) {
+	print_message(msg: msg, type: .fatal)
 	for {}
 }
 
 fn (mut r Report) warn(msg string, pos ast.FilePos, hints ...Hint) {
 	r.warnings++
-	r.print_message(pos: pos, msg: msg, type: .warn, hints: hints)
+	print_message(pos: pos, msg: msg, type: .warn, hints: hints)
 }
 
 fn (mut r Report) error(msg string, pos ast.FilePos, hints ...Hint) {
@@ -246,33 +246,29 @@ fn (mut r Report) error(msg string, pos ast.FilePos, hints ...Hint) {
 	unsafe {
 		pos.file.errors++
 	}
-	r.print_message(pos: pos, msg: msg, type: .error, hints: hints)
+	print_message(pos: pos, msg: msg, type: .error, hints: hints)
 }
 
 // convenience methods calling on correct instance:
 
 @[inline]
 pub fn ic_note(msg string) {
-	mut r := &get().report
-	r.ic_note(msg)
+	get().report.ic_note(msg)
 }
 
 @[inline]
 pub fn ic_warn(msg string) {
-	mut r := &get().report
-	r.ic_warn(msg)
+	get().report.ic_warn(msg)
 }
 
 @[noreturn]
 pub fn ic_error(msg string) {
-	mut r := &get().report
-	r.ic_error(msg)
+	get().report.ic_error(msg)
 }
 
 @[noreturn]
 pub fn ic_fatal(msg string) {
-	mut r := &get().report
-	r.ic_fatal(msg)
+	get().report.ic_fatal(msg)
 }
 
 @[inline]
