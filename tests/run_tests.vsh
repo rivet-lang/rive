@@ -26,7 +26,7 @@ for i, file in files {
 	is_err_out := file.ends_with('.err.ri')
 	out_content := os.read_file(file#[..-3] + '.out')!
 	res := os.execute('./rivetc ${file}')
-	out_is_diff := res.exit_code != 0 && res.output != out_content
+	out_is_diff := res.exit_code != 0 && res.output.trim_space() != out_content
 	if is_err_out {
 		if res.exit_code == 0 {
 			test_passed = false
@@ -42,7 +42,8 @@ for i, file in files {
 		failed++
 		if out_is_diff {
 			println('Expected:\n${out_content}\n')
-			println('Got:\n${res.output}')
+			println('Got:\n${res.output.trim_space()}')
 		}
 	}
 }
+exit(failed)
