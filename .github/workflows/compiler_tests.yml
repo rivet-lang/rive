@@ -18,4 +18,4 @@ jobs:
           git clone https://github.com/vlang/v
           cd v && make && sudo ./v symlink
           cd ..
-          v test src
+          v test compiler
