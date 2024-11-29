@@ -21,22 +21,6 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 Rivet's goal is to be a very powerful programming language and at the same time easy
 to use, whose syntax is inspired by Go, Zig and C# and other programming languages.
 
-Currently, Rivet uses C as the only backend and generates C99 code that is compiled using
-a C compiler (by default, GCC or Clang). The idea is that in the long term there will be
-other backends available for code generation, such as LLVM or WebAssembly, and also that
-there will be an interpreter available.
-
-You can find information on how to build Rivet on your computer by going to the
-[documentation](https://rivet-lang.github.io/docs).
-
-```v
-const console = @import("std").console;
-
-fn main() {
-    console.writeln("Hello World!");
-}
-```
-
 > [!IMPORTANT]
 > Currently the language is in alpha state, and therefore its syntax and the language
 > API is not stable, and may change in the long term. Not all features are implemented.
@@ -48,3 +32,19 @@ fn main() {
 > yet. Any help to provide full support for both Windows and macOS is welcome.
 > 
 > Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
+
+Rivet uses C as the only backend and generates C99 code that is compiled using a C compiler 
+(by default, GCC or Clang). The idea is that in the long term there will be other backends 
+available for code generation, such as LLVM or WebAssembly, and also that there will be an 
+interpreter available.
+
+You can find information on how to build Rivet on your computer by going to the
+[documentation](https://rivet-lang.github.io/docs).
+
+```v
+const console = @import("std").console;
+
+fn main() {
+    console.writeln("Hello World!");
+}
+```
