@@ -47,6 +47,10 @@ for i, file in files {
 	}
 }
 
+passed_str := term.green('${passed} passed')
+failed_str := term.red('${failed} failed')
+println(term.bold('Summary for all tests files: ${passed_str}, ${failed_str}, ${files.len} total.'))
+
 if failed != 0 {
 	exit(failed)
 }
