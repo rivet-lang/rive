@@ -2,9 +2,9 @@ name: Compiler Tests
 
 on:
   push:
-    paths: ['src/**.v', '.github/workflows/compiler_tests.yml']
+    paths: ['cmd/**.v', 'compiler/**.v', '.github/workflows/compiler_tests.yml', 'tests/']
   pull_request:
-    paths: ['src/**.v', '.github/workflows/compiler_tests.yml']
+    paths: ['cmd/**.v', 'compiler/**.v', '.github/workflows/compiler_tests.yml', 'tests/']
     types: [opened, synchronize]
 
 jobs:

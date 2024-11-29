@@ -1,7 +1,6 @@
 // Copyright (C) 2024-present Jose Mendoza - All rights reserved. Use of this
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
-
 import os
 import term
 
@@ -26,7 +25,8 @@ for i, file in files {
 	is_err_out := file.ends_with('.err.ri')
 	out_content := os.read_file(file#[..-3] + '.out')!
 	res := os.execute('./rivetc ${file}')
-	out_is_diff := res.exit_code != 0 && res.output.trim_space() != out_content
+	res_out := res.output.trim_space()
+	out_is_diff := res.exit_code != 0 && res_out != out_content
 	if is_err_out {
 		if res.exit_code == 0 {
 			test_passed = false
@@ -42,8 +42,11 @@ for i, file in files {
 		failed++
 		if out_is_diff {
 			println('Expected:\n${out_content}\n')
-			println('Got:\n${res.output.trim_space()}')
+			println('Got:\n${res_out}')
 		}
 	}
 }
-exit(failed)
+
+if failed != 0 {
+	exit(failed)
+}
