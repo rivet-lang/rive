@@ -234,6 +234,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`+` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.plus_assign, pos)
 				}
 				return Token.no_lit(.plus, pos)
@@ -241,6 +242,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`-` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.minus_assign, pos)
 				}
 				return Token.no_lit(.minus, pos)
@@ -248,6 +250,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`*` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.mul_assign, pos)
 				}
 				return Token.no_lit(.mul, pos)
@@ -284,6 +287,7 @@ fn (mut t Tokenizer) internal_next() Token {
 					continue
 				} else if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.div_assign, pos)
 				}
 				return Token.no_lit(.div, pos)
@@ -291,6 +295,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`%` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.mod_assign, pos)
 				}
 				return Token.no_lit(.mod, pos)
@@ -304,6 +309,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`=` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.eq, pos)
 				}
 				return Token.no_lit(.assign, pos)
@@ -311,6 +317,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`<` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.le, pos)
 				}
 				return Token.no_lit(.lt, pos)
@@ -318,6 +325,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`>` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.ge, pos)
 				}
 				return Token.no_lit(.gt, pos)
@@ -325,9 +333,11 @@ fn (mut t Tokenizer) internal_next() Token {
 			`.` {
 				if nextc == `.` && t.look_ahead(2) == `.` {
 					t.pos += 2
+					pos.end = t.current_loc()
 					return Token.no_lit(.ellipsis, pos)
 				} else if nextc == `.` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.dotdot, pos)
 				}
 				return Token.no_lit(.dot, pos)
@@ -338,6 +348,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`:` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.decl_assign, pos)
 				}
 				return Token.no_lit(.colon, pos)
@@ -348,6 +359,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`?` {
 				if nextc == `?` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.or_else, pos)
 				}
 				return Token.no_lit(.question, pos)
@@ -358,9 +370,11 @@ fn (mut t Tokenizer) internal_next() Token {
 			`&` {
 				if nextc == `&` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.log_and, pos)
 				} else if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.and_assign, pos)
 				}
 				return Token.no_lit(.amp, pos)
@@ -368,9 +382,11 @@ fn (mut t Tokenizer) internal_next() Token {
 			`|` {
 				if nextc == `|` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.log_or, pos)
 				} else if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.or_assign, pos)
 				}
 				return Token.no_lit(.pipe, pos)
@@ -378,12 +394,15 @@ fn (mut t Tokenizer) internal_next() Token {
 			`!` {
 				if t.matches('is ', t.pos + 1) {
 					t.pos += 2
+					pos.end = t.current_loc()
 					return Token.no_lit(.not_is, pos)
 				} else if t.matches('in ', t.pos + 1) {
 					t.pos += 2
+					pos.end = t.current_loc()
 					return Token.no_lit(.not_in, pos)
 				} else if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.ne, pos)
 				}
 				return Token.no_lit(.bang, pos)
@@ -394,6 +413,7 @@ fn (mut t Tokenizer) internal_next() Token {
 			`^` {
 				if nextc == `=` {
 					t.pos++
+					pos.end = t.current_loc()
 					return Token.no_lit(.xor_assign, pos)
 				}
 				return Token.no_lit(.xor, pos)
