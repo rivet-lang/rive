@@ -13,6 +13,7 @@ const cr = 13
 const backslash = `\\`
 const num_sep = `_`
 
+@[inline]
 fn is_new_line(ch u8) bool {
 	return ch in [cr, lf]
 }

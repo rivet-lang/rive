@@ -8,14 +8,14 @@ import compiler.context
 import compiler.parser
 
 pub fn run(args []string) {
-	mut c_ctx := &context.CContext{}
+	mut ctx := &context.CContext{}
 
-	context.push(c_ctx)
+	context.push(ctx)
 	defer { context.pop() }
 
-	c_ctx.options = context.parse_args(args)
+	ctx.options = context.parse_args(args)
 
-	mut p := parser.new(c_ctx)
+	mut p := parser.new(ctx)
 	p.parse()
-	c_ctx.abort_if_errors()
+	ctx.abort_if_errors()
 }
