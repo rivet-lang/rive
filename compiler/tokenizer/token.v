@@ -103,11 +103,10 @@ pub enum Kind {
 	kw_match
 	kw_mut
 	kw_none
-	kw_record
 	kw_return
+	kw_struct
 	kw_trait
 	kw_true
-	kw_union
 	kw_pub
 	kw_unsafe
 	keyword_end
@@ -196,7 +195,6 @@ fn build_token_str() []string {
 	s[Kind.at] = '@'
 	s[Kind.kw_if] = 'if'
 	s[Kind.kw_else] = 'else'
-	s[Kind.kw_record] = 'record'
 	s[Kind.kw_return] = 'return'
 	s[Kind.kw_const] = 'const'
 	s[Kind.kw_mut] = 'mut'
@@ -211,7 +209,7 @@ fn build_token_str() []string {
 	s[Kind.kw_enum] = 'enum'
 	s[Kind.kw_pub] = 'pub'
 	s[Kind.kw_in] = 'in'
-	s[Kind.kw_union] = 'union'
+	s[Kind.kw_struct] = 'struct'
 	s[Kind.kw_as] = 'as'
 	s[Kind.kw_defer] = 'defer'
 	s[Kind.kw_match] = 'match'
