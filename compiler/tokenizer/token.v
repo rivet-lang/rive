@@ -105,7 +105,6 @@ pub enum Kind {
 	kw_struct
 	kw_trait
 	kw_pub
-	kw_unsafe
 	keyword_end
 
 	_end_
