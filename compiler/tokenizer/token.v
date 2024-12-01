@@ -199,7 +199,6 @@ fn build_token_str() []string {
 	s[Kind.kw_trait] = 'trait'
 	s[Kind.kw_continue] = 'continue'
 	s[Kind.kw_break] = 'break'
-	s[Kind.kw_unsafe] = 'unsafe'
 	s[Kind.kw_enum] = 'enum'
 	s[Kind.kw_pub] = 'pub'
 	s[Kind.kw_in] = 'in'
