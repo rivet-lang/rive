@@ -94,7 +94,6 @@ pub enum Kind {
 	kw_defer
 	kw_else
 	kw_enum
-	kw_false
 	kw_for
 	kw_fn
 	kw_if
@@ -102,11 +101,9 @@ pub enum Kind {
 	kw_is
 	kw_match
 	kw_mut
-	kw_none
 	kw_return
 	kw_struct
 	kw_trait
-	kw_true
 	kw_pub
 	kw_unsafe
 	keyword_end
@@ -201,8 +198,6 @@ fn build_token_str() []string {
 	s[Kind.kw_for] = 'for'
 	s[Kind.kw_fn] = 'fn'
 	s[Kind.kw_trait] = 'trait'
-	s[Kind.kw_true] = 'true'
-	s[Kind.kw_false] = 'false'
 	s[Kind.kw_continue] = 'continue'
 	s[Kind.kw_break] = 'break'
 	s[Kind.kw_unsafe] = 'unsafe'
@@ -213,7 +208,6 @@ fn build_token_str() []string {
 	s[Kind.kw_as] = 'as'
 	s[Kind.kw_defer] = 'defer'
 	s[Kind.kw_match] = 'match'
-	s[Kind.kw_none] = 'none'
 	s[Kind.kw_is] = 'is'
 	// The following kinds are not for tokens returned by the Rivet tokenizer,
 	// they are used just for organization/ease of checking:
