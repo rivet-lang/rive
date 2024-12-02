@@ -19,7 +19,7 @@ A general-purpose programming language, focused on simplicity, safety and stabil
 </div>
 
 Rivet's goal is to be a very powerful programming language and at the same time easy
-to use, whose syntax is inspired by Go, Zig and C# and other programming languages.
+to use, whose syntax is inspired by Go, Zig, C# and other programming languages.
 
 > [!IMPORTANT]
 > Currently the language is in alpha state, and therefore its syntax and the language
@@ -28,8 +28,8 @@ to use, whose syntax is inspired by Go, Zig and C# and other programming languag
 > Compiler version 0.1.0 will be released when the self-hosted compiler can compile itself
 > successfully.
 > 
-> Only linux is supported for now. Windows is not well supported, and macOS is not supported
-> yet. Any help to provide full support for both Windows and macOS is welcome.
+> Only Linux is supported for now, Windows and macOS is not supported yet. Any help to provide 
+> full support for both Windows and macOS is welcome.
 > 
 > Read [CONTRIBUTING](CONTRIBUTING.md) to get more information.
 
