@@ -25,66 +25,65 @@ pub fn Token.no_lit(kind Kind, pos ast.FilePos) Token {
 pub enum Kind {
 	unknown
 	eof
-	ident                       // foo
-	number                      // 123
-	string                      // "foo"
-	char                        // 'A'
-	plus                        // +
-	minus                       // -
-	mul                         // *
-	div                         // /
-	mod                         // %
-	xor                         // ^
-	pipe                        // |
-	inc                         // ++
-	dec                         // --
-	log_and                     // &&
-	log_or                      // ||
-	bang                        // !
-	bit_not                     // ~
-	question                    // ?
-	or_else                     // ??
-	comma                       // ,
-	semicolon                   // ;
-	colon                       // :
-	amp                         // &
-	hash                        // #
-	dollar                      // $
-	at                          // @
-	left_shift                  // <<
-	right_shift                 // >>
-	not_in                      // !in
-	not_is                      // !is
-	assign                      // =
-	decl_assign                 // :=
-	plus_assign                 // +=
-	minus_assign                // -=
-	div_assign                  // /=
-	mul_assign                  // *=
-	xor_assign                  // ^=
-	mod_assign                  // %=
-	or_assign                   // |=
-	and_assign                  // &=
-	right_shift_assign          // <<=
-	left_shift_assign           // >>=
-	unsigned_right_shift_assign // >>>=
-	boolean_and_assign          // &&=
-	boolean_or_assign           // ||=
-	lbrace                      // {
-	rbrace                      // }
-	lparen                      // (
-	rparen                      // )
-	lbracket                    // [
-	rbracket                    // ]
-	eq       // ==
-	ne       // !=
-	gt       // >
-	lt       // <
-	ge       // >=
-	le       // <=
-	dot      // .
-	dotdot   // ..
-	ellipsis // ...
+	ident              // foo
+	number             // 123
+	string             // "foo"
+	char               // 'A'
+	plus               // +
+	minus              // -
+	mul                // *
+	div                // /
+	mod                // %
+	xor                // ^
+	pipe               // |
+	inc                // ++
+	dec                // --
+	log_and            // &&
+	log_or             // ||
+	bang               // !
+	bit_not            // ~
+	question           // ?
+	or_else            // ??
+	comma              // ,
+	semicolon          // ;
+	colon              // :
+	amp                // &
+	hash               // #
+	dollar             // $
+	at                 // @
+	left_shift         // <<
+	right_shift        // >>
+	not_in             // !in
+	not_is             // !is
+	assign             // =
+	decl_assign        // :=
+	plus_assign        // +=
+	minus_assign       // -=
+	div_assign         // /=
+	mul_assign         // *=
+	xor_assign         // ^=
+	mod_assign         // %=
+	or_assign          // |=
+	and_assign         // &=
+	right_shift_assign // <<=
+	left_shift_assign  // >>=
+	boolean_and_assign // &&=
+	boolean_or_assign  // ||=
+	lbrace             // {
+	rbrace             // }
+	lparen             // (
+	rparen             // )
+	lbracket           // [
+	rbracket           // ]
+	eq                 // ==
+	ne                 // !=
+	gt                 // >
+	lt                 // <
+	ge                 // >=
+	le                 // <=
+	dot                // .
+	dotdot             // ..
+	ellipsis           // ...
 
 	keyword_beg
 	kw_as
@@ -167,7 +166,6 @@ fn build_token_str() []string {
 	s[Kind.or_assign] = '|='
 	s[Kind.and_assign] = '&='
 	s[Kind.right_shift_assign] = '>>='
-	s[Kind.unsigned_right_shift_assign] = '>>>='
 	s[Kind.left_shift_assign] = '<<='
 	s[Kind.boolean_or_assign] = '||='
 	s[Kind.boolean_and_assign] = '&&='
@@ -189,28 +187,26 @@ fn build_token_str() []string {
 	s[Kind.right_shift] = '>>'
 	s[Kind.dollar] = '$'
 	s[Kind.at] = '@'
-	s[Kind.kw_if] = 'if'
-	s[Kind.kw_else] = 'else'
-	s[Kind.kw_return] = 'return'
-	s[Kind.kw_const] = 'const'
-	s[Kind.kw_mut] = 'mut'
-	s[Kind.kw_for] = 'for'
-	s[Kind.kw_fn] = 'fn'
-	s[Kind.kw_trait] = 'trait'
-	s[Kind.kw_continue] = 'continue'
-	s[Kind.kw_break] = 'break'
-	s[Kind.kw_enum] = 'enum'
-	s[Kind.kw_pub] = 'pub'
-	s[Kind.kw_in] = 'in'
-	s[Kind.kw_struct] = 'struct'
+
 	s[Kind.kw_as] = 'as'
+	s[Kind.kw_break] = 'break'
+	s[Kind.kw_const] = 'const'
+	s[Kind.kw_continue] = 'continue'
 	s[Kind.kw_defer] = 'defer'
-	s[Kind.kw_match] = 'match'
+	s[Kind.kw_else] = 'else'
+	s[Kind.kw_enum] = 'enum'
+	s[Kind.kw_fn] = 'fn'
+	s[Kind.kw_for] = 'for'
+	s[Kind.kw_if] = 'if'
+	s[Kind.kw_in] = 'in'
 	s[Kind.kw_is] = 'is'
-	// The following kinds are not for tokens returned by the Rivet tokenizer,
-	// they are used just for organization/ease of checking:
-	s[Kind.keyword_beg] = 'keyword_beg'
-	s[Kind.keyword_end] = 'keyword_end'
+	s[Kind.kw_match] = 'match'
+	s[Kind.kw_mut] = 'mut'
+	s[Kind.kw_pub] = 'pub'
+	s[Kind.kw_return] = 'return'
+	s[Kind.kw_struct] = 'struct'
+	s[Kind.kw_trait] = 'trait'
+
 	return s
 }
 
