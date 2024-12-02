@@ -114,7 +114,7 @@ pub const keywords = build_keys()
 
 pub const assign_tokens = [Kind.assign, .decl_assign, .plus_assign, .minus_assign, .mul_assign,
 	.div_assign, .xor_assign, .mod_assign, .or_assign, .and_assign, .right_shift_assign,
-	.left_shift_assign, .unsigned_right_shift_assign, .boolean_and_assign, .boolean_or_assign]
+	.left_shift_assign, .boolean_and_assign, .boolean_or_assign]
 
 fn build_keys() map[string]Kind {
 	mut res := map[string]Kind{}
