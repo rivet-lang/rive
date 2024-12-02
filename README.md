@@ -40,11 +40,3 @@ interpreter available.
 
 You can find information on how to build Rivet on your computer by going to the
 [documentation](https://rivet-lang.github.io/docs).
-
-```v
-const console = @import("std").console;
-
-fn main() {
-    console.writeln("Hello World!");
-}
-```
