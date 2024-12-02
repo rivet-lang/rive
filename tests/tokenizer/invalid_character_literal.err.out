@@ -7,4 +7,4 @@ tests/tokenizer/invalid_character_literal.err.ri:2:5: error: character literal m
     2 | 'abc'
       |     ^
       = help: if you meant to write a string literal, use double quotes
-error: could not compile source code, aborting due to 2 previous errors
+error: could not compile `invalid_character_literal` module, aborting due to 2 previous errors

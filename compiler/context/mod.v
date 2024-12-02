@@ -36,7 +36,8 @@ pub mut:
 	options Options
 	report  Report
 
-	files []&ast.File
+	root_file &ast.File = unsafe { nil }
+	files     []&ast.File
 }
 
 pub fn (ctx &CContext) abort_if_errors() {
@@ -46,6 +47,6 @@ pub fn (ctx &CContext) abort_if_errors() {
 		} else {
 			'aborting due to ${ctx.report.errors} previous errors'
 		}
-		ic_error('could not compile source code, ${reason}')
+		ic_error('could not compile `${ctx.root_file.mod_name}` module, ${reason}')
 	}
 }

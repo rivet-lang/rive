@@ -28,11 +28,14 @@ pub fn new(ctx &context.CContext) &Parser {
 }
 
 pub fn (mut p Parser) parse() {
-	p.parse_file(p.ctx.options.input)
+	p.parse_file(p.ctx.options.input, true)
 }
 
-fn (mut p Parser) parse_file(filename string) {
+fn (mut p Parser) parse_file(filename string, is_root bool) {
 	p.file = ast.File.new(filename)
+	if is_root {
+		p.ctx.root_file = p.file
+	}
 	p.ctx.files << p.file
 
 	p.tokenizer = tokenizer.from_file(p.ctx, p.file)

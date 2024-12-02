@@ -11,6 +11,7 @@ pub struct File {
 pub:
 	filename string
 	content  string
+	mod_name string
 pub mut:
 	errors int
 mut:
@@ -51,11 +52,12 @@ pub:
 	col  int
 }
 
-pub fn File.new(file string) &File {
-	content := read_file(file)
+pub fn File.new(filename string) &File {
+	content := read_file(filename)
 	return &File{
-		filename: file
+		filename: filename
 		content:  content
+		mod_name: os.base(filename).all_before('.')
 	}
 }
 
@@ -63,6 +65,7 @@ pub fn File.from_memory(content string) &File {
 	return &File{
 		filename: '<memory>'
 		content:  content
+		mod_name: '<memory>'
 	}
 }
 

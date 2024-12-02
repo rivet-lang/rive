@@ -60,4 +60,4 @@ tests/tokenizer/invalid_number_literal.err.ri:22:4: error: cannot use `_` at the
       | 
    22 | 123_ // fail
       |    ^        
-error: could not compile source code, aborting due to 15 previous errors
+error: could not compile `invalid_number_literal` module, aborting due to 15 previous errors
