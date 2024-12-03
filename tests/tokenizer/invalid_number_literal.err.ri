@@ -1,6 +1,7 @@
 0b010101 // ok
 0xabcdef // ok
 0o1234567 // ok
+0 // ok
 
 0b // fail
 0o // fail

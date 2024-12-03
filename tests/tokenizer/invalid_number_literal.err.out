@@ -1,63 +1,63 @@
-tests/tokenizer/invalid_number_literal.err.ri:5:2: error: number part of this binary number is not provided
+tests/tokenizer/invalid_number_literal.err.ri:6:2: error: number part of this binary number is not provided
       | 
-    5 | 0b // fail
+    6 | 0b // fail
       |  ^        
-tests/tokenizer/invalid_number_literal.err.ri:6:2: error: number part of this octal number is not provided
+tests/tokenizer/invalid_number_literal.err.ri:7:2: error: number part of this octal number is not provided
       | 
-    6 | 0o // fail
+    7 | 0o // fail
       |  ^        
-tests/tokenizer/invalid_number_literal.err.ri:7:2: error: number part of this hexadecimal number is not provided
+tests/tokenizer/invalid_number_literal.err.ri:8:2: error: number part of this hexadecimal number is not provided
       | 
-    7 | 0x // fail
+    8 | 0x // fail
       |  ^        
-tests/tokenizer/invalid_number_literal.err.ri:9:5: error: this number has unsuitable digit `g`
+tests/tokenizer/invalid_number_literal.err.ri:10:5: error: this number has unsuitable digit `g`
       | 
-    9 | 123eg // fail
+   10 | 123eg // fail
       |     ^        
-tests/tokenizer/invalid_number_literal.err.ri:10:5: error: exponent has no digits
+tests/tokenizer/invalid_number_literal.err.ri:11:5: error: exponent has no digits
       | 
-   10 | 123.e // fail
+   11 | 123.e // fail
       |     ^        
-tests/tokenizer/invalid_number_literal.err.ri:11:4: error: float literals should have a digit after the decimal point
+tests/tokenizer/invalid_number_literal.err.ri:12:4: error: float literals should have a digit after the decimal point
       | 
-   11 | 123. // fail
+   12 | 123. // fail
       |    ^        
       = help: use `123.0` instead of `123`
-tests/tokenizer/invalid_number_literal.err.ri:12:4: error: exponent has no digits
+tests/tokenizer/invalid_number_literal.err.ri:13:4: error: exponent has no digits
       | 
-   12 | 123e // fail
+   13 | 123e // fail
       |    ^        
-tests/tokenizer/invalid_number_literal.err.ri:14:5: error: too many decimal points in number
+tests/tokenizer/invalid_number_literal.err.ri:15:5: error: too many decimal points in number
       | 
-   14 | 123.1.3 // fail
+   15 | 123.1.3 // fail
       |     ^          
-tests/tokenizer/invalid_number_literal.err.ri:16:3: error: separator `_` is only valid between digits in a numeric literal
+tests/tokenizer/invalid_number_literal.err.ri:17:3: error: separator `_` is only valid between digits in a numeric literal
       | 
-   16 | 0x_abc // fail
+   17 | 0x_abc // fail
       |   ^           
-tests/tokenizer/invalid_number_literal.err.ri:17:3: error: cannot use `_` consecutively in a numeric literal
+tests/tokenizer/invalid_number_literal.err.ri:18:3: error: cannot use `_` consecutively in a numeric literal
       | 
-   17 | 1__00 // fail
+   18 | 1__00 // fail
       |   ^          
-tests/tokenizer/invalid_number_literal.err.ri:18:1: error: zeros are not allowed at the beginning of a decimal literal
+tests/tokenizer/invalid_number_literal.err.ri:19:1: error: zeros are not allowed at the beginning of a decimal literal
       | 
-   18 | 0123 // fail
+   19 | 0123 // fail
       | ^           
       = note: use the prefix `0o` to denote an octal number
-tests/tokenizer/invalid_number_literal.err.ri:19:5: error: binary number has unsuitable digit `2`
+tests/tokenizer/invalid_number_literal.err.ri:20:5: error: binary number has unsuitable digit `2`
       | 
-   19 | 0b01210101 // fail
+   20 | 0b01210101 // fail
       |     ^             
-tests/tokenizer/invalid_number_literal.err.ri:20:3: error: hexadecimal number has unsuitable digit `h`
+tests/tokenizer/invalid_number_literal.err.ri:21:3: error: hexadecimal number has unsuitable digit `h`
       | 
-   20 | 0xhabc // fail
+   21 | 0xhabc // fail
       |   ^           
-tests/tokenizer/invalid_number_literal.err.ri:21:3: error: octal number has unsuitable digit `9`
+tests/tokenizer/invalid_number_literal.err.ri:22:3: error: octal number has unsuitable digit `9`
       | 
-   21 | 0o91234 // fail
+   22 | 0o91234 // fail
       |   ^            
-tests/tokenizer/invalid_number_literal.err.ri:22:4: error: cannot use `_` at the end of a numeric literal
+tests/tokenizer/invalid_number_literal.err.ri:23:4: error: cannot use `_` at the end of a numeric literal
       | 
-   22 | 123_ // fail
+   23 | 123_ // fail
       |    ^        
 error: could not compile `invalid_number_literal` module, aborting due to 15 previous errors

@@ -59,14 +59,6 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		context.error('separator `_` is only valid between digits in a numeric literal',
 			t.current_pos())
 	}
-	// decimal literals starting with 0 are invalid, an octal literal should be used instead
-	if mode == .dec && t.pos < t.text.len && t.text[t.pos] == `0` {
-		context.error('zeros are not allowed at the beginning of a decimal literal', t.current_pos(),
-			context.Hint{
-			kind: .note
-			msg:  'use the prefix `0o` to denote an octal number'
-		})
-	}
 	for t.pos < t.text.len {
 		ch := t.text[t.pos]
 		if ch == num_sep && t.text[t.pos - 1] == num_sep {
@@ -181,6 +173,17 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		}
 	}
 	lit := t.text[start..t.pos]
+	// decimal literals starting with 0 are invalid, an octal literal should be used instead
+	if mode == .dec && lit.len > 1 && lit[0] == `0` {
+		old_pos := t.pos
+		t.pos = start
+		context.error('zeros are not allowed at the beginning of a decimal literal', t.current_pos(),
+			context.Hint{
+			kind: .note
+			msg:  'use the prefix `0o` to denote an octal number'
+		})
+		t.pos = old_pos
+	}
 	t.pos-- // fix pos
 	return lit
 }
