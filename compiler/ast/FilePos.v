@@ -4,6 +4,13 @@
 
 module ast
 
+pub struct FileLoc {
+pub:
+	pos  int
+	line int
+	col  int
+}
+
 pub struct FilePos {
 pub mut:
 	file  &File = unsafe { nil }
@@ -29,11 +36,4 @@ pub fn (fp &FilePos) str() string {
 		return '${fp.file.filename}:${fp.begin.line + 1}:${fp.begin.col}'
 	}
 	return '${fp.file.filename}:${fp.begin.line + 1}:${fp.begin.col}-${fp.end.line + 1}:${fp.end.col}'
-}
-
-pub struct FileLoc {
-pub:
-	pos  int
-	line int
-	col  int
 }

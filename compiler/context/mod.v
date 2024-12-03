@@ -16,14 +16,14 @@ pub fn push(ctx &CContext) {
 
 pub fn get() &CContext {
 	if stack == [] {
-		panic('empty ccontext stack')
+		panic('empty CContext stack')
 	}
 	return stack.last()
 }
 
 pub fn pop() {
 	if stack == [] {
-		panic('empty ccontext stack')
+		panic('empty CContext stack')
 	}
 	unsafe {
 		_ = stack.pop()

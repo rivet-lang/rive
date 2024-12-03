@@ -13,6 +13,7 @@ pub:
 	content  string
 	mod_name string
 pub mut:
+	scope  &Scope = unsafe { nil }
 	errors int
 mut:
 	lines ?[]string
