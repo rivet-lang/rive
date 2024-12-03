@@ -103,6 +103,7 @@ pub enum Kind {
 	kw_pub
 	kw_return
 	kw_struct
+	kw_test
 	kw_trait
 	kw_while
 	keyword_end
@@ -206,6 +207,7 @@ fn build_token_str() []string {
 	s[Kind.kw_pub] = 'pub'
 	s[Kind.kw_return] = 'return'
 	s[Kind.kw_struct] = 'struct'
+	s[Kind.kw_test] = 'test'
 	s[Kind.kw_trait] = 'trait'
 	s[Kind.kw_while] = 'while'
 
