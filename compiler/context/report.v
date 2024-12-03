@@ -116,10 +116,6 @@ fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
 					continue
 				}
 
-				if idx == pos.end.line && jdx == pos.end.col {
-					break
-				}
-
 				mut caret := false
 				if pos.begin.line == idx && pos.end.line == idx {
 					if pos.begin.col <= jdx + 1 && jdx + 1 <= pos.end.col {
@@ -134,6 +130,9 @@ fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
 				}
 
 				if caret {
+					if idx == pos.end.line && jdx == pos.end.col {
+						break
+					}
 					if pos.begin.line == idx && pos.begin.col == jdx + 1 {
 						sb.write_string(green(bold('^')))
 					} else {
