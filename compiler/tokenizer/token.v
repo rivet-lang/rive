@@ -5,6 +5,7 @@
 module tokenizer
 
 import compiler.ast
+import compiler.context
 
 @[minify]
 pub struct Token {
@@ -51,8 +52,8 @@ pub enum Kind {
 	hash               // #
 	dollar             // $
 	at                 // @
-	left_shift         // <<
-	right_shift        // >>
+	lshift             // <<
+	rshift             // >>
 	not_in             // !in
 	not_is             // !is
 	assign             // =
@@ -65,8 +66,8 @@ pub enum Kind {
 	mod_assign         // %=
 	or_assign          // |=
 	and_assign         // &=
-	right_shift_assign // <<=
-	left_shift_assign  // >>=
+	rshift_assign      // <<=
+	lshift_assign      // >>=
 	boolean_and_assign // &&=
 	boolean_or_assign  // ||=
 	lbrace             // {
@@ -115,8 +116,8 @@ pub const token_str = build_token_str()
 pub const keywords = build_keys()
 
 pub const assign_tokens = [Kind.assign, .decl_assign, .plus_assign, .minus_assign, .mul_assign,
-	.div_assign, .xor_assign, .mod_assign, .or_assign, .and_assign, .right_shift_assign,
-	.left_shift_assign, .boolean_and_assign, .boolean_or_assign]
+	.div_assign, .xor_assign, .mod_assign, .or_assign, .and_assign, .rshift_assign, .lshift_assign,
+	.boolean_and_assign, .boolean_or_assign]
 
 fn build_keys() map[string]Kind {
 	mut res := map[string]Kind{}
@@ -130,7 +131,7 @@ fn build_token_str() []string {
 	mut s := []string{len: int(Kind._end_)}
 	s[Kind.unknown] = 'unknown'
 	s[Kind.eof] = 'eof'
-	s[Kind.ident] = 'ident'
+	s[Kind.ident] = 'identifier'
 	s[Kind.number] = 'number'
 	s[Kind.string] = 'string'
 	s[Kind.char] = 'char'
@@ -167,8 +168,8 @@ fn build_token_str() []string {
 	s[Kind.mod_assign] = '%='
 	s[Kind.or_assign] = '|='
 	s[Kind.and_assign] = '&='
-	s[Kind.right_shift_assign] = '>>='
-	s[Kind.left_shift_assign] = '<<='
+	s[Kind.rshift_assign] = '>>='
+	s[Kind.lshift_assign] = '<<='
 	s[Kind.boolean_or_assign] = '||='
 	s[Kind.boolean_and_assign] = '&&='
 	s[Kind.lbrace] = '{'
@@ -185,8 +186,8 @@ fn build_token_str() []string {
 	s[Kind.le] = '<='
 	s[Kind.question] = '?'
 	s[Kind.or_else] = '??'
-	s[Kind.left_shift] = '<<'
-	s[Kind.right_shift] = '>>'
+	s[Kind.lshift] = '<<'
+	s[Kind.rshift] = '>>'
 	s[Kind.dollar] = '$'
 	s[Kind.at] = '@'
 
@@ -245,7 +246,7 @@ pub fn (t Kind) str() string {
 pub fn (t Token) str() string {
 	mut s := t.kind.str()
 	if s.len == 0 {
-		eprintln('missing token kind string')
+		context.ic_fatal('Token.str(): missing token kind string - at ${t.pos}')
 	} else if !s[0].is_letter() {
 		// punctuation, operators
 		return 'token `${s}`'

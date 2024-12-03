@@ -13,6 +13,7 @@ pub fn run(args []string) {
 	context.push(ctx)
 	defer { context.pop() }
 
+	ctx.setup()
 	ctx.options = context.parse_args(args)
 
 	mut p := parser.new(ctx)

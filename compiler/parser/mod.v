@@ -18,6 +18,9 @@ mut:
 	prev_tok  tokenizer.Token
 	tok       tokenizer.Token
 	next_tok  tokenizer.Token
+
+	abort              bool
+	inside_local_scope bool
 }
 
 @[inline]
@@ -44,7 +47,14 @@ fn (mut p Parser) parse_file(filename string, is_root bool) {
 		return
 	}
 
-	p.advance(3)
+	p.advance(2)
+
+	for p.tok.kind != .eof {
+		p.file.stmts << p.parse_stmt()
+		if p.abort {
+			break
+		}
+	}
 }
 
 fn (mut p Parser) next() {
@@ -57,4 +67,29 @@ fn (mut p Parser) advance(n int) {
 	for _ in 0 .. n {
 		p.next()
 	}
+}
+
+fn (mut p Parser) expect(kind tokenizer.Kind) {
+	if !p.accept(kind) {
+		context.error('expected `${kind}`, but found ${p.tok}', p.tok.pos)
+	}
+}
+
+fn (mut p Parser) accept(kind tokenizer.Kind) bool {
+	if p.tok.kind == kind {
+		p.next()
+		return true
+	}
+	return false
+}
+
+fn (mut p Parser) parse_ident() string {
+	if p.tok.kind == .ident {
+		ident := p.tok.lit
+		p.next()
+		return ident
+	}
+	context.error('expected identifier, but found ${p.tok}', p.tok.pos)
+	p.next()
+	return ''
 }

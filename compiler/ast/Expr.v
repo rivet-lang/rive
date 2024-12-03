@@ -4,7 +4,14 @@
 
 module ast
 
-pub type Expr = RuneLit | IntegerLit
+pub type Expr = EmptyExpr | RuneLit | IntegerLit
+
+pub struct EmptyExpr {
+pub:
+	pos FilePos
+}
+
+pub const empty_expr = EmptyExpr{}
 
 pub struct RuneLit {
 pub:

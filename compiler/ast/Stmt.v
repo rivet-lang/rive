@@ -4,7 +4,11 @@
 
 module ast
 
-pub type Stmt = FnStmt
+pub type Stmt = EmptyStmt | FnStmt
+
+pub type EmptyStmt = u8
+
+pub const empty_stmt = EmptyStmt(0)
 
 pub struct FnStmt {
 pub:
@@ -18,8 +22,8 @@ pub:
 
 pub struct FnArg {
 pub:
-	name          string
-	name_pos      FilePos
-	type          Type
-	default_value ?Expr
+	name         string
+	name_pos     FilePos
+	type         Type
+	default_expr ?Expr
 }

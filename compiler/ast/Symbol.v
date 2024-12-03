@@ -4,11 +4,55 @@
 
 module ast
 
-pub type Symbol = Function | Constant
+pub type Symbol = Function | Constant | TypeSym
+
+pub struct TypeSym {
+pub:
+	name   string
+	kind   TypeKind
+	fields []Field
+}
+
+pub enum TypeKind {
+	unknown
+	alias
+
+	i8
+	i16
+	i32
+	i64
+	int
+
+	u8
+	u16
+	u32
+	u64
+	uint
+
+	f32
+	f64
+
+	bool
+	rune
+
+	array
+	slice
+	tuple
+	struct
+	trait
+	enum
+}
+
+pub struct Field {
+pub:
+	name string
+	type Type
+}
 
 pub struct Function {
 pub:
 	name string
+	args []FnArg
 	node FnStmt
 }
 

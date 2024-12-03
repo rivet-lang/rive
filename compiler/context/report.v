@@ -116,6 +116,10 @@ fn report_source(pos ast.FilePos, prefix string, mut sb strings.Builder) {
 					continue
 				}
 
+				if idx == pos.end.line && jdx == pos.end.col {
+					break
+				}
+
 				mut caret := false
 				if pos.begin.line == idx && pos.end.line == idx {
 					if pos.begin.col <= jdx + 1 && jdx + 1 <= pos.end.col {
@@ -163,7 +167,7 @@ fn print_highlighted_message(msg string, mut sb strings.Builder) {
 				start = cur
 			} else {
 				cur++
-				sb.write_string(cyan(msg[start..cur]))
+				sb.write_string(bold(blue(msg[start..cur])))
 				start = cur
 			}
 		} else {

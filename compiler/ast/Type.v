@@ -4,13 +4,24 @@
 
 module ast
 
-pub type Type = SimpleType | PointerType
+pub type Type = VoidType | NoneType | NeverType | UnresolvedType | SimpleType | PointerType
+
+pub struct UnresolvedType {
+pub:
+	expr Expr
+	pos  FilePos
+}
+
+pub struct VoidType {}
+
+pub struct NoneType {}
+
+pub struct NeverType {}
 
 pub struct SimpleType {
 pub:
-	expr Expr
-	sym  ?Symbol
-	pos  FilePos
+	sym Symbol
+	pos FilePos
 }
 
 pub struct PointerType {
