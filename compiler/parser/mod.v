@@ -49,9 +49,9 @@ fn (mut p Parser) parse_file(filename string, is_root bool) {
 
 	p.advance(2)
 
-	for p.tok.kind != .eof {
+	for {
 		p.file.stmts << p.parse_stmt()
-		if p.abort {
+		if p.should_abort() {
 			break
 		}
 	}
@@ -92,4 +92,9 @@ fn (mut p Parser) parse_ident() string {
 	context.error('expected identifier, but found ${p.tok}', p.tok.pos)
 	p.next()
 	return ''
+}
+
+@[inline]
+fn (p &Parser) should_abort() bool {
+	return p.tok.kind == .eof || p.abort
 }

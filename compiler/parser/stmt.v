@@ -16,7 +16,7 @@ fn (mut p Parser) parse_block() []ast.Stmt {
 	p.expect(.lbrace)
 	for !p.accept(.rbrace) {
 		stmts << p.parse_stmt()
-		if p.abort {
+		if p.should_abort() {
 			break
 		}
 	}
@@ -26,9 +26,6 @@ fn (mut p Parser) parse_block() []ast.Stmt {
 fn (mut p Parser) parse_stmt() ast.Stmt {
 	// module stmts: fns, consts, vars, etc.
 	is_pub := !p.inside_local_scope && p.accept(.kw_pub)
-	// if is_pub && p.inside_local_scope {
-	//	context.error('cannot declare public symbols inside a local scope', p.prev_tok.pos)
-	//}
 	match p.tok.kind {
 		.kw_fn {
 			return p.parse_fn_stmt(is_pub)
@@ -41,7 +38,7 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 					.kw_for {}
 					.kw_defer {}
 					else {
-						// .kw_if, .kw_match, .kw_break, .kw_continue, .kw_return are handled in p.parse_expr
+						// `.kw_if`, `.kw_match`, `.kw_break`, `.kw_continue` and `.kw_return` are handled in `p.parse_expr()`
 						return ast.ExprStmt{p.parse_expr()}
 					}
 				}
@@ -72,7 +69,7 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 				arg_default_expr = p.parse_expr()
 			}
 			args << ast.FnArg{arg_name, arg_name_pos, arg_type, arg_default_expr}
-			if !p.accept(.comma) || p.accept(.eof) {
+			if !p.accept(.comma) || p.should_abort() {
 				break
 			}
 		}
