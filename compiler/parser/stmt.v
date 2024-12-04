@@ -24,25 +24,32 @@ fn (mut p Parser) parse_block() []ast.Stmt {
 }
 
 fn (mut p Parser) parse_stmt() ast.Stmt {
-	is_pub := p.accept(.kw_pub)
-	// local stmts: if, while, match, etc.
-	if p.inside_local_scope {
-		if is_pub {
-			context.error('cannot declare public symbols inside a local scope', p.prev_tok.pos)
-		}
-		match p.tok.kind {
-			.kw_if {}
-			else {}
-		}
-	}
 	// module stmts: fns, consts, vars, etc.
+	is_pub := !p.inside_local_scope && p.accept(.kw_pub)
+	// if is_pub && p.inside_local_scope {
+	//	context.error('cannot declare public symbols inside a local scope', p.prev_tok.pos)
+	//}
 	match p.tok.kind {
 		.kw_fn {
 			return p.parse_fn_stmt(is_pub)
 		}
 		else {
-			context.error('invalid statement: unexpected ${p.tok}', p.tok.pos)
-			p.abort = true
+			// local stmts: if, while, match, etc.
+			if p.inside_local_scope {
+				match p.tok.kind {
+					.kw_while {}
+					.kw_for {}
+					.kw_defer {}
+					else {
+						// .kw_if, .kw_match, .kw_break, .kw_continue, .kw_return are handled in p.parse_expr
+						return ast.ExprStmt{p.parse_expr()}
+					}
+				}
+				p.next()
+			} else {
+				context.error('invalid declaration: unexpected ${p.tok}', p.tok.pos)
+				p.abort = true
+			}
 		}
 	}
 	return ast.empty_stmt

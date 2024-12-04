@@ -4,11 +4,16 @@
 
 module ast
 
-pub type Stmt = EmptyStmt | FnStmt
+pub type Stmt = EmptyStmt | FnStmt | ExprStmt
 
 pub type EmptyStmt = u8
 
 pub const empty_stmt = EmptyStmt(0)
+
+pub struct ExprStmt {
+pub:
+	expr Expr
+}
 
 pub struct FnStmt {
 pub:

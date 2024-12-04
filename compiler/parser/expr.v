@@ -9,6 +9,11 @@ import compiler.context
 
 fn (mut p Parser) parse_expr() ast.Expr {
 	match p.tok.kind {
+		.kw_if {}
+		.kw_match {}
+		.kw_break {}
+		.kw_continue {}
+		.kw_return {}
 		.number {
 			return p.parse_integer_lit()
 		}
@@ -16,7 +21,8 @@ fn (mut p Parser) parse_expr() ast.Expr {
 			return p.parse_rune_lit()
 		}
 		else {
-			context.error('unexpected token', p.tok.pos)
+			context.error('invalid expression', p.tok.pos)
+			p.abort = true
 		}
 	}
 	return ast.empty_expr
