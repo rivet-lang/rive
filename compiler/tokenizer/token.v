@@ -130,7 +130,7 @@ fn build_keys() map[string]Kind {
 fn build_token_str() []string {
 	mut s := []string{len: int(Kind._end_)}
 	s[Kind.unknown] = 'unknown'
-	s[Kind.eof] = 'eof'
+	s[Kind.eof] = 'end of file'
 	s[Kind.ident] = 'identifier'
 	s[Kind.number] = 'number'
 	s[Kind.string] = 'string'

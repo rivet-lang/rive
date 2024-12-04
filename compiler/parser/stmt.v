@@ -8,17 +8,31 @@ import compiler.ast
 import compiler.context
 
 fn (mut p Parser) parse_block() []ast.Stmt {
+	if p.tok.kind == .lbrace && p.next_tok.kind == .rbrace {
+		// empty block: `{}`
+		p.advance(2)
+		return []
+	}
+
 	old_inside_local_scope := p.inside_local_scope
 	defer { p.inside_local_scope = old_inside_local_scope }
 	p.inside_local_scope = true
 
+	mut is_finished := false
 	mut stmts := []ast.Stmt{}
+	lbrace_pos := p.tok.pos
 	p.expect(.lbrace)
-	for !p.accept(.rbrace) {
+	for {
 		stmts << p.parse_stmt()
-		if p.should_abort() {
+		is_finished = p.accept(.rbrace)
+		if is_finished || p.should_abort() {
 			break
 		}
+	}
+	if !is_finished && !p.abort {
+		// we give an error because the block has not been finished (`}` was not found),
+		// but it has not been aborted (due to poor formation of expressions or statements)
+		context.error('unfinished block, expected `}` and found ${p.tok}', lbrace_pos)
 	}
 	return stmts
 }

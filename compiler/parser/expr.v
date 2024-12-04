@@ -8,6 +8,9 @@ import compiler.ast
 import compiler.context
 
 fn (mut p Parser) parse_expr() ast.Expr {
+	if p.should_abort() {
+		return ast.empty_expr
+	}
 	match p.tok.kind {
 		.kw_if {}
 		.kw_match {}

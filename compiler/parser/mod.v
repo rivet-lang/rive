@@ -48,7 +48,6 @@ fn (mut p Parser) parse_file(filename string, is_root bool) {
 	}
 
 	p.advance(2)
-
 	for {
 		p.file.stmts << p.parse_stmt()
 		if p.should_abort() {
