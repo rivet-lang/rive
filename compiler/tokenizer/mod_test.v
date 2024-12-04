@@ -3,6 +3,7 @@
 // file.
 import compiler.context
 import compiler.tokenizer
+import compiler.token
 
 struct ExpectedToken {
 	kind token.Kind
