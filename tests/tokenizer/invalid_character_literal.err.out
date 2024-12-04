@@ -1,7 +1,7 @@
 tests/tokenizer/invalid_character_literal.err.ri:1:1: error: empty character literal
       | 
     1 | ''
-      | ^
+      | ^ 
 tests/tokenizer/invalid_character_literal.err.ri:2:5: error: character literal may only contain one codepoint
       | 
     2 | 'abc'
