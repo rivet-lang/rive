@@ -44,19 +44,15 @@ fn (mut p Parser) parse_and_expr() ast.Expr {
 
 fn (mut p Parser) parse_equality_expr() ast.Expr {
 	mut left := p.parse_relational_expr()
-	for {
-		if p.tok.kind in [.eq, .ne] {
-			op := p.tok.kind
-			p.next()
-			right := p.parse_relational_expr()
-			left = ast.BinaryExpr{
-				left:  left
-				op:    if op == .eq { .eq } else { .ne }
-				right: right
-				pos:   left.pos.extend(right.pos)
-			}
-		} else {
-			break
+	for p.tok.kind in [.eq, .ne] {
+		op := p.tok.kind
+		p.next()
+		right := p.parse_relational_expr()
+		left = ast.BinaryExpr{
+			left:  left
+			op:    if op == .eq { .eq } else { .ne }
+			right: right
+			pos:   left.pos.extend(right.pos)
 		}
 	}
 	return left
@@ -64,27 +60,23 @@ fn (mut p Parser) parse_equality_expr() ast.Expr {
 
 fn (mut p Parser) parse_relational_expr() ast.Expr {
 	mut left := p.parse_shift_expr()
-	for {
-		if p.tok.kind in [.gt, .lt, .le, .or_else, .kw_in, .not_in, .kw_is, .not_is] {
-			op := p.tok.kind
-			p.next()
-			right := p.parse_shift_expr()
-			left = ast.BinaryExpr{
-				left:  left
-				op:    match op {
-					.gt { .gt }
-					.lt { .lt }
-					.ge { .ge }
-					.or_else { .or_else }
-					.kw_in { .kw_in }
-					.kw_is { .kw_is }
-					else { .unknown }
-				}
-				right: right
-				pos:   left.pos.extend(right.pos)
+	for p.tok.kind in [.gt, .lt, .le, .or_else, .kw_in, .not_in, .kw_is, .not_is] {
+		op := p.tok.kind
+		p.next()
+		right := p.parse_shift_expr()
+		left = ast.BinaryExpr{
+			left:  left
+			op:    match op {
+				.gt { .gt }
+				.lt { .lt }
+				.ge { .ge }
+				.or_else { .or_else }
+				.kw_in { .kw_in }
+				.kw_is { .kw_is }
+				else { .unknown }
 			}
-		} else {
-			break
+			right: right
+			pos:   left.pos.extend(right.pos)
 		}
 	}
 	return left
@@ -92,26 +84,22 @@ fn (mut p Parser) parse_relational_expr() ast.Expr {
 
 fn (mut p Parser) parse_shift_expr() ast.Expr {
 	mut left := p.parse_additive_expr()
-	for {
-		if p.tok.kind in [.amp, .pipe, .xor, .lshift, .rshift] {
-			op := p.tok.kind
-			p.next()
-			right := p.parse_additive_expr()
-			left = ast.BinaryExpr{
-				left:  left
-				op:    match op {
-					.amp { .amp }
-					.pipe { .pipe }
-					.xor { .xor }
-					.lshift { .lshift }
-					.rshift { .rshift }
-					else { .unknown }
-				}
-				right: right
-				pos:   left.pos.extend(right.pos)
+	for p.tok.kind in [.amp, .pipe, .xor, .lshift, .rshift] {
+		op := p.tok.kind
+		p.next()
+		right := p.parse_additive_expr()
+		left = ast.BinaryExpr{
+			left:  left
+			op:    match op {
+				.amp { .amp }
+				.pipe { .pipe }
+				.xor { .xor }
+				.lshift { .lshift }
+				.rshift { .rshift }
+				else { .unknown }
 			}
-		} else {
-			break
+			right: right
+			pos:   left.pos.extend(right.pos)
 		}
 	}
 	return left
@@ -119,23 +107,19 @@ fn (mut p Parser) parse_shift_expr() ast.Expr {
 
 fn (mut p Parser) parse_additive_expr() ast.Expr {
 	mut left := p.parse_multiplicative_expr()
-	for {
-		if p.tok.kind in [.plus, .minus] {
-			op := p.tok.kind
-			p.next()
-			right := p.parse_multiplicative_expr()
-			left = ast.BinaryExpr{
-				left:  left
-				op:    match op {
-					.plus { .plus }
-					.minus { .minus }
-					else { .unknown }
-				}
-				right: right
-				pos:   left.pos.extend(right.pos)
+	for p.tok.kind in [.plus, .minus] {
+		op := p.tok.kind
+		p.next()
+		right := p.parse_multiplicative_expr()
+		left = ast.BinaryExpr{
+			left:  left
+			op:    match op {
+				.plus { .plus }
+				.minus { .minus }
+				else { .unknown }
 			}
-		} else {
-			break
+			right: right
+			pos:   left.pos.extend(right.pos)
 		}
 	}
 	return left
@@ -143,24 +127,20 @@ fn (mut p Parser) parse_additive_expr() ast.Expr {
 
 fn (mut p Parser) parse_multiplicative_expr() ast.Expr {
 	mut left := p.parse_unary_expr()
-	for {
-		if p.tok.kind in [.mul, .div, .mod] {
-			op := p.tok.kind
-			p.next()
-			right := p.parse_unary_expr()
-			left = ast.BinaryExpr{
-				left:  left
-				op:    match op {
-					.mul { .mul }
-					.div { .div }
-					.mod { .mod }
-					else { .unknown }
-				}
-				right: right
-				pos:   left.pos.extend(right.pos)
+	for p.tok.kind in [.mul, .div, .mod] {
+		op := p.tok.kind
+		p.next()
+		right := p.parse_unary_expr()
+		left = ast.BinaryExpr{
+			left:  left
+			op:    match op {
+				.mul { .mul }
+				.div { .div }
+				.mod { .mod }
+				else { .unknown }
 			}
-		} else {
-			break
+			right: right
+			pos:   left.pos.extend(right.pos)
 		}
 	}
 	return left

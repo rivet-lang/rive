@@ -79,7 +79,7 @@ fn (mut p Parser) expect(kind token.Kind) {
 	} else {
 		p.prev_expect_pos = p.tok.pos
 	}
-	
+
 	if !p.accept(kind) {
 		if p.expect_is_called {
 			p.next()
