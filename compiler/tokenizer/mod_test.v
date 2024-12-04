@@ -5,7 +5,7 @@ import compiler.context
 import compiler.tokenizer
 
 struct ExpectedToken {
-	kind tokenizer.Kind
+	kind token.Kind
 	lit  string
 }
 

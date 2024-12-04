@@ -7,6 +7,7 @@ module tokenizer
 import compiler.ast
 import compiler.context
 import compiler.util
+import compiler.token { Token, lookup }
 
 const lf = 10
 const cr = 13
@@ -168,7 +169,7 @@ fn (t &Tokenizer) look_ahead(pos int) u8 {
 }
 
 @[inline]
-fn (mut t Tokenizer) end_of_file() Token {
+pub fn (mut t Tokenizer) end_of_file() Token {
 	t.eofs++
 	if t.pos != t.text.len && t.eofs == 1 {
 		t.inc_line_number()

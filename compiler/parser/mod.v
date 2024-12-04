@@ -5,6 +5,7 @@
 module parser
 
 import compiler.ast
+import compiler.token
 import compiler.context
 import compiler.tokenizer
 
@@ -15,12 +16,15 @@ mut:
 	file &ast.File = unsafe { nil }
 
 	tokenizer tokenizer.Tokenizer
-	prev_tok  tokenizer.Token
-	tok       tokenizer.Token
-	next_tok  tokenizer.Token
+	prev_tok  token.Token
+	tok       token.Token
+	next_tok  token.Token
 
 	abort              bool
 	inside_local_scope bool
+
+	expect_is_called bool
+	prev_expect_pos  ast.FilePos
 }
 
 @[inline]
@@ -68,13 +72,24 @@ fn (mut p Parser) advance(n int) {
 	}
 }
 
-fn (mut p Parser) expect(kind tokenizer.Kind) {
+fn (mut p Parser) expect(kind token.Kind) {
+	// this prevents an infinite loop due to an unexpected token, and also a double error message.
+	if p.tok.pos == p.prev_expect_pos && !p.expect_is_called {
+		p.expect_is_called = true
+	} else {
+		p.prev_expect_pos = p.tok.pos
+	}
+	
 	if !p.accept(kind) {
-		context.error('expected `${kind}`, but found ${p.tok}', p.tok.pos)
+		if p.expect_is_called {
+			p.next()
+		} else {
+			context.error('expected `${kind}`, but found ${p.tok}', p.tok.pos)
+		}
 	}
 }
 
-fn (mut p Parser) accept(kind tokenizer.Kind) bool {
+fn (mut p Parser) accept(kind token.Kind) bool {
 	if p.tok.kind == kind {
 		p.next()
 		return true

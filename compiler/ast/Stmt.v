@@ -8,7 +8,7 @@ pub type Stmt = EmptyStmt | FnStmt | ExprStmt
 
 pub type EmptyStmt = u8
 
-pub const empty_stmt = EmptyStmt(0)
+pub const empty_stmt = Stmt(EmptyStmt(0))
 
 pub struct ExprStmt {
 pub:

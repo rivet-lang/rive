@@ -3,3 +3,4 @@ rivetc
 main.ri
 tests/gen_out_files
 tests/run_tests
+x.py

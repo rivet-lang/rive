@@ -2,7 +2,7 @@
 // source code is governed by an MIT license that can be found in the LICENSE
 // file.
 
-module tokenizer
+module token
 
 import compiler.ast
 import compiler.context

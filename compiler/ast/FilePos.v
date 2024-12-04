@@ -18,6 +18,22 @@ pub mut:
 	end   FileLoc
 }
 
+@[inline]
+pub fn (fp FilePos) == (fp2 FilePos) bool {
+	if fp.file == unsafe { nil } || fp2.file == unsafe { nil } {
+		return false
+	}
+	return fp.file == fp2.file && fp.begin == fp2.begin && fp.end == fp2.end
+}
+
+@[inline]
+pub fn (fp &FilePos) extend(end &FilePos) FilePos {
+	return FilePos{
+		...fp
+		end: end.end
+	}
+}
+
 pub fn (fp &FilePos) contains(loc &FileLoc) bool {
 	if loc.line > fp.begin.line && loc.line < fp.end.line {
 		return true
@@ -32,8 +48,9 @@ pub fn (fp &FilePos) contains(loc &FileLoc) bool {
 }
 
 pub fn (fp &FilePos) str() string {
+	filename := if fp.file == unsafe { nil } { '<unknown-file>' } else { fp.file.filename }
 	if fp.begin.line == fp.end.line {
-		return '${fp.file.filename}:${fp.begin.line + 1}:${fp.begin.col}'
+		return '${filename}:${fp.begin.line + 1}:${fp.begin.col}'
 	}
-	return '${fp.file.filename}:${fp.begin.line + 1}:${fp.begin.col}-${fp.end.line + 1}:${fp.end.col}'
+	return '${filename}:${fp.begin.line + 1}:${fp.begin.col}-${fp.end.line + 1}:${fp.end.col}'
 }
