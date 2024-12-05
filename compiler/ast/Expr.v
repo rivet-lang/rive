@@ -3,7 +3,7 @@
 
 module ast
 
-pub type Expr = EmptyExpr | UnaryExpr | BinaryExpr | RuneLit | IntegerLit
+pub type Expr = EmptyExpr | UnaryExpr | BinaryExpr | CharLiteral | IntegerLiteral | FloatLiteral
 
 pub struct EmptyExpr {
 pub:
@@ -62,14 +62,20 @@ pub:
 	pos   FilePos
 }
 
-pub struct RuneLit {
+pub struct CharLiteral {
 pub:
 	value   string
 	is_byte bool
 	pos     FilePos
 }
 
-pub struct IntegerLit {
+pub struct IntegerLiteral {
+pub:
+	value string
+	pos   FilePos
+}
+
+pub struct FloatLiteral {
 pub:
 	value string
 	pos   FilePos

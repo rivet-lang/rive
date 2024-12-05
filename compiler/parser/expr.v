@@ -171,17 +171,14 @@ fn (mut p Parser) parse_unary_expr() ast.Expr {
 
 fn (mut p Parser) parse_primary_expr() ast.Expr {
 	match p.tok.kind {
+		.char, .number, .string {
+			return p.parse_literal()
+		}
 		.kw_if {}
 		.kw_match {}
 		.kw_break {}
 		.kw_continue {}
 		.kw_return {}
-		.number {
-			return p.parse_integer_lit()
-		}
-		.char {
-			return p.parse_rune_lit()
-		}
 		else {
 			context.error('invalid expression: unexpected ${p.tok}', p.tok.pos)
 			p.abort = true
@@ -190,10 +187,38 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 	return ast.empty_expr
 }
 
-fn (mut p Parser) parse_integer_lit() ast.IntegerLit {
-	return ast.IntegerLit{}
+fn (mut p Parser) parse_literal() ast.Expr {
+	return match p.tok.kind {
+		.char {
+			p.parse_char_literal()
+		}
+		.number {
+			p.parse_number_literal()
+		}
+		else {
+			context.error('invalid literal expression: found ${p.tok}', p.tok.pos)
+			ast.empty_expr
+		}
+	}
 }
 
-fn (mut p Parser) parse_rune_lit() ast.RuneLit {
-	return ast.RuneLit{}
+fn (mut p Parser) parse_number_literal() ast.Expr {
+	pos := p.tok.pos
+	value := p.tok.lit
+	p.next()
+	return if (value.len > 2 && value[..2] !in ['0x', '0o', '0b']) && value.index_any('.eE') >= 0 {
+		ast.IntegerLiteral{
+			value: value
+			pos:   pos
+		}
+	} else {
+		ast.FloatLiteral{
+			value: value
+			pos:   pos
+		}
+	}
+}
+
+fn (mut p Parser) parse_char_literal() ast.Expr {
+	return ast.CharLiteral{}
 }

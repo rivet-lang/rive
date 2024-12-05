@@ -78,7 +78,7 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 			p.expect(.colon)
 			arg_type := p.parse_type()
 			mut arg_default_expr := ast.empty_expr
-			if p.accept(.eq) {
+			if p.accept(.assign) {
 				arg_default_expr = p.parse_expr()
 			}
 			args << ast.FnArg{arg_name, arg_name_pos, arg_type, arg_default_expr}
