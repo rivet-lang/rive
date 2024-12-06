@@ -4,6 +4,7 @@
 module parser
 
 import compiler.ast
+import compiler.util
 import compiler.context
 
 fn (mut p Parser) parse_expr() ast.Expr {
@@ -174,6 +175,21 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 		.char, .number, .string {
 			return p.parse_literal()
 		}
+		.ident {
+			if p.next_tok.kind == .char {
+				if p.tok.lit == 'b' {
+					return p.parse_char_literal()
+				} else {
+					context.error('only `b` is recognized as a valid prefix for a character literal',
+						p.tok.pos)
+					p.next()
+				}
+			} else if p.next_tok.kind == .string {
+				return p.parse_string_literal()
+			} else {
+				return p.parse_ident_expr()
+			}
+		}
 		.kw_if {}
 		.kw_match {}
 		.kw_break {}
@@ -206,13 +222,14 @@ fn (mut p Parser) parse_number_literal() ast.Expr {
 	pos := p.tok.pos
 	value := p.tok.lit
 	p.next()
-	return if (value.len > 2 && value[..2] !in ['0x', '0o', '0b']) && value.index_any('.eE') >= 0 {
-		ast.IntegerLiteral{
+	no_has_prefix := !util.numeric_value_has_prefix(value)
+	return if no_has_prefix && value.index_any('.eE') >= 0 {
+		ast.FloatLiteral{
 			value: value
 			pos:   pos
 		}
 	} else {
-		ast.FloatLiteral{
+		ast.IntegerLiteral{
 			value: value
 			pos:   pos
 		}
@@ -220,5 +237,59 @@ fn (mut p Parser) parse_number_literal() ast.Expr {
 }
 
 fn (mut p Parser) parse_char_literal() ast.Expr {
-	return ast.CharLiteral{}
+	is_byte := if p.tok.kind == .ident && p.tok.lit == 'b' {
+		p.next()
+		true
+	} else {
+		false
+	}
+	value := p.tok.lit
+	pos := p.tok.pos
+	p.expect(.char)
+	return ast.CharLiteral{
+		value:   value
+		is_byte: is_byte
+		pos:     pos
+	}
+}
+
+fn (mut p Parser) parse_string_literal() ast.Expr {
+	literal_type := if p.accept(.ident) {
+		match p.prev_tok.lit {
+			'b' {
+				ast.StringType.bytes
+			}
+			'c' {
+				ast.StringType.c_string
+			}
+			'r' {
+				ast.StringType.raw_string
+			}
+			else {
+				context.error('only `b`, `c` and `r` are recognized as valid prefixes for a string literal',
+					p.prev_tok.pos)
+				ast.StringType.normal
+			}
+		}
+	} else {
+		.normal
+	}
+	value := p.tok.lit
+	pos := p.tok.pos
+	p.expect(.string)
+	return ast.StringLiteral{
+		value:        value
+		literal_type: literal_type
+		pos:          pos
+	}
+}
+
+fn (mut p Parser) parse_ident_expr() ast.Expr {
+	pos := p.tok.pos
+	name := p.parse_ident()
+	return ast.Ident{
+		name:  name
+		scope: p.scope
+		pos:   pos
+	}
 }

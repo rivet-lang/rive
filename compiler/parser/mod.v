@@ -12,12 +12,13 @@ pub struct Parser {
 mut:
 	ctx &context.CContext
 
-	file &ast.File = unsafe { nil }
-
 	tokenizer tokenizer.Tokenizer
 	prev_tok  token.Token
 	tok       token.Token
 	next_tok  token.Token
+
+	file  &ast.File  = unsafe { nil }
+	scope &ast.Scope = unsafe { nil }
 
 	abort              bool
 	inside_local_scope bool

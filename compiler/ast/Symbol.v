@@ -40,6 +40,7 @@ pub enum TypeKind {
 	struct
 	trait
 	enum
+	function
 }
 
 pub struct Field {
