@@ -53,16 +53,23 @@ pub struct Function {
 pub:
 	name string
 	args []FnArg
-	node FnStmt
+	node &FnStmt = unsafe { nil }
 }
 
 pub struct Constant {
 pub:
-	name string
+	name   string
+	is_pub bool
+	type   Type
 }
 
 pub struct Variable {
 pub:
 	name     string
 	is_local bool
+	is_mut   bool
+	is_pub   bool
+	is_arg   bool
+	type     Type
+	node     &LetStmt = unsafe { nil }
 }

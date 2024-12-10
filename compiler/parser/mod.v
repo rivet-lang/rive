@@ -73,7 +73,8 @@ fn (mut p Parser) advance(n int) {
 }
 
 fn (mut p Parser) expect(kind token.Kind) {
-	// this prevents an infinite loop due to an unexpected token, and also a double error message.
+	// this prevents an infinite loop due to an unexpected token, and also a
+	// double error message.
 	if p.tok.pos == p.prev_expect_pos && !p.expect_is_called {
 		p.expect_is_called = true
 	} else {

@@ -3,7 +3,7 @@
 
 module ast
 
-pub type Stmt = EmptyStmt | FnStmt | ExprStmt
+pub type Stmt = EmptyStmt | FnStmt | ExprStmt | LetStmt
 
 pub type EmptyStmt = u8
 
@@ -12,6 +12,13 @@ pub const empty_stmt = Stmt(EmptyStmt(0))
 pub struct ExprStmt {
 pub:
 	expr Expr
+}
+
+pub struct LetStmt {
+pub:
+	lefts  []Variable
+	right  Expr
+	is_pub bool
 }
 
 pub struct FnStmt {

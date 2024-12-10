@@ -43,6 +43,9 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 		.kw_fn {
 			return p.parse_fn_stmt(is_pub)
 		}
+		.kw_let {
+			return p.parse_let_stmt(is_pub)
+		}
 		else {
 			// local stmts: if, while, match, etc.
 			if p.inside_local_scope {
@@ -95,4 +98,36 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 	}
 	stmts := p.parse_block()
 	return ast.FnStmt{is_pub, name, name_pos, args, return_type, stmts}
+}
+
+fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
+	p.expect(.kw_let)
+	mut lefts := []ast.Variable{}
+	for {
+		is_mut := p.accept(.kw_mut)
+		name := p.parse_ident()
+		type := if p.accept(.colon) {
+			p.parse_type()
+		} else {
+			p.ctx.void_type
+		}
+		lefts << ast.Variable{
+			name:     name
+			is_local: p.inside_local_scope
+			is_pub:   is_pub
+			is_mut:   is_mut
+			type:     type
+		}
+		if !p.accept(.comma) || p.should_abort() {
+			break
+		}
+	}
+	p.expect(.assign)
+	right := p.parse_expr()
+	p.expect(.semicolon)
+	return ast.LetStmt{
+		lefts:  lefts
+		right:  right
+		is_pub: is_pub
+	}
 }

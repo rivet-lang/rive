@@ -19,6 +19,46 @@ pub:
 
 pub const empty_expr = Expr(EmptyExpr{})
 
+pub struct Ident {
+pub:
+	name  string
+	scope &Scope
+	pos   FilePos
+}
+
+pub struct IntegerLiteral {
+pub:
+	value string
+	pos   FilePos
+}
+
+pub struct FloatLiteral {
+pub:
+	value string
+	pos   FilePos
+}
+
+pub struct CharLiteral {
+pub:
+	value   string
+	is_byte bool
+	pos     FilePos
+}
+
+pub enum StringType {
+	normal
+	c_string
+	bytes
+	raw_string
+}
+
+pub struct StringLiteral {
+pub:
+	value        string
+	literal_type StringType
+	pos          FilePos
+}
+
 pub enum UnaryOp {
 	unknown
 	amp     // &
@@ -67,44 +107,4 @@ pub:
 	op    BinaryOp
 	right Expr
 	pos   FilePos
-}
-
-pub struct Ident {
-pub:
-	name  string
-	scope &Scope
-	pos   FilePos
-}
-
-pub struct IntegerLiteral {
-pub:
-	value string
-	pos   FilePos
-}
-
-pub struct FloatLiteral {
-pub:
-	value string
-	pos   FilePos
-}
-
-pub struct CharLiteral {
-pub:
-	value   string
-	is_byte bool
-	pos     FilePos
-}
-
-pub enum StringType {
-	normal
-	c_string
-	bytes
-	raw_string
-}
-
-pub struct StringLiteral {
-pub:
-	value        string
-	literal_type StringType
-	pos          FilePos
 }

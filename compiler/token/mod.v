@@ -98,6 +98,7 @@ pub enum Kind {
 	kw_if
 	kw_in
 	kw_is
+	kw_let
 	kw_match
 	kw_mut
 	kw_pub
@@ -202,6 +203,7 @@ fn build_token_str() []string {
 	s[Kind.kw_if] = 'if'
 	s[Kind.kw_in] = 'in'
 	s[Kind.kw_is] = 'is'
+	s[Kind.kw_let] = 'let'
 	s[Kind.kw_match] = 'match'
 	s[Kind.kw_mut] = 'mut'
 	s[Kind.kw_pub] = 'pub'
