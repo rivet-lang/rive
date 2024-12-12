@@ -71,5 +71,4 @@ pub:
 	is_pub   bool
 	is_arg   bool
 	type     Type
-	node     &LetStmt = unsafe { nil }
 }

@@ -3,6 +3,7 @@
 
 module ast
 
+@[minify]
 pub struct FileLoc {
 pub:
 	pos  int
@@ -10,6 +11,7 @@ pub:
 	col  int
 }
 
+@[minify]
 pub struct FilePos {
 pub mut:
 	file  &File = unsafe { nil }
@@ -17,12 +19,11 @@ pub mut:
 	end   FileLoc
 }
 
-@[inline]
 pub fn (fp FilePos) == (fp2 FilePos) bool {
-	if fp.file == unsafe { nil } || fp2.file == unsafe { nil } {
+	if !(fp.begin == fp2.begin && fp.end == fp2.end) {
 		return false
 	}
-	return fp.file == fp2.file && fp.begin == fp2.begin && fp.end == fp2.end
+	return fp.file == fp2.file
 }
 
 @[inline]
