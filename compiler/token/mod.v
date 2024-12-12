@@ -36,8 +36,6 @@ pub enum Kind {
 	mod                // %
 	xor                // ^
 	pipe               // |
-	inc                // ++
-	dec                // --
 	log_and            // &&
 	log_or             // ||
 	bang               // !
@@ -145,8 +143,6 @@ fn build_token_str() []string {
 	s[Kind.pipe] = '|'
 	s[Kind.hash] = '#'
 	s[Kind.amp] = '&'
-	s[Kind.inc] = '++'
-	s[Kind.dec] = '--'
 	s[Kind.log_and] = '&&'
 	s[Kind.log_or] = '||'
 	s[Kind.bang] = '!'

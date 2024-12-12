@@ -237,10 +237,6 @@ fn (mut t Tokenizer) internal_next() Token {
 					t.pos++
 					pos.end = t.current_loc()
 					return Token.no_lit(.plus_assign, pos)
-				} else if nextc == `+` {
-					t.pos++
-					pos.end = t.current_loc()
-					return Token.no_lit(.inc, pos)
 				}
 				return Token.no_lit(.plus, pos)
 			}
@@ -249,10 +245,6 @@ fn (mut t Tokenizer) internal_next() Token {
 					t.pos++
 					pos.end = t.current_loc()
 					return Token.no_lit(.minus_assign, pos)
-				} else if nextc == `-` {
-					t.pos++
-					pos.end = t.current_loc()
-					return Token.no_lit(.dec, pos)
 				}
 				return Token.no_lit(.minus, pos)
 			}
