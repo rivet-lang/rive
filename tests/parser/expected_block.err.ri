@@ -1,6 +1,6 @@
 fn main() {
     while (true) {} // ok
-    while (true): 1 // ok
+    while (true): 1; // ok
     
-    while (true) 1 // fail
+    while (true) 1; // fail
 }
