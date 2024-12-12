@@ -68,7 +68,9 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 						return p.parse_while_stmt()
 					}
 					.kw_for {}
-					.kw_defer {}
+					.kw_defer {
+						return p.parse_defer_stmt()
+					}
 					else {
 						// `.kw_if`, `.kw_match`, `.kw_break`, `.kw_continue` and `.kw_return` are handled in `p.parse_expr()`
 						return ast.ExprStmt{p.parse_expr()}
@@ -163,4 +165,33 @@ fn (mut p Parser) parse_while_stmt() ast.Stmt {
 	p.expect(.rparen)
 	stmts := p.parse_block()
 	return ast.WhileStmt{init_stmt, cond, continue_expr, stmts}
+}
+
+fn (mut p Parser) parse_defer_stmt() ast.Stmt {
+	p.expect(.kw_defer)
+	mut defer_mode := ast.DeferMode.default
+	if p.accept(.lparen) {
+		mode_pos := p.tok.pos
+		mode := p.parse_ident()
+		match mode {
+			'success' {
+				defer_mode = .success
+			}
+			'error' {
+				defer_mode = .error
+			}
+			else {
+				context.error('unknown `defer` mode', mode_pos, context.Hint{
+					kind: .note
+					msg:  'valid `defer` modes are `success` and `error`'
+				})
+			}
+		}
+		p.expect(.rparen)
+	}
+	stmts := p.parse_block()
+	return ast.DeferStmt{
+		mode:  defer_mode
+		stmts: stmts
+	}
 }

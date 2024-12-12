@@ -3,7 +3,7 @@
 
 module ast
 
-pub type Stmt = EmptyStmt | FnStmt | ExprStmt | LetStmt | WhileStmt
+pub type Stmt = EmptyStmt | FnStmt | ExprStmt | LetStmt | WhileStmt | DeferStmt
 
 pub type EmptyStmt = u8
 
@@ -45,4 +45,16 @@ pub:
 	cond          Expr
 	continue_expr ?Expr
 	stmts         []Stmt
+}
+
+pub enum DeferMode {
+	default
+	success
+	error
+}
+
+pub struct DeferStmt {
+pub:
+	mode  DeferMode
+	stmts []Stmt
 }
