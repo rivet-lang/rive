@@ -54,7 +54,7 @@ pub fn (sc &Scope) lookup(name string) ?Symbol {
 	if sym := sc.find(name) {
 		return sym
 	}
-	if sc.owner is Function || sc.parent == unsafe { nil } {
+	if sc.owner is Function || isnil(sc.parent) {
 		return none
 	}
 	return sc.parent.lookup(name)

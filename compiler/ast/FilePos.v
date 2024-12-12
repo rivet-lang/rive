@@ -19,10 +19,16 @@ pub mut:
 	end   FileLoc
 }
 
+// NOTE: if `.file` is compared before the start and end locations,
+// a segfault occurs.
 pub fn (fp FilePos) == (fp2 FilePos) bool {
+	// fast route: if the start and end location are different, then
+	// we return `false`.
 	if !(fp.begin == fp2.begin && fp.end == fp2.end) {
 		return false
 	}
+
+	// otherwise, everything will depend on whether it is the same file.
 	return fp.file == fp2.file
 }
 
@@ -35,20 +41,27 @@ pub fn (fp &FilePos) extend(end &FilePos) FilePos {
 }
 
 pub fn (fp &FilePos) contains(loc &FileLoc) bool {
-	if loc.line > fp.begin.line && loc.line < fp.end.line {
-		return true
-	} else if loc.line == fp.begin.line && loc.line == fp.end.line {
-		return loc.col >= fp.begin.col && loc.col <= fp.end.col
-	} else if loc.line == fp.begin.line {
-		return loc.col >= fp.begin.col
-	} else if loc.line == fp.end.line {
-		return loc.col <= fp.end.col
+	return match true {
+		loc.line > fp.begin.line && loc.line < fp.end.line {
+			true
+		}
+		loc.line == fp.begin.line && loc.line == fp.end.line {
+			loc.col >= fp.begin.col && loc.col <= fp.end.col
+		}
+		loc.line == fp.begin.line {
+			loc.col >= fp.begin.col
+		}
+		loc.line == fp.end.line {
+			loc.col <= fp.end.col
+		}
+		else {
+			false
+		}
 	}
-	return false
 }
 
 pub fn (fp &FilePos) str() string {
-	filename := if fp.file == unsafe { nil } { '<unknown-file>' } else { fp.file.filename }
+	filename := if isnil(fp.file) { '<unknown-file>' } else { fp.file.filename }
 	if fp.begin.line == fp.end.line {
 		return '${filename}:${fp.begin.line + 1}:${fp.begin.col}'
 	}
