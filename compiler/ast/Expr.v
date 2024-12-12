@@ -9,6 +9,7 @@ pub type Expr = EmptyExpr
 	| IntegerLiteral
 	| FloatLiteral
 	| StringLiteral
+	| IfExpr
 	| UnaryExpr
 	| BinaryExpr
 
@@ -57,6 +58,24 @@ pub:
 	value        string
 	literal_type StringType
 	pos          FilePos
+}
+
+pub struct IfExpr {
+pub:
+	branches []IfBranch
+	pos      FilePos
+}
+
+pub struct IfBranch {
+pub:
+	cond  ?Expr
+	stmts []Stmt
+	pos   FilePos
+}
+
+@[inline]
+pub fn (ib IfBranch) is_else() bool {
+	return ib.cond == none
 }
 
 pub enum UnaryOp {

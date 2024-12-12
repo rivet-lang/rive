@@ -190,7 +190,9 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 				return p.parse_ident_expr()
 			}
 		}
-		.kw_if {}
+		.kw_if {
+			return p.parse_if_expr()
+		}
 		.kw_match {}
 		.kw_break {}
 		.kw_continue {}
@@ -292,4 +294,24 @@ fn (mut p Parser) parse_ident_expr() ast.Expr {
 		scope: p.scope
 		pos:   pos
 	}
+}
+
+fn (mut p Parser) parse_if_expr() ast.Expr {
+	mut branches := []ast.IfBranch{}
+	pos := p.tok.pos
+	for p.tok.kind in [.kw_if, .kw_else] {
+		if p.accept(.kw_else) && p.tok.kind != .kw_if {
+			branches << ast.IfBranch{none, p.parse_stmts(), pos}
+			break
+		}
+		p.expect(.kw_if)
+		p.expect(.lparen)
+		cond := p.parse_expr()
+		p.expect(.rparen)
+		branches << ast.IfBranch{cond, p.parse_stmts(), pos}
+		if p.tok.kind != .kw_else {
+			break
+		}
+	}
+	return ast.IfExpr{branches, pos}
 }
