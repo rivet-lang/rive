@@ -50,7 +50,9 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 			// local stmts: if, while, match, etc.
 			if p.inside_local_scope {
 				match p.tok.kind {
-					.kw_while {}
+					.kw_while {
+						return p.parse_while_stmt()
+					}
 					.kw_for {}
 					.kw_defer {}
 					else {
@@ -130,4 +132,21 @@ fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
 		right:  right
 		is_pub: is_pub
 	}
+}
+
+fn (mut p Parser) parse_while_stmt() ast.Stmt {
+	p.expect(.kw_while)
+	p.expect(.lparen)
+	mut init_stmt := ?ast.Stmt(none)
+	if p.tok.kind == .kw_let {
+		init_stmt = p.parse_let_stmt(false)
+	}
+	cond := p.parse_expr()
+	mut continue_expr := ?ast.Expr(none)
+	if p.accept(.semicolon) {
+		continue_expr = p.parse_expr()
+	}
+	p.expect(.rparen)
+	stmts := p.parse_block()
+	return ast.WhileStmt{init_stmt, cond, continue_expr, stmts}
 }

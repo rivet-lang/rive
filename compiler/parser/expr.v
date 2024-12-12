@@ -22,7 +22,7 @@ fn (mut p Parser) parse_or_expr() ast.Expr {
 			left:  left
 			op:    .log_or
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -36,7 +36,7 @@ fn (mut p Parser) parse_and_expr() ast.Expr {
 			left:  left
 			op:    .log_and
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -52,7 +52,7 @@ fn (mut p Parser) parse_equality_expr() ast.Expr {
 			left:  left
 			op:    if op == .eq { .eq } else { .ne }
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -76,7 +76,7 @@ fn (mut p Parser) parse_relational_expr() ast.Expr {
 				else { .unknown }
 			}
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -99,7 +99,7 @@ fn (mut p Parser) parse_shift_expr() ast.Expr {
 				else { .unknown }
 			}
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -119,7 +119,7 @@ fn (mut p Parser) parse_additive_expr() ast.Expr {
 				else { .unknown }
 			}
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -140,7 +140,7 @@ fn (mut p Parser) parse_multiplicative_expr() ast.Expr {
 				else { .unknown }
 			}
 			right: right
-			pos:   left.pos.extend(right.pos)
+			pos:   left.pos + right.pos
 		}
 	}
 	return left
@@ -162,7 +162,7 @@ fn (mut p Parser) parse_unary_expr() ast.Expr {
 				.minus { .minus }
 				else { .unknown }
 			}
-			pos:   pos.extend(right.pos)
+			pos:   pos + right.pos
 		}
 	} else {
 		expr = p.parse_primary_expr()

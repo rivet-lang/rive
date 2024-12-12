@@ -3,7 +3,7 @@
 
 module ast
 
-pub type Stmt = EmptyStmt | FnStmt | ExprStmt | LetStmt
+pub type Stmt = EmptyStmt | FnStmt | ExprStmt | LetStmt | WhileStmt
 
 pub type EmptyStmt = u8
 
@@ -37,4 +37,12 @@ pub:
 	name_pos     FilePos
 	type         Type
 	default_expr ?Expr
+}
+
+pub struct WhileStmt {
+pub:
+	init_stmt     ?Stmt
+	cond          Expr
+	continue_expr ?Expr
+	stmts         []Stmt
 }

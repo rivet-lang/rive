@@ -33,7 +33,12 @@ pub fn (fp FilePos) == (fp2 FilePos) bool {
 }
 
 @[inline]
-pub fn (fp &FilePos) extend(end &FilePos) FilePos {
+pub fn (fp FilePos) + (fp2 FilePos) FilePos {
+	return fp.extend(fp2)
+}
+
+@[inline]
+pub fn (fp FilePos) extend(end FilePos) FilePos {
 	return FilePos{
 		...fp
 		end: end.end
