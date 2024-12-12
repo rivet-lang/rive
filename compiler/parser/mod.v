@@ -87,6 +87,7 @@ fn (mut p Parser) expect(kind token.Kind) {
 			p.next()
 		} else {
 			context.error('expected `${kind}`, but found ${p.tok}', p.tok.pos)
+			p.abort = true
 		}
 	}
 }
