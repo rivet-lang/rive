@@ -7,6 +7,20 @@ import compiler.ast
 import compiler.context
 
 fn (mut p Parser) parse_block() []ast.Stmt {
+	if p.accept(.colon) {
+		// single-statement: `if (is_online): player.kick()`
+		return [p.parse_stmt()]
+	}
+
+	if p.tok.kind != .lbrace {
+		p.abort = true
+		context.error('expected block, found ${p.tok}', p.tok.pos, context.Hint{
+			kind: .help
+			msg:  'if you want to write a single-statement, use `:`: `if (is_online): player.kick()`'
+		})
+		return []
+	}
+
 	if p.tok.kind == .lbrace && p.next_tok.kind == .rbrace {
 		// empty block: `{}`
 		p.advance(2)
