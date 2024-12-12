@@ -171,38 +171,69 @@ fn (mut p Parser) parse_unary_expr() ast.Expr {
 }
 
 fn (mut p Parser) parse_primary_expr() ast.Expr {
+	mut expr := ast.empty_expr
 	match p.tok.kind {
 		.char, .number, .string {
-			return p.parse_literal()
+			expr = p.parse_literal()
 		}
 		.ident {
 			if p.next_tok.kind == .char {
 				if p.tok.lit == 'b' {
-					return p.parse_char_literal()
+					expr = p.parse_char_literal()
 				} else {
 					context.error('only `b` is recognized as a valid prefix for a character literal',
 						p.tok.pos)
 					p.next()
 				}
 			} else if p.next_tok.kind == .string {
-				return p.parse_string_literal()
+				expr = p.parse_string_literal()
 			} else {
-				return p.parse_ident_expr()
+				expr = p.parse_ident_expr()
 			}
 		}
 		.kw_if {
-			return p.parse_if_expr()
+			expr = p.parse_if_expr()
 		}
 		.kw_match {}
 		.kw_break {}
 		.kw_continue {}
 		.kw_return {}
-		else {
-			context.error('invalid expression: unexpected ${p.tok}', p.tok.pos)
-			p.abort = true
+		else {}
+	}
+
+	for true {
+		match true {
+			p.tok.kind.is_assign() {
+				op := match p.tok.kind {
+					.assign { ast.AssignOp.assign }
+					.plus_assign { .plus_assign }
+					.minus_assign { .minus_assign }
+					.div_assign { .div_assign }
+					.mul_assign { .mul_assign }
+					.xor_assign { .xor_assign }
+					.mod_assign { .mod_assign }
+					.or_assign { .or_assign }
+					.and_assign { .and_assign }
+					.lshift_assign { .lshift_assign }
+					.rshift_assign { .rshift_assign }
+					.log_and_assign { .log_and_assign }
+					.log_or_assign { .log_or_assign }
+					else { .unknown }
+				}
+				p.next()
+				expr = ast.AssignExpr{
+					left:  expr
+					op:    op
+					right: p.parse_expr()
+				}
+			}
+			else {
+				break
+			}
 		}
 	}
-	return ast.empty_expr
+
+	return expr
 }
 
 fn (mut p Parser) parse_literal() ast.Expr {

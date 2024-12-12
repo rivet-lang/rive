@@ -25,63 +25,63 @@ pub fn Token.no_lit(kind Kind, pos ast.FilePos) Token {
 pub enum Kind {
 	unknown
 	eof
-	ident              // foo
-	number             // 123
-	string             // "foo"
-	char               // 'A'
-	plus               // +
-	minus              // -
-	mul                // *
-	div                // /
-	mod                // %
-	xor                // ^
-	pipe               // |
-	log_and            // &&
-	log_or             // ||
-	bang               // !
-	bit_not            // ~
-	question           // ?
-	or_else            // ??
-	comma              // ,
-	semicolon          // ;
-	colon              // :
-	amp                // &
-	hash               // #
-	dollar             // $
-	at                 // @
-	lshift             // <<
-	rshift             // >>
-	not_in             // !in
-	not_is             // !is
-	assign             // =
-	decl_assign        // :=
-	plus_assign        // +=
-	minus_assign       // -=
-	div_assign         // /=
-	mul_assign         // *=
-	xor_assign         // ^=
-	mod_assign         // %=
-	or_assign          // |=
-	and_assign         // &=
-	rshift_assign      // <<=
-	lshift_assign      // >>=
-	boolean_and_assign // &&=
-	boolean_or_assign  // ||=
-	lbrace             // {
-	rbrace             // }
-	lparen             // (
-	rparen             // )
-	lbracket           // [
-	rbracket           // ]
-	eq                 // ==
-	ne                 // !=
-	gt                 // >
-	lt                 // <
-	ge                 // >=
-	le                 // <=
-	dot                // .
-	dotdot             // ..
-	ellipsis           // ...
+	ident          // foo
+	number         // 123
+	string         // "foo"
+	char           // 'A'
+	plus           // +
+	minus          // -
+	mul            // *
+	div            // /
+	mod            // %
+	xor            // ^
+	pipe           // |
+	log_and        // &&
+	log_or         // ||
+	bang           // !
+	bit_not        // ~
+	question       // ?
+	or_else        // ??
+	comma          // ,
+	semicolon      // ;
+	colon          // :
+	amp            // &
+	hash           // #
+	dollar         // $
+	at             // @
+	lshift         // <<
+	rshift         // >>
+	not_in         // !in
+	not_is         // !is
+	assign         // =
+	decl_assign    // :=
+	plus_assign    // +=
+	minus_assign   // -=
+	div_assign     // /=
+	mul_assign     // *=
+	xor_assign     // ^=
+	mod_assign     // %=
+	or_assign      // |=
+	and_assign     // &=
+	rshift_assign  // <<=
+	lshift_assign  // >>=
+	log_and_assign // &&=
+	log_or_assign  // ||=
+	lbrace         // {
+	rbrace         // }
+	lparen         // (
+	rparen         // )
+	lbracket       // [
+	rbracket       // ]
+	eq             // ==
+	ne             // !=
+	gt             // >
+	lt             // <
+	ge             // >=
+	le             // <=
+	dot            // .
+	dotdot         // ..
+	ellipsis       // ...
 
 	keyword_beg
 	kw_as
@@ -115,7 +115,7 @@ pub const keywords = build_keys()
 
 pub const assign_tokens = [Kind.assign, .decl_assign, .plus_assign, .minus_assign, .mul_assign,
 	.div_assign, .xor_assign, .mod_assign, .or_assign, .and_assign, .rshift_assign, .lshift_assign,
-	.boolean_and_assign, .boolean_or_assign]
+	.log_and_assign, .log_or_assign]!
 
 fn build_keys() map[string]Kind {
 	mut res := map[string]Kind{}
@@ -166,8 +166,8 @@ fn build_token_str() []string {
 	s[Kind.and_assign] = '&='
 	s[Kind.rshift_assign] = '>>='
 	s[Kind.lshift_assign] = '<<='
-	s[Kind.boolean_or_assign] = '||='
-	s[Kind.boolean_and_assign] = '&&='
+	s[Kind.log_or_assign] = '||='
+	s[Kind.log_and_assign] = '&&='
 	s[Kind.lbrace] = '{'
 	s[Kind.rbrace] = '}'
 	s[Kind.lparen] = '('

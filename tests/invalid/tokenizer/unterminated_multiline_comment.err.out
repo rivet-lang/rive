@@ -1,4 +1,4 @@
-tests/tokenizer/unterminated_multiline_comment.err.ri:2:1: error: unterminated multiline comment
+tests/invalid/tokenizer/unterminated_multiline_comment.err.ri:2:1: error: unterminated multiline comment
       | 
     2 | unterminated multiline comment :(
       | ^                                

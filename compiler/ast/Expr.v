@@ -10,6 +10,7 @@ pub type Expr = EmptyExpr
 	| FloatLiteral
 	| StringLiteral
 	| IfExpr
+	| AssignExpr
 	| UnaryExpr
 	| BinaryExpr
 
@@ -76,6 +77,31 @@ pub:
 @[inline]
 pub fn (ib IfBranch) is_else() bool {
 	return ib.cond == none
+}
+
+pub enum AssignOp {
+	unknown
+	assign         // =
+	plus_assign    // +=
+	minus_assign   // -=
+	div_assign     // /=
+	mul_assign     // *=
+	xor_assign     // ^=
+	mod_assign     // %=
+	or_assign      // |=
+	and_assign     // &=
+	rshift_assign  // <<=
+	lshift_assign  // >>=
+	log_and_assign // &&=
+	log_or_assign  // ||=
+}
+
+pub struct AssignExpr {
+pub:
+	left  Expr
+	op    AssignOp
+	right Expr
+	pos   FilePos
 }
 
 pub enum UnaryOp {

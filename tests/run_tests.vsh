@@ -22,7 +22,7 @@ for i, file in files {
 	print(file)
 	mut test_passed := true
 	is_err_out := file.ends_with('.err.ri')
-	out_content := os.read_file(file#[..-3] + '.out')!
+	out_content := if is_err_out { os.read_file(file#[..-3] + '.out')! } else { '' }
 	res := os.execute('./rivetc ${file}')
 	res_out := res.output.trim_space()
 	out_is_diff := res.exit_code != 0 && res_out != out_content
@@ -32,6 +32,12 @@ for i, file in files {
 		} else if out_is_diff {
 			test_passed = false
 		}
+	} else {
+		if res.exit_code == 0 || res_out.len == 0 {
+			test_passed = true
+		} else {
+			test_passed = false
+		}
 	}
 	if test_passed {
 		println(term.bold(term.green(' .. PASSED')))
@@ -39,9 +45,11 @@ for i, file in files {
 	} else {
 		println(term.bold(term.red(' .. FAILED')))
 		failed++
-		if out_is_diff {
+		if is_err_out && out_is_diff {
 			println('Expected:\n${out_content}\n')
 			println('Got:\n${res_out}')
+		} else {
+			println('Expected clean compilation, got:\n${res_out}')
 		}
 	}
 }

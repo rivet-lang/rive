@@ -1,4 +1,4 @@
-tests/parser/unfinished_block.err.ri:1:10: error: unfinished block, expected `}` and found end of file
+tests/invalid/parser/unfinished_block.err.ri:1:10: error: unfinished block, expected `}` and found end of file
       | 
     1 | fn main() {
       |          ^ 

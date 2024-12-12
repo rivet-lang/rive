@@ -1,4 +1,4 @@
-tests/tokenizer/invalid_character.err.ri:1:1: error: invalid character `¿`
+tests/invalid/tokenizer/invalid_character.err.ri:1:1: error: invalid character `¿`
       | 
     1 | ¿
       | ^ 
