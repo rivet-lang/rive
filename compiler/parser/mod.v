@@ -22,6 +22,7 @@ mut:
 
 	abort              bool
 	inside_local_scope bool
+	expect_semicolon   bool
 
 	expect_is_called bool
 	prev_expect_pos  ast.FilePos

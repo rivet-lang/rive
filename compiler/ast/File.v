@@ -19,6 +19,11 @@ mut:
 	lines ?[]string
 }
 
+@[inline]
+pub fn (f File) == (f2 File) bool {
+	return f.filename == f2.filename && f.content == f2.content && f.mod_name == f2.mod_name
+}
+
 pub fn File.new(filename string) &File {
 	content := read_file(filename)
 	return &File{

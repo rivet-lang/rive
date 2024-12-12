@@ -6,12 +6,17 @@ module parser
 import compiler.ast
 import compiler.context
 
-fn (mut p Parser) parse_block() []ast.Stmt {
+// parses a list of statements that are enclosed in `{` `}`, it can also parse a
+// single-statement if the form `: <stmt>` is used.
+fn (mut p Parser) parse_stmts() []ast.Stmt {
 	if p.accept(.colon) {
-		// single-statement: `if (is_online): player.kick()`
-		return [p.parse_stmt()]
+		// single-statement: `if (is_online): player.kick();`
+		stmt := p.parse_stmt()
+		p.expect_semicolon = false
+		return [stmt]
 	}
 
+	p.expect_semicolon = false
 	if p.tok.kind != .lbrace {
 		p.abort = true
 		context.error('expected block, found ${p.tok}', p.tok.pos, context.Hint{
@@ -21,9 +26,9 @@ fn (mut p Parser) parse_block() []ast.Stmt {
 		return []
 	}
 
-	if p.tok.kind == .lbrace && p.next_tok.kind == .rbrace {
+	lbrace_pos := p.tok.pos
+	if p.accept(.lbrace) && p.accept(.rbrace) {
 		// empty block: `{}`
-		p.advance(2)
 		return []
 	}
 
@@ -33,57 +38,66 @@ fn (mut p Parser) parse_block() []ast.Stmt {
 
 	mut is_finished := false
 	mut stmts := []ast.Stmt{}
-	lbrace_pos := p.tok.pos
-	p.expect(.lbrace)
 	for {
+		p.expect_semicolon = true
 		stmts << p.parse_stmt()
+		p.expect_semicolon = false
 		is_finished = p.accept(.rbrace)
 		if is_finished || p.should_abort() {
 			break
 		}
 	}
+
 	if !is_finished && !p.abort {
 		// we give an error because the block has not been finished (`}` was not found),
 		// but it has not been aborted (due to poor formation of expressions or statements)
 		context.error('unfinished block, expected `}` and found ${p.tok}', lbrace_pos)
 	}
+
 	return stmts
 }
 
 fn (mut p Parser) parse_stmt() ast.Stmt {
+	mut old_expect_semicolon := p.expect_semicolon
+	defer { p.expect_semicolon = old_expect_semicolon }
+
 	// module stmts: fns, consts, vars, etc.
 	is_pub := !p.inside_local_scope && p.accept(.kw_pub)
+	mut stmt := ast.empty_stmt
 	match p.tok.kind {
 		.kw_fn {
-			return p.parse_fn_stmt(is_pub)
+			stmt = p.parse_fn_stmt(is_pub)
 		}
 		.kw_let {
-			return p.parse_let_stmt(is_pub)
+			stmt = p.parse_let_stmt(is_pub)
 		}
 		else {
 			// local stmts: if, while, match, etc.
 			if p.inside_local_scope {
 				match p.tok.kind {
-					.kw_while {
-						return p.parse_while_stmt()
-					}
 					.kw_for {}
+					.kw_while {
+						stmt = p.parse_while_stmt()
+					}
 					.kw_defer {
-						return p.parse_defer_stmt()
+						stmt = p.parse_defer_stmt()
 					}
 					else {
-						// `.kw_if`, `.kw_match`, `.kw_break`, `.kw_continue` and `.kw_return` are handled in `p.parse_expr()`
-						return ast.ExprStmt{p.parse_expr()}
+						// `.kw_if`, `.kw_match`, `.kw_break`, `.kw_continue` and `.kw_return` are
+						// handled in `p.parse_expr()`
+						stmt = ast.ExprStmt{p.parse_expr()}
 					}
 				}
-				p.next()
 			} else {
 				context.error('invalid declaration: unexpected ${p.tok}', p.tok.pos)
 				p.abort = true
 			}
 		}
 	}
-	return ast.empty_stmt
+	if p.expect_semicolon && !p.should_abort() {
+		p.expect(.semicolon)
+	}
+	return stmt
 }
 
 fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
@@ -114,7 +128,7 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 	} else {
 		p.ctx.void_type
 	}
-	stmts := p.parse_block()
+	stmts := p.parse_stmts()
 	return ast.FnStmt{is_pub, name, name_pos, args, return_type, stmts}
 }
 
@@ -142,7 +156,7 @@ fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
 	}
 	p.expect(.assign)
 	right := p.parse_expr()
-	p.expect(.semicolon)
+	p.expect_semicolon = true
 	return ast.LetStmt{
 		lefts:  lefts
 		right:  right
@@ -156,6 +170,7 @@ fn (mut p Parser) parse_while_stmt() ast.Stmt {
 	mut init_stmt := ?ast.Stmt(none)
 	if p.tok.kind == .kw_let {
 		init_stmt = p.parse_let_stmt(false)
+		p.expect(.semicolon)
 	}
 	cond := p.parse_expr()
 	mut continue_expr := ?ast.Expr(none)
@@ -163,7 +178,7 @@ fn (mut p Parser) parse_while_stmt() ast.Stmt {
 		continue_expr = p.parse_expr()
 	}
 	p.expect(.rparen)
-	stmts := p.parse_block()
+	stmts := p.parse_stmts()
 	return ast.WhileStmt{init_stmt, cond, continue_expr, stmts}
 }
 
@@ -189,7 +204,7 @@ fn (mut p Parser) parse_defer_stmt() ast.Stmt {
 		}
 		p.expect(.rparen)
 	}
-	stmts := p.parse_block()
+	stmts := p.parse_stmts()
 	return ast.DeferStmt{
 		mode:  defer_mode
 		stmts: stmts

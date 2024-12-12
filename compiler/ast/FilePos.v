@@ -19,15 +19,12 @@ pub mut:
 	end   FileLoc
 }
 
-// NOTE: if `.file` is compared before the start and end locations,
-// a segfault occurs.
 pub fn (fp FilePos) == (fp2 FilePos) bool {
 	// fast route: if the start and end location are different, then
 	// we return `false`.
 	if !(fp.begin == fp2.begin && fp.end == fp2.end) {
 		return false
 	}
-
 	// otherwise, everything will depend on whether it is the same file.
 	return fp.file == fp2.file
 }
