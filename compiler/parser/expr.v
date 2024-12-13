@@ -244,6 +244,9 @@ fn (mut p Parser) parse_literal() ast.Expr {
 		.number {
 			p.parse_number_literal()
 		}
+		.string {
+			p.parse_string_literal()
+		}
 		else {
 			context.error('invalid literal expression: found ${p.tok}', p.tok.pos)
 			ast.empty_expr

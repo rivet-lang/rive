@@ -59,7 +59,13 @@ fn (mut p Parser) parse_stmts() []ast.Stmt {
 
 fn (mut p Parser) parse_stmt() ast.Stmt {
 	mut old_expect_semicolon := p.expect_semicolon
-	defer { p.expect_semicolon = old_expect_semicolon }
+	mut old_tags := p.tags
+	defer {
+		p.expect_semicolon = old_expect_semicolon
+		p.tags = old_tags
+	}
+
+	p.tags = p.parse_tags()
 
 	// module stmts: fns, consts, vars, etc.
 	is_pub := !p.inside_local_scope && p.accept(.kw_pub)
@@ -129,7 +135,7 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 		p.ctx.void_type
 	}
 	stmts := p.parse_stmts()
-	return ast.FnStmt{is_pub, name, name_pos, args, return_type, stmts}
+	return ast.FnStmt{p.tags, is_pub, name, name_pos, args, return_type, stmts}
 }
 
 fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
@@ -158,6 +164,7 @@ fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
 	right := p.parse_expr()
 	p.expect_semicolon = true
 	return ast.LetStmt{
+		tags:   p.tags
 		lefts:  lefts
 		right:  right
 		is_pub: is_pub
@@ -179,7 +186,7 @@ fn (mut p Parser) parse_while_stmt() ast.Stmt {
 	}
 	p.expect(.rparen)
 	stmts := p.parse_stmts()
-	return ast.WhileStmt{init_stmt, cond, continue_expr, stmts}
+	return ast.WhileStmt{p.tags, init_stmt, cond, continue_expr, stmts}
 }
 
 fn (mut p Parser) parse_defer_stmt() ast.Stmt {
@@ -206,6 +213,7 @@ fn (mut p Parser) parse_defer_stmt() ast.Stmt {
 	}
 	stmts := p.parse_stmts()
 	return ast.DeferStmt{
+		tags:  p.tags
 		mode:  defer_mode
 		stmts: stmts
 	}

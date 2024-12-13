@@ -19,10 +19,11 @@ mut:
 
 	file  &ast.File  = unsafe { nil }
 	scope &ast.Scope = unsafe { nil }
+	tags  ast.Tags
 
-	abort              bool
 	inside_local_scope bool
 	expect_semicolon   bool
+	abort              bool
 
 	expect_is_called bool
 	prev_expect_pos  ast.FilePos

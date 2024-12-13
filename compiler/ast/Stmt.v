@@ -16,6 +16,7 @@ pub:
 
 pub struct LetStmt {
 pub:
+	tags   Tags
 	lefts  []Variable
 	right  Expr
 	is_pub bool
@@ -23,6 +24,7 @@ pub:
 
 pub struct FnStmt {
 pub:
+	tags        Tags
 	is_pub      bool
 	name        string
 	name_pos    FilePos
@@ -41,6 +43,7 @@ pub:
 
 pub struct WhileStmt {
 pub:
+	tags          Tags
 	init_stmt     ?Stmt
 	cond          Expr
 	continue_expr ?Expr
@@ -55,6 +58,7 @@ pub enum DeferMode {
 
 pub struct DeferStmt {
 pub:
+	tags  Tags
 	mode  DeferMode
 	stmts []Stmt
 }
