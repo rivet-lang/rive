@@ -341,6 +341,9 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 	pos := p.tok.pos
 	for {
 		if p.accept(.kw_else) && p.tok.kind != .kw_if {
+			if p.tok.kind != .lbrace {
+				p.expect(.colon)
+			}
 			branches << ast.IfBranch{none, p.parse_expr(), pos}
 			break
 		}
@@ -348,10 +351,15 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		p.expect(.lparen)
 		cond := p.parse_expr()
 		p.expect(.rparen)
+		mut expect_semicolon := false
 		if p.tok.kind != .lbrace {
 			p.expect(.colon)
+			expect_semicolon = true
 		}
 		branches << ast.IfBranch{cond, p.parse_expr(), pos}
+		if expect_semicolon && p.next_tok.kind == .kw_else {
+			p.expect(.semicolon)
+		}
 		if p.tok.kind != .kw_else {
 			break
 		}
