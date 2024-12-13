@@ -341,14 +341,14 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 	pos := p.tok.pos
 	for {
 		if p.accept(.kw_else) && p.tok.kind != .kw_if {
-			branches << ast.IfBranch{none, p.parse_stmts(), pos}
+			branches << ast.IfBranch{none, p.parse_expr(), pos}
 			break
 		}
 		p.expect(.kw_if)
 		p.expect(.lparen)
 		cond := p.parse_expr()
 		p.expect(.rparen)
-		branches << ast.IfBranch{cond, p.parse_stmts(), pos}
+		branches << ast.IfBranch{cond, p.parse_expr(), pos}
 		if p.tok.kind != .kw_else {
 			break
 		}

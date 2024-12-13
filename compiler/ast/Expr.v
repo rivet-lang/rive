@@ -77,9 +77,9 @@ pub:
 
 pub struct IfBranch {
 pub:
-	cond  ?Expr
-	stmts []Stmt
-	pos   FilePos
+	cond ?Expr
+	expr Expr
+	pos  FilePos
 }
 
 @[inline]
