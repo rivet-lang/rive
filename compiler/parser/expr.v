@@ -333,7 +333,7 @@ fn (mut p Parser) parse_ident_expr() ast.Expr {
 fn (mut p Parser) parse_if_expr() ast.Expr {
 	mut branches := []ast.IfBranch{}
 	pos := p.tok.pos
-	for p.tok.kind in [.kw_if, .kw_else] {
+	for {
 		if p.accept(.kw_else) && p.tok.kind != .kw_if {
 			branches << ast.IfBranch{none, p.parse_stmts(), pos}
 			break
