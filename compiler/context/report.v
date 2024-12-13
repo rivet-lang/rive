@@ -202,7 +202,8 @@ fn print_message(params ReportParams) {
 	for hint in params.hints {
 		sb.write_u8(`\n`)
 		eq := bold(blue('='))
-		sb.write_string('${' ':6}${eq} ${hint.kind.colorize()} ${hint.msg}')
+		sb.write_string('${' ':6}${eq} ${hint.kind.colorize()} ')
+		print_highlighted_message(hint.msg, mut sb)
 		if hint.pos != none {
 			// report_source()
 		}
