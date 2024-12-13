@@ -348,6 +348,9 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		p.expect(.lparen)
 		cond := p.parse_expr()
 		p.expect(.rparen)
+		if p.tok.kind != .lbrace {
+			p.expect(.colon)
+		}
 		branches << ast.IfBranch{cond, p.parse_expr(), pos}
 		if p.tok.kind != .kw_else {
 			break

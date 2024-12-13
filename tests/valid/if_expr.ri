@@ -1,9 +1,9 @@
 fn main() {
-    if (true) {
-        y;
+    let b = if (true) {
+        y
     } else {
-        x;
-    }
+        x
+    };
 
     let add = 0;
     if (1 + 2 == 3) {
@@ -11,4 +11,6 @@ fn main() {
     } else {
         add = 4;
     }
+
+    if (true): x;
 }
