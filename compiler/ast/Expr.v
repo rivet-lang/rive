@@ -10,6 +10,7 @@ pub type Expr = EmptyExpr
 	| FloatLiteral
 	| StringLiteral
 	| IfExpr
+	| MatchExpr
 	| AssignExpr
 	| BlockExpr
 	| UnaryExpr
@@ -80,6 +81,20 @@ pub:
 	cond ?Expr
 	expr Expr
 	pos  FilePos
+}
+
+pub struct MatchExpr {
+pub:
+	expr     Expr
+	branches []MatchBranch
+	pos      FilePos
+}
+
+pub struct MatchBranch {
+pub:
+	is_else bool
+	cases   []Expr
+	expr    Expr
 }
 
 @[inline]

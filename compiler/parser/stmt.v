@@ -93,6 +93,10 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 		.kw_let {
 			stmt = p.parse_let_stmt(is_pub)
 		}
+		.semicolon {
+			context.error('orphan semicolon detected', p.tok.pos)
+			p.abort = true
+		}
 		else {
 			// local stmts: if, while, match, etc.
 			if p.inside_local_scope {
@@ -105,9 +109,11 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 						stmt = p.parse_defer_stmt()
 					}
 					else {
-						// `.kw_if`, `.kw_match`, `.kw_break`, `.kw_continue` and `.kw_return` are
+						// `.kw_if`, `.kw_match`, `.kw_break`/`.kw_continue` and `.kw_return` are
 						// handled in `p.parse_expr()`
-						stmt = ast.ExprStmt{p.tags, p.parse_expr()}
+						expr := p.parse_expr()
+						p.expect_semicolon = expr !in [ast.IfExpr, ast.MatchExpr, ast.BlockExpr]
+						stmt = ast.ExprStmt{p.tags, expr}
 					}
 				}
 			} else {
@@ -116,9 +122,15 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 			}
 		}
 	}
-	if p.expect_semicolon && !p.should_abort() && !(p.inside_block_expr && p.tok.kind == .rbrace) {
+
+	// NOTE: if the previous token was a semicolon, it means that the parser no longer needs
+	// to wait for another semicolon.
+	if p.expect_semicolon && !p.should_abort() && !(p.inside_block_expr && p.tok.kind == .rbrace)
+		&& p.prev_tok.kind != .semicolon {
 		p.expect(.semicolon)
+		p.expect_semicolon = false
 	}
+
 	return stmt
 }
 

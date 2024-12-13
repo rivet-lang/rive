@@ -197,9 +197,10 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 		.kw_if {
 			expr = p.parse_if_expr()
 		}
-		.kw_match {}
-		.kw_break {}
-		.kw_continue {}
+		.kw_match {
+			expr = p.parse_match_expr()
+		}
+		.kw_break, .kw_continue {}
 		.kw_return {}
 		.lbrace {
 			expr = p.parse_block_expr()
@@ -336,7 +337,51 @@ fn (mut p Parser) parse_ident_expr() ast.Expr {
 	}
 }
 
+fn (mut p Parser) parse_match_expr() ast.Expr {
+	pos := p.tok.pos
+	mut branches := []ast.MatchBranch{}
+
+	p.expect(.kw_match)
+	p.expect(.lparen)
+	expr := p.parse_expr()
+	p.expect(.rparen)
+
+	p.expect(.lbrace)
+	for {
+		mut is_else := false
+		mut cases := []ast.Expr{}
+		if p.accept(.kw_else) {
+			is_else = true
+		} else {
+			for {
+				cases << p.parse_expr()
+				if !p.accept(.comma) {
+					break
+				}
+			}
+		}
+		p.expect(.colon)
+		branch_expr := p.parse_expr()
+		branches << ast.MatchBranch{
+			is_else: is_else
+			cases:   cases
+			expr:    branch_expr
+		}
+		if !p.accept(.comma) {
+			break
+		}
+	}
+	p.expect(.rbrace)
+
+	return ast.MatchExpr{
+		expr:     expr
+		branches: branches
+		pos:      pos
+	}
+}
+
 fn (mut p Parser) parse_if_expr() ast.Expr {
+	mut needs_semicolon := false
 	mut branches := []ast.IfBranch{}
 	pos := p.tok.pos
 	for {
@@ -351,18 +396,22 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		p.expect(.lparen)
 		cond := p.parse_expr()
 		p.expect(.rparen)
-		mut expect_semicolon := false
+		mut expect_comma := false
 		if p.tok.kind != .lbrace {
 			p.expect(.colon)
-			expect_semicolon = true
+			needs_semicolon = true
+			expect_comma = true
 		}
 		branches << ast.IfBranch{cond, p.parse_expr(), pos}
-		if expect_semicolon && p.next_tok.kind == .kw_else {
-			p.expect(.semicolon)
+		if expect_comma && p.next_tok.kind == .kw_else {
+			p.expect(.comma)
 		}
 		if p.tok.kind != .kw_else {
 			break
 		}
+	}
+	if needs_semicolon {
+		p.expect(.semicolon)
 	}
 	return ast.IfExpr{branches, pos}
 }
