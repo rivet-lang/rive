@@ -11,6 +11,9 @@ fn (mut p Parser) parse_expr() ast.Expr {
 	if p.should_abort() {
 		return ast.empty_expr
 	}
+	old_inside_expr := p.inside_expr
+	defer { p.inside_expr = old_inside_expr }
+	p.inside_expr = true
 	return p.parse_or_expr()
 }
 
@@ -198,6 +201,9 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 		.kw_break {}
 		.kw_continue {}
 		.kw_return {}
+		.lbrace {
+			expr = p.parse_block_expr()
+		}
 		else {}
 	}
 
@@ -348,4 +354,16 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		}
 	}
 	return ast.IfExpr{branches, pos}
+}
+
+fn (mut p Parser) parse_block_expr() ast.Expr {
+	old_inside_block_expr := p.inside_block_expr
+	defer { p.inside_block_expr = old_inside_block_expr }
+	p.inside_block_expr = p.inside_expr
+
+	stmts, expr := p.parse_simple_block()
+	return ast.BlockExpr{
+		stmts: stmts
+		expr:  expr
+	}
 }

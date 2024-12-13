@@ -21,6 +21,8 @@ mut:
 	scope &ast.Scope = unsafe { nil }
 	tags  ast.Tags
 
+	inside_expr        bool
+	inside_block_expr  bool
 	inside_local_scope bool
 	expect_semicolon   bool
 	abort              bool

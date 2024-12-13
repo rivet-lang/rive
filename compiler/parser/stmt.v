@@ -26,22 +26,37 @@ fn (mut p Parser) parse_stmts() []ast.Stmt {
 		return []
 	}
 
-	lbrace_pos := p.tok.pos
-	if p.accept(.lbrace) && p.accept(.rbrace) {
-		// empty block: `{}`
-		return []
-	}
-
 	old_inside_local_scope := p.inside_local_scope
 	defer { p.inside_local_scope = old_inside_local_scope }
 	p.inside_local_scope = true
+
+	stmts, _ := p.parse_simple_block()
+	return stmts
+}
+
+fn (mut p Parser) parse_simple_block() ([]ast.Stmt, ?ast.Expr) {
+	lbrace_pos := p.tok.pos
+	if p.accept(.lbrace) && p.accept(.rbrace) {
+		// empty block: `{}`
+		return []ast.Stmt{}, none
+	}
+
+	mut expr := ?ast.Expr(none)
 
 	mut is_finished := false
 	mut stmts := []ast.Stmt{}
 	for {
 		p.expect_semicolon = true
-		stmts << p.parse_stmt()
+		stmt := p.parse_stmt()
 		p.expect_semicolon = false
+
+		if p.inside_block_expr && p.tok.kind == .rbrace && stmt is ast.ExprStmt {
+			// this is an expression that is being used as the value returned by the block
+			expr = stmt.expr
+		} else {
+			stmts << stmt
+		}
+
 		is_finished = p.accept(.rbrace)
 		if is_finished || p.should_abort() {
 			break
@@ -55,7 +70,7 @@ fn (mut p Parser) parse_stmts() []ast.Stmt {
 		p.abort = true
 	}
 
-	return stmts
+	return stmts, expr
 }
 
 fn (mut p Parser) parse_stmt() ast.Stmt {
@@ -101,7 +116,7 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 			}
 		}
 	}
-	if p.expect_semicolon && !p.should_abort() {
+	if p.expect_semicolon && !p.should_abort() && !(p.inside_block_expr && p.tok.kind == .rbrace) {
 		p.expect(.semicolon)
 	}
 	return stmt

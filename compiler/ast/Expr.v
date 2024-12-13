@@ -11,6 +11,7 @@ pub type Expr = EmptyExpr
 	| StringLiteral
 	| IfExpr
 	| AssignExpr
+	| BlockExpr
 	| UnaryExpr
 	| BinaryExpr
 
@@ -59,6 +60,13 @@ pub:
 	value        string
 	literal_type StringType
 	pos          FilePos
+}
+
+pub struct BlockExpr {
+pub:
+	stmts []Stmt
+	expr  ?Expr
+	pos   FilePos
 }
 
 pub struct IfExpr {
