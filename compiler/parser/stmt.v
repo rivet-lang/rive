@@ -52,6 +52,7 @@ fn (mut p Parser) parse_stmts() []ast.Stmt {
 		// we give an error because the block has not been finished (`}` was not found),
 		// but it has not been aborted (due to poor formation of expressions or statements)
 		context.error('unfinished block, expected `}` and found ${p.tok}', lbrace_pos)
+		p.abort = true
 	}
 
 	return stmts

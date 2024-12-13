@@ -24,9 +24,6 @@ mut:
 	inside_local_scope bool
 	expect_semicolon   bool
 	abort              bool
-
-	expect_is_called bool
-	prev_expect_pos  ast.FilePos
 }
 
 @[inline]
@@ -75,21 +72,9 @@ fn (mut p Parser) advance(n int) {
 }
 
 fn (mut p Parser) expect(kind token.Kind) {
-	// this prevents an infinite loop due to an unexpected token, and also a
-	// double error message.
-	if p.tok.pos == p.prev_expect_pos && !p.expect_is_called {
-		p.expect_is_called = true
-	} else {
-		p.prev_expect_pos = p.tok.pos
-	}
-
 	if !p.accept(kind) {
-		if p.expect_is_called {
-			p.next()
-		} else {
-			context.error('expected `${kind}`, but found ${p.tok}', p.tok.pos)
-			p.abort = true
-		}
+		context.error('expected `${kind}`, but found ${p.tok}', p.tok.pos)
+		p.abort = true
 	}
 }
 
@@ -107,6 +92,7 @@ fn (mut p Parser) parse_ident() string {
 		p.next()
 		return ident
 	}
+	p.abort = true
 	context.error('expected identifier, but found ${p.tok}', p.tok.pos)
 	p.next()
 	return ''
