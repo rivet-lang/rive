@@ -91,7 +91,7 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 					else {
 						// `.kw_if`, `.kw_match`, `.kw_break`, `.kw_continue` and `.kw_return` are
 						// handled in `p.parse_expr()`
-						stmt = ast.ExprStmt{p.parse_expr()}
+						stmt = ast.ExprStmt{p.tags, p.parse_expr()}
 					}
 				}
 			} else {

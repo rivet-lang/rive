@@ -11,6 +11,7 @@ pub const empty_stmt = Stmt(EmptyStmt(0))
 
 pub struct ExprStmt {
 pub:
+	tags Tags
 	expr Expr
 }
 
