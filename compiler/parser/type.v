@@ -4,7 +4,7 @@
 module parser
 
 import compiler.ast
-import compiler.context
+import compiler.context as _
 
 fn (mut p Parser) parse_type() ast.Type {
 	if p.tok.kind == .ident {

@@ -54,7 +54,6 @@ pub enum Kind {
 	not_in         // !in
 	not_is         // !is
 	assign         // =
-	decl_assign    // :=
 	plus_assign    // +=
 	minus_assign   // -=
 	div_assign     // /=
@@ -113,8 +112,8 @@ pub enum Kind {
 pub const token_str = build_token_str()
 pub const keywords = build_keys()
 
-pub const assign_tokens = [Kind.assign, .decl_assign, .plus_assign, .minus_assign, .mul_assign,
-	.div_assign, .xor_assign, .mod_assign, .or_assign, .and_assign, .rshift_assign, .lshift_assign,
+pub const assign_tokens = [Kind.assign, .plus_assign, .minus_assign, .mul_assign, .div_assign,
+	.xor_assign, .mod_assign, .or_assign, .and_assign, .rshift_assign, .lshift_assign,
 	.log_and_assign, .log_or_assign]!
 
 fn build_keys() map[string]Kind {
@@ -155,7 +154,6 @@ fn build_token_str() []string {
 	s[Kind.semicolon] = ';'
 	s[Kind.colon] = ':'
 	s[Kind.assign] = '='
-	s[Kind.decl_assign] = ':='
 	s[Kind.plus_assign] = '+='
 	s[Kind.minus_assign] = '-='
 	s[Kind.mul_assign] = '*='

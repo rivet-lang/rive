@@ -347,11 +347,6 @@ fn (mut t Tokenizer) internal_next() Token {
 				return Token.no_lit(.comma, pos)
 			}
 			`:` {
-				if nextc == `=` {
-					t.pos++
-					pos.end = t.current_loc()
-					return Token.no_lit(.decl_assign, pos)
-				}
 				return Token.no_lit(.colon, pos)
 			}
 			`;` {
