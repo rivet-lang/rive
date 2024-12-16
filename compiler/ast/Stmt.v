@@ -45,7 +45,7 @@ pub:
 pub struct WhileStmt {
 pub:
 	tags          Tags
-	init_stmt     ?Stmt
+	init_stmt     ?LetStmt
 	cond          Expr
 	continue_expr ?Expr
 	stmts         []Stmt

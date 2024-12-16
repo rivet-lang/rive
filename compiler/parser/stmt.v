@@ -173,7 +173,7 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 	return ast.FnStmt{p.tags, is_pub, name, name_pos, args, return_type, stmts}
 }
 
-fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
+fn (mut p Parser) parse_let_stmt(is_pub bool) ast.LetStmt {
 	p.expect(.kw_let)
 	mut lefts := []ast.Variable{}
 	for {
@@ -206,10 +206,10 @@ fn (mut p Parser) parse_let_stmt(is_pub bool) ast.Stmt {
 	}
 }
 
-fn (mut p Parser) parse_while_stmt() ast.Stmt {
+fn (mut p Parser) parse_while_stmt() ast.WhileStmt {
 	p.expect(.kw_while)
 	p.expect(.lparen)
-	mut init_stmt := ?ast.Stmt(none)
+	mut init_stmt := ?ast.LetStmt(none)
 	if p.tok.kind == .kw_let {
 		init_stmt = p.parse_let_stmt(false)
 		p.expect(.semicolon)
@@ -224,7 +224,7 @@ fn (mut p Parser) parse_while_stmt() ast.Stmt {
 	return ast.WhileStmt{p.tags, init_stmt, cond, continue_expr, stmts}
 }
 
-fn (mut p Parser) parse_defer_stmt() ast.Stmt {
+fn (mut p Parser) parse_defer_stmt() ast.DeferStmt {
 	p.expect(.kw_defer)
 	mut defer_mode := ast.DeferMode.default
 	if p.accept(.lparen) {
