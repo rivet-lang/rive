@@ -7,6 +7,13 @@ import compiler.ast
 import compiler.util
 import compiler.context
 
+fn (mut p Parser) parse_surrounded_expr() ast.Expr {
+	p.expect(.lparen)
+	expr := p.parse_expr()
+	p.expect(.rparen)
+	return expr
+}
+
 fn (mut p Parser) parse_expr() ast.Expr {
 	if p.should_abort() {
 		return ast.empty_expr
@@ -342,10 +349,7 @@ fn (mut p Parser) parse_match_expr() ast.Expr {
 	mut branches := []ast.MatchBranch{}
 
 	p.expect(.kw_match)
-	p.expect(.lparen)
-	expr := p.parse_expr()
-	p.expect(.rparen)
-
+	expr := p.parse_surrounded_expr()
 	p.expect(.lbrace)
 	for {
 		mut is_else := false
@@ -393,9 +397,7 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 			break
 		}
 		p.expect(.kw_if)
-		p.expect(.lparen)
-		cond := p.parse_expr()
-		p.expect(.rparen)
+		cond := p.parse_surrounded_expr()
 		mut expect_comma := false
 		if p.tok.kind != .lbrace {
 			p.expect(.colon)
