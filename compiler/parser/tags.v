@@ -21,7 +21,7 @@ fn (mut p Parser) parse_tags() ast.Tags {
 				}
 				arg_value := p.parse_expr()
 				args << ast.TagArg{arg_name, arg_value}
-				if !p.accept(.comma) {
+				if !p.accept(.comma) || p.should_abort() {
 					break
 				}
 			}

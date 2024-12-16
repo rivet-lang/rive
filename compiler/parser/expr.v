@@ -359,7 +359,7 @@ fn (mut p Parser) parse_match_expr() ast.Expr {
 		} else {
 			for {
 				cases << p.parse_expr()
-				if !p.accept(.comma) {
+				if !p.accept(.comma) || p.should_abort() {
 					break
 				}
 			}
@@ -371,7 +371,7 @@ fn (mut p Parser) parse_match_expr() ast.Expr {
 			cases:   cases
 			expr:    branch_expr
 		}
-		if !p.accept(.comma) {
+		if !p.accept(.comma) || p.should_abort() {
 			break
 		}
 	}
@@ -408,7 +408,7 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		if expect_comma && p.next_tok.kind == .kw_else {
 			p.expect(.comma)
 		}
-		if p.tok.kind != .kw_else {
+		if p.tok.kind != .kw_else || p.should_abort() {
 			break
 		}
 	}
