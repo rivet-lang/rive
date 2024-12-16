@@ -72,8 +72,9 @@ pub:
 
 pub struct IfExpr {
 pub:
-	branches []IfBranch
-	pos      FilePos
+	branches  []IfBranch
+	is_inline bool
+	pos       FilePos
 }
 
 pub struct IfBranch {

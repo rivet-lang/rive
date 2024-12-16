@@ -94,6 +94,8 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 			stmt = p.parse_let_stmt(is_pub)
 		}
 		.semicolon {
+			// an orphaned semicolon indicates that `p.stmt()` is not properly
+			// handling the `;`
 			context.error('orphan semicolon detected', p.tok.pos)
 			p.abort = true
 		}
@@ -112,7 +114,12 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 						// `.kw_if`, `.kw_match`, `.kw_break`/`.kw_continue` and `.kw_return` are
 						// handled in `p.parse_expr()`
 						expr := p.parse_expr()
-						p.expect_semicolon = expr !in [ast.IfExpr, ast.MatchExpr, ast.BlockExpr]
+						if expr in [ast.MatchExpr, ast.BlockExpr] {
+							p.expect_semicolon = false
+						} else if expr is ast.IfExpr {
+							// true = `if (abc): x, else: y;`
+							p.expect_semicolon = expr.is_inline
+						}
 						stmt = ast.ExprStmt{p.tags, expr}
 					}
 				}

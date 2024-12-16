@@ -381,7 +381,7 @@ fn (mut p Parser) parse_match_expr() ast.Expr {
 }
 
 fn (mut p Parser) parse_if_expr() ast.Expr {
-	mut needs_semicolon := false
+	mut is_inline := false
 	mut branches := []ast.IfBranch{}
 	pos := p.tok.pos
 	for {
@@ -399,8 +399,8 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		mut expect_comma := false
 		if p.tok.kind != .lbrace {
 			p.expect(.colon)
-			needs_semicolon = true
 			expect_comma = true
+			is_inline = true
 		}
 		branches << ast.IfBranch{cond, p.parse_expr(), pos}
 		if expect_comma && p.next_tok.kind == .kw_else {
@@ -410,10 +410,7 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 			break
 		}
 	}
-	if needs_semicolon {
-		p.expect(.semicolon)
-	}
-	return ast.IfExpr{branches, pos}
+	return ast.IfExpr{branches, is_inline, pos}
 }
 
 fn (mut p Parser) parse_block_expr() ast.Expr {
