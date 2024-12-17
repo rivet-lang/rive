@@ -83,7 +83,6 @@ pub enum Kind {
 	ellipsis       // ...
 
 	keyword_beg
-	kw_as
 	kw_break
 	kw_const
 	kw_continue
@@ -185,7 +184,6 @@ fn build_token_str() []string {
 	s[Kind.dollar] = '$'
 	s[Kind.at] = '@'
 
-	s[Kind.kw_as] = 'as'
 	s[Kind.kw_break] = 'break'
 	s[Kind.kw_const] = 'const'
 	s[Kind.kw_continue] = 'continue'
