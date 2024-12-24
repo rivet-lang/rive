@@ -7,4 +7,8 @@ let x = 1;
 fn main() {
     let y = 1;
     let abc, def = 1;
+
+    fn inside() {
+        let inside_var = false;
+    }
 }
