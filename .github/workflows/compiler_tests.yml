@@ -21,9 +21,8 @@ jobs:
 
       - name: Build Rivet compiler
         run: |
-          v -o rivetc cmd/
+          make build
 
       - name: Run Rivet compiler tests
         run: |
-          v test compiler
-          v tests/run_tests.vsh
+          make test

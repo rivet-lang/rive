@@ -6,8 +6,10 @@ import term
 // test.err.ri -> test.err.out
 // test.ok.ri -> test.ok.out
 
-if !os.exists('rivetc') {
-	panic('rivetc executable not found')
+const rivetc = 'bin/rivetc'
+
+if !os.exists(rivetc) {
+	panic('`${rivetc}` executable not found')
 }
 
 mut passed := 0
@@ -23,7 +25,7 @@ for i, file in files {
 	mut test_passed := true
 	is_err_out := file.ends_with('.err.ri')
 	out_content := if is_err_out { os.read_file(file#[..-3] + '.out')! } else { '' }
-	res := os.execute('./rivetc ${file}')
+	res := os.execute('${rivetc} ${file}')
 	res_out := res.output.trim_space()
 	out_is_diff := res.exit_code != 0 && res_out != out_content
 	if is_err_out {
