@@ -7,3 +7,6 @@ build:
 test: build
 	v test compiler
 	v tests/run_tests.vsh
+
+fmt:
+	v fmt -w .

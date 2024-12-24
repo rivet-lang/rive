@@ -6,7 +6,7 @@ let x = 1;
 
 fn main() {
     let y = 1;
-    let abc, def = 1;
+    let abc, def = (11 + 15) / 99;
 
     fn inside() {
         let inside_var = false;

@@ -4,6 +4,7 @@
 module ast
 
 pub type Expr = EmptyExpr
+	| ParenExpr
 	| Ident
 	| CharLiteral
 	| IntegerLiteral
@@ -22,6 +23,12 @@ pub:
 }
 
 pub const empty_expr = Expr(EmptyExpr{})
+
+pub struct ParenExpr {
+pub:
+	expr Expr
+	pos  FilePos
+}
 
 pub struct Ident {
 pub:

@@ -201,6 +201,12 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 				expr = p.parse_ident_expr()
 			}
 		}
+		.lparen {
+			pos := p.tok.pos
+			p.next()
+			expr = ast.ParenExpr{p.parse_expr(), pos + p.tok.pos}
+			p.expect(.rparen)
+		}
 		.kw_if {
 			expr = p.parse_if_expr()
 		}
