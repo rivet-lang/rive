@@ -1,0 +1,10 @@
+fn other_fn() {
+    let bc = true;
+}
+
+let x = 1;
+
+fn main() {
+    let y = 1;
+    let abc, def = 1;
+}
