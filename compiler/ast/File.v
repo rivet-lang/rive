@@ -15,7 +15,6 @@ pub mut:
 	errors int
 	scope  &Scope = unsafe { nil }
 	stmts  []Stmt
-	pos    FilePos
 mut:
 	lines ?[]string
 }

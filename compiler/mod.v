@@ -24,5 +24,6 @@ pub fn run(args []string) {
 			parser: p
 		}
 		s.analyze(ctx)
+		ctx.abort_if_errors()
 	}
 }

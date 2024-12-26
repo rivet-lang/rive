@@ -34,11 +34,12 @@ pub fn new(ctx &context.CContext) &Parser {
 	}
 }
 
+@[inline]
 pub fn (mut p Parser) parse() {
-	p.parse_file(p.ctx.options.input, true)
+	_ = p.parse_file(p.ctx.options.input, true)
 }
 
-fn (mut p Parser) parse_file(filename string, is_root bool) {
+fn (mut p Parser) parse_file(filename string, is_root bool) ?&ast.File {
 	p.file = ast.File.new(filename)
 	if is_root {
 		p.ctx.root_file = p.file
@@ -47,17 +48,18 @@ fn (mut p Parser) parse_file(filename string, is_root bool) {
 	p.tokenizer = tokenizer.from_file(p.ctx, p.file)
 	if p.file.errors > 0 {
 		// if the tokenizer found errors in the file, let's skip it
-		return
+		return none
 	}
 
 	p.advance(2)
-	p.file.pos = p.tok.pos
 	for {
 		p.file.stmts << p.parse_stmt()
 		if p.should_abort() {
 			break
 		}
 	}
+
+	return p.file
 }
 
 fn (mut p Parser) next() {

@@ -74,6 +74,10 @@ fn (mut p Parser) parse_simple_block() ([]ast.Stmt, ?ast.Expr) {
 }
 
 fn (mut p Parser) parse_stmt() ast.Stmt {
+	if p.should_abort() {
+		return ast.empty_stmt
+	}
+
 	mut old_expect_semicolon := p.expect_semicolon
 	mut old_tags := p.tags
 	defer {
