@@ -245,7 +245,11 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 		else {}
 	}
 
-	for true {
+	if p.should_abort() {
+		return expr
+	}
+
+	for {
 		match true {
 			p.accept(.lparen) {
 				// call expr
@@ -288,6 +292,9 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 					op:    op
 					right: p.parse_expr()
 				}
+			}
+			p.should_abort() {
+				break
 			}
 			else {
 				break
