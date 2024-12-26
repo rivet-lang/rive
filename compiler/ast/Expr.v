@@ -37,7 +37,7 @@ pub:
 pub struct Ident {
 pub:
 	name  string
-	scope &Scope
+	scope &Scope = unsafe { nil }
 	pos   FilePos
 }
 

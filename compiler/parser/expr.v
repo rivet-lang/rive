@@ -393,9 +393,8 @@ fn (mut p Parser) parse_ident_expr() ast.Expr {
 	pos := p.tok.pos
 	name := p.parse_ident()
 	return ast.Ident{
-		name:  name
-		scope: p.scope
-		pos:   pos
+		name: name
+		pos:  pos
 	}
 }
 

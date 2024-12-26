@@ -17,9 +17,8 @@ mut:
 	tok       token.Token
 	next_tok  token.Token
 
-	file  &ast.File  = unsafe { nil }
-	scope &ast.Scope = unsafe { nil }
-	tags  ast.Tags
+	file &ast.File = unsafe { nil }
+	tags ast.Tags
 
 	inside_expr        bool
 	inside_block_expr  bool
@@ -44,7 +43,6 @@ fn (mut p Parser) parse_file(filename string, is_root bool) {
 	if is_root {
 		p.ctx.root_file = p.file
 	}
-	p.ctx.files << p.file
 
 	p.tokenizer = tokenizer.from_file(p.ctx, p.file)
 	if p.file.errors > 0 {
@@ -53,6 +51,7 @@ fn (mut p Parser) parse_file(filename string, is_root bool) {
 	}
 
 	p.advance(2)
+	p.file.pos = p.tok.pos
 	for {
 		p.file.stmts << p.parse_stmt()
 		if p.should_abort() {

@@ -5,6 +5,7 @@ module compiler
 
 import compiler.context
 import compiler.parser
+import compiler.sema
 
 pub fn run(args []string) {
 	mut ctx := &context.CContext{}
@@ -12,10 +13,16 @@ pub fn run(args []string) {
 	context.push(ctx)
 	defer { context.pop() }
 
-	ctx.setup()
 	ctx.options = context.parse_args(args)
 
 	mut p := parser.new(ctx)
 	p.parse()
 	ctx.abort_if_errors()
+
+	if !ctx.options.check_syntax {
+		mut s := &sema.Sema{
+			parser: p
+		}
+		s.analyze(ctx)
+	}
 }

@@ -13,10 +13,14 @@ mut:
 }
 
 @[inline]
-pub fn Scope.new(parent &Scope) &Scope {
-	return &Scope{
+pub fn Scope.new(parent &Scope, owner ?Symbol) &Scope {
+	mut sc := &Scope{
 		parent: parent
 	}
+	if owner != none {
+		sc.owner = owner
+	}
+	return sc
 }
 
 @[inline]

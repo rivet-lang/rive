@@ -35,12 +35,14 @@ pub mut:
 	options Options
 	report  Report
 
-	universe &ast.Scope = ast.Scope.new(unsafe { nil })
+	universe &ast.Scope = ast.Scope.new(unsafe { nil }, none)
 
 	root_file &ast.File = unsafe { nil }
 	files     []&ast.File
 
-	// Types:
+	// Types.
+	// NOTE: All of these types are initialized in the semantic analyzer,
+	// see `Sema.analyze`.
 	void_type  ast.Type
 	none_type  ast.Type
 	never_type ast.Type
@@ -64,7 +66,7 @@ pub mut:
 	rune_type ast.Type
 }
 
-pub fn (mut ctx CContext) setup() {
+pub fn (mut ctx CContext) load_builtin_symbols() {
 	ctx.load_universe()
 	ctx.load_primitive_types()
 }

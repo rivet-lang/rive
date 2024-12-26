@@ -14,7 +14,8 @@ pub struct Options {
 pub mut:
 	input string @[ignore]
 
-	show_help bool @[long: help; short: h; xdoc: 'Print help information.']
+	show_help    bool @[long: help; short: h; xdoc: 'Print help information.']
+	check_syntax bool @[xdoc: 'Only parse the files, but then stop.']
 }
 
 @[inline]
