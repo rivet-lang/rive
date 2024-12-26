@@ -4,9 +4,9 @@
 module parser
 
 import compiler.ast
-import compiler.token
 import compiler.context
-import compiler.tokenizer
+import compiler.token
+import compiler.token.tokenizer
 
 pub struct Parser {
 mut:
