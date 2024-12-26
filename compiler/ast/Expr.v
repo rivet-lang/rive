@@ -12,6 +12,8 @@ pub type Expr = EmptyExpr
 	| StringLiteral
 	| LoopControl
 	| ReturnExpr
+	| BuiltinCallExpr
+	| CallExpr
 	| IfExpr
 	| MatchExpr
 	| AssignExpr
@@ -81,6 +83,20 @@ pub:
 pub struct ReturnExpr {
 pub:
 	expr ?Expr
+	pos  FilePos
+}
+
+pub struct BuiltinCallExpr {
+pub:
+	name string
+	args []Expr
+	pos  FilePos
+}
+
+pub struct CallExpr {
+pub:
+	left Expr
+	args []Expr
 	pos  FilePos
 }
 

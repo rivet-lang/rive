@@ -187,7 +187,27 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 			expr = p.parse_literal()
 		}
 		.ident {
-			if p.next_tok.kind == .char {
+			if p.next_tok.kind == .bang {
+				// builtin call expr
+				mut pos := p.tok.pos
+				name := p.parse_ident()
+				p.expect(.bang)
+				p.expect(.lparen)
+				mut args := []ast.Expr{}
+				for {
+					args << p.parse_expr()
+					if !p.accept(.comma) || p.should_abort() {
+						break
+					}
+				}
+				pos += p.tok.pos
+				p.expect(.rparen)
+				expr = ast.BuiltinCallExpr{
+					name: name
+					args: args
+					pos:  pos
+				}
+			} else if p.next_tok.kind == .char {
 				if p.tok.lit == 'b' {
 					expr = p.parse_char_literal()
 				} else {
@@ -227,6 +247,24 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 
 	for true {
 		match true {
+			p.accept(.lparen) {
+				// call expr
+				mut pos := p.prev_tok.pos
+				mut args := []ast.Expr{}
+				for {
+					args << p.parse_expr()
+					if !p.accept(.comma) || p.should_abort() {
+						break
+					}
+				}
+				pos += p.tok.pos
+				p.expect(.rparen)
+				expr = ast.CallExpr{
+					left: expr
+					args: args
+					pos:  pos
+				}
+			}
 			p.tok.kind.is_assign() {
 				op := match p.tok.kind {
 					.assign { ast.AssignOp.assign }
