@@ -10,6 +10,8 @@ pub type Expr = EmptyExpr
 	| IntegerLiteral
 	| FloatLiteral
 	| StringLiteral
+	| LoopControl
+	| ReturnExpr
 	| IfExpr
 	| MatchExpr
 	| AssignExpr
@@ -68,6 +70,18 @@ pub:
 	value        string
 	literal_type StringType
 	pos          FilePos
+}
+
+pub struct LoopControl {
+pub:
+	is_continue bool
+	pos         FilePos
+}
+
+pub struct ReturnExpr {
+pub:
+	expr ?Expr
+	pos  FilePos
 }
 
 pub struct BlockExpr {

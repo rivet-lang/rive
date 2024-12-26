@@ -1,0 +1,11 @@
+fn main() {
+    let x = abc;
+}
+
+fn abc() int {
+    return 100 + 200;
+}
+
+fn early_return() {
+    return;
+}

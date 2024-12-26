@@ -213,8 +213,12 @@ fn (mut p Parser) parse_primary_expr() ast.Expr {
 		.kw_match {
 			expr = p.parse_match_expr()
 		}
-		.kw_break, .kw_continue {}
-		.kw_return {}
+		.kw_break, .kw_continue {
+			expr = p.parse_loop_control()
+		}
+		.kw_return {
+			expr = p.parse_return_expr()
+		}
 		.lbrace {
 			expr = p.parse_block_expr()
 		}
@@ -419,6 +423,26 @@ fn (mut p Parser) parse_if_expr() ast.Expr {
 		}
 	}
 	return ast.IfExpr{branches, is_inline, pos}
+}
+
+fn (mut p Parser) parse_loop_control() ast.Expr {
+	pos := p.tok.pos
+	is_continue := p.tok.kind == .kw_continue
+	p.next()
+	return ast.LoopControl{is_continue, pos}
+}
+
+fn (mut p Parser) parse_return_expr() ast.Expr {
+	pos := p.tok.pos
+	p.expect(.kw_return)
+	mut expr := ?ast.Expr(none)
+	if p.tok.kind !in [.semicolon, .comma, .rparen, .rbrace] {
+		expr = p.parse_expr()
+	}
+	return ast.ReturnExpr{
+		expr: expr
+		pos:  pos + p.prev_tok.pos
+	}
 }
 
 fn (mut p Parser) parse_block_expr() ast.Expr {
