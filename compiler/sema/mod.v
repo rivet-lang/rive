@@ -42,13 +42,22 @@ fn (mut sema Sema) check_file(mut file ast.File) {
 	sema.file.scope = ast.Scope.new(sema.ctx.universe, sema.sym)
 	sema.scope = sema.file.scope
 
-	sema.first_pass = true
-	sema.stmts(mut sema.file.stmts)
+	sema.file_stmts(true)
+	if sema.ctx.code_has_errors() {
+		return
+	}
 
-	sema.first_pass = false
-	sema.stmts(mut sema.file.stmts)
+	sema.file_stmts(false)
+	if sema.ctx.code_has_errors() {
+		return
+	}
 
 	sema.ctx.files << sema.file
+}
+
+fn (mut sema Sema) file_stmts(first_pass bool) {
+	sema.first_pass = first_pass
+	sema.stmts(mut sema.file.stmts)
 }
 
 fn (mut sema Sema) stmts(mut stmts []ast.Stmt) {
@@ -73,5 +82,7 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 			args: stmt.args
 			node: unsafe { stmt }
 		}) or { context.error(err.msg(), stmt.name_pos) }
+		sema.stmts(mut stmt.stmts)
+		return
 	}
 }

@@ -31,7 +31,8 @@ pub:
 	name_pos    FilePos
 	args        []FnArg
 	return_type Type
-	stmts       []Stmt
+pub mut:
+	stmts []Stmt
 }
 
 pub struct FnArg {

@@ -185,8 +185,13 @@ pub fn (mut ctx CContext) load_primitive_types() {
 	}
 }
 
+@[inline]
+pub fn (ctx &CContext) code_has_errors() bool {
+	return ctx.report.errors > 0
+}
+
 pub fn (ctx &CContext) abort_if_errors() {
-	if ctx.report.errors > 0 {
+	if ctx.code_has_errors() {
 		reason := if ctx.report.errors == 1 {
 			'aborting due to previous error'
 		} else {
