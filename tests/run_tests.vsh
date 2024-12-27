@@ -6,7 +6,7 @@ import term
 // test.err.ri -> test.err.out
 // test.ok.ri -> test.ok.out
 
-const rivetc = 'bin/rivetc'
+const rivetc = './bin/rivetc'
 
 if !os.exists(rivetc) {
 	panic('`${rivetc}` executable not found')

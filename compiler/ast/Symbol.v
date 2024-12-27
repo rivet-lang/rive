@@ -3,7 +3,28 @@
 
 module ast
 
-pub type Symbol = Function | Constant | TypeSym
+pub type Symbol = Function | Variable | Constant | TypeSym
+
+pub fn (sym Symbol) type_of() string {
+	return match sym {
+		Function {
+			'function'
+		}
+		Variable {
+			if sym.is_arg {
+				'argument'
+			} else {
+				'variable'
+			}
+		}
+		Constant {
+			'constant'
+		}
+		TypeSym {
+			'type'
+		}
+	}
+}
 
 pub struct TypeSym {
 pub:

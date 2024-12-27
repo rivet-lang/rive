@@ -76,13 +76,37 @@ fn (mut sema Sema) stmt(mut stmt ast.Stmt) {
 }
 
 fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
+	old_scope := sema.scope
+	defer {
+		sema.scope = old_scope
+	}
+
 	if sema.first_pass {
-		sema.scope.add_local_symbol(ast.Function{
+		stmt.sym = &ast.Function{
 			name: stmt.name
 			args: stmt.args
 			node: unsafe { stmt }
-		}) or { context.error(err.msg(), stmt.name_pos) }
+		}
+		stmt.scope = ast.Scope.new(sema.scope, ?ast.Symbol(stmt.sym))
+		sema.scope.add_local_symbol(stmt.sym) or { context.error(err.msg(), stmt.name_pos) }
+		sema.scope = stmt.scope
+		for arg in stmt.args {
+			sema.scope.add_symbol(ast.Variable{
+				name:     arg.name
+				is_local: true
+				is_arg:   true
+				type:     arg.type
+			}) or {
+				context.error(err.msg(), arg.pos, context.Hint{
+					kind: .note
+					msg:  'inside function `${stmt.name}`'
+				})
+			}
+		}
 		sema.stmts(mut stmt.stmts)
 		return
 	}
+
+	sema.scope = stmt.scope
+	sema.stmts(mut stmt.stmts)
 }

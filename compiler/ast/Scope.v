@@ -33,7 +33,7 @@ pub fn (sc &Scope) derive() &Scope {
 
 pub fn (mut sc Scope) add_symbol(sym Symbol) ! {
 	if _ := sc.lookup(sym.name) {
-		return error('duplicate variable `${sym.name}`')
+		return error('duplicate ${sym.type_of()} `${sym.name}`')
 	}
 	sc.syms << sym
 }

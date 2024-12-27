@@ -33,6 +33,8 @@ pub:
 	return_type Type
 pub mut:
 	stmts []Stmt
+	sym   &Function = unsafe { nil }
+	scope &Scope    = unsafe { nil }
 }
 
 pub struct FnArg {
@@ -41,6 +43,7 @@ pub:
 	name_pos     FilePos
 	type         Type
 	default_expr ?Expr
+	pos          FilePos
 }
 
 pub struct WhileStmt {

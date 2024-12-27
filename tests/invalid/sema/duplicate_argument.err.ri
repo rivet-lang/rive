@@ -1,0 +1,5 @@
+fn main() {}
+
+fn my_fn(a: int, b: int) {} // OK
+
+fn win(a: int, a: int) {} // FAIL
