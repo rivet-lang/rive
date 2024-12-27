@@ -32,15 +32,25 @@ pub fn (sc &Scope) derive() &Scope {
 }
 
 pub fn (mut sc Scope) add_symbol(sym Symbol) ! {
-	if _ := sc.lookup(sym.name) {
-		return error('duplicate ${sym.type_of()} `${sym.name}`')
+	if other := sc.lookup(sym.name) {
+		m := if other.type_of() == sym.type_of() {
+			'duplicate ${sym.type_of()} `${sym.name}`'
+		} else {
+			'another symbol exists with the same name as `${sym.name}`'
+		}
+		return error(m)
 	}
 	sc.syms << sym
 }
 
 pub fn (mut sc Scope) add_local_symbol(sym Symbol) ! {
-	if _ := sc.find(sym.name) {
-		return error('duplicate symbol `${sym.name}`')
+	if other := sc.find(sym.name) {
+		m := if other.type_of() == sym.type_of() {
+			'duplicate ${sym.type_of()} `${sym.name}`'
+		} else {
+			'another symbol exists with the same name as `${sym.name}`'
+		}
+		return error(m)
 	}
 	sc.syms << sym
 }

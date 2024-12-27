@@ -91,7 +91,7 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 		sema.scope.add_local_symbol(stmt.sym) or { context.error(err.msg(), stmt.name_pos) }
 		sema.scope = stmt.scope
 		for arg in stmt.args {
-			sema.scope.add_symbol(ast.Variable{
+			sema.scope.add_local_symbol(ast.Variable{
 				name:     arg.name
 				is_local: true
 				is_arg:   true
