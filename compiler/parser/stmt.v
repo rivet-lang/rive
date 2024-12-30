@@ -19,10 +19,7 @@ fn (mut p Parser) parse_stmts() []ast.Stmt {
 	p.expect_semicolon = false
 	if p.tok.kind != .lbrace {
 		p.abort = true
-		context.error('expected block, found ${p.tok}', p.tok.pos, context.Hint{
-			kind: .help
-			msg:  'if you want to write a single-statement, use `:`: `if (is_online): player.kick()`'
-		})
+		context.error('expected block, found ${p.tok}', p.tok.pos, context.help('if you want to write a single-statement, use `:`: `if (is_online): player.kick()`'))
 		return []
 	}
 
@@ -252,10 +249,7 @@ fn (mut p Parser) parse_defer_stmt() ast.DeferStmt {
 				defer_mode = .error
 			}
 			else {
-				context.error('unknown `defer` mode', mode_pos, context.Hint{
-					kind: .note
-					msg:  'valid `defer` modes are `success` and `error`'
-				})
+				context.error('unknown `defer` mode', mode_pos, context.note('valid `defer` modes are `success` and `error`'))
 			}
 		}
 		p.expect(.rparen)

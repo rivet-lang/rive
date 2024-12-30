@@ -124,10 +124,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 					t.pos--
 					fl := t.text[start..t.pos]
 					context.error('float literals should have a digit after the decimal point',
-						t.current_pos(), context.Hint{
-						kind: .help
-						msg:  'use `${fl}.0` instead of `${fl}`'
-					})
+						t.current_pos(), context.help('use `${fl}.0` instead of `${fl}`'))
 					t.pos++
 				}
 			}
@@ -177,10 +174,7 @@ fn (mut t Tokenizer) read_number_mode(mode NumberMode) string {
 		old_pos := t.pos
 		t.pos = start
 		context.error('zeros are not allowed at the beginning of a decimal literal', t.current_pos(),
-			context.Hint{
-			kind: .note
-			msg:  'use the prefix `0o` to denote an octal number'
-		})
+			context.note('use the prefix `0o` to denote an octal number'))
 		t.pos = old_pos
 	}
 	t.pos-- // fix pos
@@ -225,10 +219,7 @@ fn (mut t Tokenizer) read_char() string {
 		context.error('empty character literal', t.current_pos())
 	} else if len != 1 {
 		context.error('character literal may only contain one codepoint', t.current_pos(),
-			context.Hint{
-			kind: .help
-			msg:  'if you meant to write a string literal, use double quotes'
-		})
+			context.help('if you meant to write a string literal, use double quotes'))
 	}
 	return ch
 }

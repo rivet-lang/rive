@@ -97,10 +97,7 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 				is_arg:   true
 				type:     arg.type
 			}) or {
-				context.error(err.msg(), arg.pos, context.Hint{
-					kind: .note
-					msg:  'inside function `${stmt.name}`'
-				})
+				context.error(err.msg(), arg.pos, context.note('inside function `${stmt.name}`'))
 			}
 		}
 		sema.stmts(mut stmt.stmts)

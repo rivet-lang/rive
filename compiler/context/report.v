@@ -91,6 +91,16 @@ pub:
 	pos  ?ast.FilePos
 }
 
+@[inline]
+pub fn note(msg string) Hint {
+	return Hint{.note, msg, none}
+}
+
+@[inline]
+pub fn help(msg string) Hint {
+	return Hint{.help, msg, none}
+}
+
 @[params]
 struct ReportParams {
 	pos   ?ast.FilePos
