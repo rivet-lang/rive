@@ -35,7 +35,7 @@ fn (mut sema Sema) check_file(mut file ast.File) {
 		kind: .struct
 	}
 
-	sema.ctx.universe.add_local_symbol(sema.sym) or {
+	sema.ctx.universe.add_symbol(sema.sym) or {
 		context.ic_error('cannot load module `${file.mod_name}`, there is another symbol with the same name')
 	}
 
@@ -104,11 +104,11 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 			node: unsafe { stmt }
 		}
 		sema.sym = stmt.sym
-		stmt.scope = ast.Scope.new(sema.scope, ?ast.Symbol(stmt.sym))
-		sema.scope.add_local_symbol(stmt.sym) or { context.error(err.msg(), stmt.name_pos) }
+		stmt.scope = ast.Scope.new(sema.scope, ?ast.Symbol(sema.sym))
+		sema.scope.add_symbol(stmt.sym) or { context.error(err.msg(), stmt.name_pos) }
 		sema.scope = stmt.scope
 		for arg in stmt.args {
-			sema.scope.add_local_symbol(ast.Variable{
+			sema.scope.add_symbol(ast.Variable{
 				name:     arg.name
 				is_local: true
 				is_arg:   true
@@ -147,12 +147,12 @@ fn (mut sema Sema) let_stmt(mut stmt ast.LetStmt) {
 		for var in stmt.lefts {
 			if var.is_local {
 				// local variables
-				sema.scope.add_symbol(var) or {
+				sema.scope.add_symbol_with_lookup(var) or {
 					context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
 				}
 			} else {
 				// variables declared at module scope
-				sema.scope.add_local_symbol(var) or {
+				sema.scope.add_symbol(var) or {
 					context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
 				}
 			}

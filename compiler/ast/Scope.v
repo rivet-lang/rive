@@ -31,7 +31,7 @@ pub fn (sc &Scope) derive() &Scope {
 	}
 }
 
-pub fn (mut sc Scope) add_symbol(sym Symbol) ! {
+pub fn (mut sc Scope) add_symbol_with_lookup(sym Symbol) ! {
 	if other := sc.lookup(sym.name) {
 		m := if other is Variable && other.is_arg {
 			'${sym.type_of()} `${sym.name}` has the same name as an argument'
@@ -45,7 +45,7 @@ pub fn (mut sc Scope) add_symbol(sym Symbol) ! {
 	sc.syms << sym
 }
 
-pub fn (mut sc Scope) add_local_symbol(sym Symbol) ! {
+pub fn (mut sc Scope) add_symbol(sym Symbol) ! {
 	if other := sc.find(sym.name) {
 		m := if other.type_of() == sym.type_of() {
 			'duplicate ${sym.type_of()} `${sym.name}`'

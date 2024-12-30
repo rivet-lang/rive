@@ -72,62 +72,62 @@ pub fn (mut ctx CContext) load_builtin_symbols() {
 }
 
 pub fn (mut ctx CContext) load_universe() {
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'i8'
 		kind: .i8
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'i16'
 		kind: .i16
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'i32'
 		kind: .i32
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'i64'
 		kind: .i64
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'int'
 		kind: .int
 	}) or { ic_error(err.msg()) }
 
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'u8'
 		kind: .u8
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'u16'
 		kind: .u16
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'u32'
 		kind: .u32
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'u64'
 		kind: .u64
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'uint'
 		kind: .uint
 	}) or { ic_error(err.msg()) }
 
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'f32'
 		kind: .f32
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'f64'
 		kind: .f64
 	}) or { ic_error(err.msg()) }
 
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'bool'
 		kind: .bool
 	}) or { ic_error(err.msg()) }
-	ctx.universe.add_local_symbol(ast.TypeSym{
+	ctx.universe.add_symbol(ast.TypeSym{
 		name: 'rune'
 		kind: .rune
 	}) or { ic_error(err.msg()) }
