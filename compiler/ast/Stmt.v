@@ -18,6 +18,7 @@ pub fn empty_stmt(pos FilePos) Stmt {
 pub struct ExprStmt {
 pub:
 	tags Tags
+pub mut:
 	expr Expr
 }
 

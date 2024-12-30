@@ -91,8 +91,10 @@ fn (mut sema Sema) stmt(mut stmt ast.Stmt) {
 
 fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 	old_scope := sema.scope
+	old_sym := sema.sym
 	defer {
 		sema.scope = old_scope
+		sema.sym = old_sym
 	}
 
 	if sema.first_pass {
@@ -101,6 +103,7 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 			args: stmt.args
 			node: unsafe { stmt }
 		}
+		sema.sym = stmt.sym
 		stmt.scope = ast.Scope.new(sema.scope, ?ast.Symbol(stmt.sym))
 		sema.scope.add_local_symbol(stmt.sym) or { context.error(err.msg(), stmt.name_pos) }
 		sema.scope = stmt.scope
@@ -123,25 +126,56 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 }
 
 fn (mut sema Sema) expr_stmt(mut stmt ast.ExprStmt) {
-	sema.expr(stmt.expr)
+	sema.expr(mut stmt.expr)
 }
 
 fn (mut sema Sema) while_stmt(mut stmt ast.WhileStmt) {
 	if stmt.init_stmt != none {
 		sema.let_stmt(mut stmt.init_stmt)
 	}
-	sema.expr(stmt.cond)
+	sema.expr(mut stmt.cond)
 	if stmt.continue_expr != none {
-		sema.expr(stmt.continue_expr)
+		sema.expr(mut stmt.continue_expr)
 	}
 	sema.stmts(mut stmt.stmts)
 }
 
 fn (mut sema Sema) let_stmt(mut stmt ast.LetStmt) {
+	if sema.first_pass {
+		for var in stmt.lefts {
+			if var.is_local {
+				// local variables
+				sema.scope.add_symbol(var) or {
+					context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
+				}
+			} else {
+				// variables declared at module scope
+				sema.scope.add_local_symbol(var) or {
+					context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
+				}
+			}
+		}
+	}
 }
 
 fn (mut sema Sema) defer_stmt(mut stmt ast.DeferStmt) {
 	sema.stmts(mut stmt.stmts)
 }
 
-fn (mut sema Sema) expr(expr ast.Expr) {}
+fn (mut sema Sema) expr(mut expr ast.Expr) {
+	match mut expr {
+		ast.BlockExpr {
+			sema.block_expr(mut expr)
+		}
+		else {}
+	}
+}
+
+fn (mut sema Sema) block_expr(mut expr ast.BlockExpr) {
+	old_scope := sema.scope
+	defer {
+		sema.scope = old_scope
+	}
+	sema.scope = ast.Scope.new(sema.scope, sema.sym)
+	sema.stmts(mut expr.stmts)
+}

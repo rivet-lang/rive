@@ -188,6 +188,7 @@ fn (mut p Parser) parse_let_stmt(is_pub bool) ast.LetStmt {
 	p.expect(.kw_let)
 	mut lefts := []ast.Variable{}
 	for {
+		mut left_pos := p.tok.pos
 		is_mut := p.accept(.kw_mut)
 		name := p.parse_ident()
 		type := if p.accept(.colon) {
@@ -195,12 +196,14 @@ fn (mut p Parser) parse_let_stmt(is_pub bool) ast.LetStmt {
 		} else {
 			p.ctx.void_type
 		}
+		left_pos += p.prev_tok.pos
 		lefts << ast.Variable{
 			name:     name
 			is_local: p.inside_local_scope
 			is_pub:   is_pub
 			is_mut:   is_mut
 			type:     type
+			pos:      left_pos
 		}
 		if !p.accept(.comma) || p.should_abort() {
 			break

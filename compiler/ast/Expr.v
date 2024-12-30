@@ -101,10 +101,11 @@ pub:
 }
 
 pub struct BlockExpr {
-pub:
+pub mut:
 	stmts []Stmt
 	expr  ?Expr
-	pos   FilePos
+pub:
+	pos FilePos
 }
 
 pub struct IfExpr {
