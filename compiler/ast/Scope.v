@@ -31,23 +31,18 @@ pub fn (sc &Scope) derive() &Scope {
 	}
 }
 
-pub fn (mut sc Scope) add_symbol_with_lookup(sym Symbol) ! {
-	if other := sc.lookup(sym.name) {
-		m := if other is Variable && other.is_arg {
-			'${sym.type_of()} `${sym.name}` has the same name as an argument'
-		} else if other.type_of() == sym.type_of() {
-			'duplicate ${sym.type_of()} `${sym.name}`'
-		} else {
-			'another symbol exists with the same name as `${sym.name}`'
-		}
-		return error(m)
-	}
-	sc.syms << sym
+@[params]
+pub struct AddSymbolParams {
+pub:
+	lookup bool
 }
 
-pub fn (mut sc Scope) add_symbol(sym Symbol) ! {
-	if other := sc.find(sym.name) {
-		m := if other.type_of() == sym.type_of() {
+pub fn (mut sc Scope) add_symbol(sym Symbol, params AddSymbolParams) ! {
+	func := if params.lookup { sc.lookup } else { sc.find }
+	if other := func(sym.name) {
+		m := if (other is Variable && other.is_arg) && (sym is Variable && !sym.is_arg) {
+			'${sym.type_of()} `${sym.name}` has the same name as an argument'
+		} else if other.type_of() == sym.type_of() {
 			'duplicate ${sym.type_of()} `${sym.name}`'
 		} else {
 			'another symbol exists with the same name as `${sym.name}`'

@@ -145,16 +145,8 @@ fn (mut sema Sema) while_stmt(mut stmt ast.WhileStmt) {
 fn (mut sema Sema) let_stmt(mut stmt ast.LetStmt) {
 	if sema.first_pass {
 		for var in stmt.lefts {
-			if var.is_local {
-				// local variables
-				sema.scope.add_symbol_with_lookup(var) or {
-					context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
-				}
-			} else {
-				// variables declared at module scope
-				sema.scope.add_symbol(var) or {
-					context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
-				}
+			sema.scope.add_symbol(var, lookup: var.is_local) or {
+				context.error(err.msg(), var.pos, context.note('inside ${sema.sym.type_of()} `${sema.sym.name}`'))
 			}
 		}
 	}
