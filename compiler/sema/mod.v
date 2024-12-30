@@ -112,6 +112,8 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 				name:     arg.name
 				is_local: true
 				is_arg:   true
+				is_mut:   arg.is_mut
+				is_ref:   arg.is_ref
 				type:     arg.type
 			}) or {
 				context.error(err.msg(), arg.pos, context.note('inside function `${stmt.name}`'))

@@ -151,6 +151,8 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 	if !p.accept(.rparen) {
 		for {
 			mut arg_pos := p.tok.pos
+			arg_is_ref := p.accept(.amp)
+			arg_is_mut := p.accept(.kw_mut)
 			arg_name := p.parse_ident()
 			arg_name_pos := p.prev_tok.pos
 			p.expect(.colon)
@@ -160,7 +162,7 @@ fn (mut p Parser) parse_fn_stmt(is_pub bool) ast.FnStmt {
 				arg_default_expr = p.parse_expr()
 			}
 			arg_pos += p.prev_tok.pos
-			args << ast.FnArg{arg_name, arg_name_pos, arg_type, arg_default_expr, arg_pos}
+			args << ast.FnArg{arg_name, arg_name_pos, arg_type, arg_default_expr, arg_is_mut, arg_is_ref, arg_pos}
 			if !p.accept(.comma) || p.should_abort() {
 				break
 			}
