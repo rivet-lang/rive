@@ -5,22 +5,20 @@ module ast
 
 pub type Stmt = EmptyStmt | FnStmt | ExprStmt | LetStmt | WhileStmt | DeferStmt
 
-pub type EmptyStmt = u8
+pub struct EmptyStmt {
+pub:
+	pos FilePos
+}
 
-pub const empty_stmt = Stmt(EmptyStmt(0))
+@[inline]
+pub fn empty_stmt(pos FilePos) Stmt {
+	return EmptyStmt{pos}
+}
 
 pub struct ExprStmt {
 pub:
 	tags Tags
 	expr Expr
-}
-
-pub struct LetStmt {
-pub:
-	tags   Tags
-	lefts  []Variable
-	right  Expr
-	is_pub bool
 }
 
 pub struct FnStmt {
@@ -48,11 +46,20 @@ pub:
 
 pub struct WhileStmt {
 pub:
-	tags          Tags
+	tags Tags
+pub mut:
 	init_stmt     ?LetStmt
 	cond          Expr
 	continue_expr ?Expr
 	stmts         []Stmt
+}
+
+pub struct LetStmt {
+pub:
+	tags   Tags
+	lefts  []Variable
+	right  Expr
+	is_pub bool
 }
 
 pub enum DeferMode {
@@ -63,7 +70,8 @@ pub enum DeferMode {
 
 pub struct DeferStmt {
 pub:
-	tags  Tags
-	mode  DeferMode
+	tags Tags
+	mode DeferMode
+pub mut:
 	stmts []Stmt
 }

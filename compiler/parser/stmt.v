@@ -72,7 +72,7 @@ fn (mut p Parser) parse_simple_block() ([]ast.Stmt, ?ast.Expr) {
 
 fn (mut p Parser) parse_stmt() ast.Stmt {
 	if p.should_abort() {
-		return ast.empty_stmt
+		return ast.empty_stmt(p.tok.pos)
 	}
 
 	mut old_expect_semicolon := p.expect_semicolon
@@ -86,7 +86,7 @@ fn (mut p Parser) parse_stmt() ast.Stmt {
 
 	// module stmts: fns, consts, vars, etc.
 	is_pub := !p.inside_local_scope && p.accept(.kw_pub)
-	mut stmt := ast.empty_stmt
+	mut stmt := ast.empty_stmt(p.tok.pos)
 	match p.tok.kind {
 		.kw_fn {
 			stmt = p.parse_fn_stmt(is_pub)

@@ -30,11 +30,11 @@ pub fn (mut sema Sema) analyze(ctx &context.CContext) {
 
 fn (mut sema Sema) check_file(mut file ast.File) {
 	sema.file = file
-
 	sema.sym = ast.TypeSym{
 		name: sema.file.mod_name
 		kind: .struct
 	}
+
 	sema.ctx.universe.add_local_symbol(sema.sym) or {
 		context.ic_error('cannot load module `${file.mod_name}`, there is another symbol with the same name')
 	}
@@ -71,7 +71,21 @@ fn (mut sema Sema) stmt(mut stmt ast.Stmt) {
 		ast.FnStmt {
 			sema.fn_stmt(mut stmt)
 		}
-		else {}
+		ast.ExprStmt {
+			sema.expr_stmt(mut stmt)
+		}
+		ast.WhileStmt {
+			sema.while_stmt(mut stmt)
+		}
+		ast.LetStmt {
+			sema.let_stmt(mut stmt)
+		}
+		ast.DeferStmt {
+			sema.defer_stmt(mut stmt)
+		}
+		ast.EmptyStmt {
+			context.error('empty statement detected', stmt.pos)
+		}
 	}
 }
 
@@ -107,3 +121,27 @@ fn (mut sema Sema) fn_stmt(mut stmt ast.FnStmt) {
 	sema.scope = stmt.scope
 	sema.stmts(mut stmt.stmts)
 }
+
+fn (mut sema Sema) expr_stmt(mut stmt ast.ExprStmt) {
+	sema.expr(stmt.expr)
+}
+
+fn (mut sema Sema) while_stmt(mut stmt ast.WhileStmt) {
+	if stmt.init_stmt != none {
+		sema.let_stmt(mut stmt.init_stmt)
+	}
+	sema.expr(stmt.cond)
+	if stmt.continue_expr != none {
+		sema.expr(stmt.continue_expr)
+	}
+	sema.stmts(mut stmt.stmts)
+}
+
+fn (mut sema Sema) let_stmt(mut stmt ast.LetStmt) {
+}
+
+fn (mut sema Sema) defer_stmt(mut stmt ast.DeferStmt) {
+	sema.stmts(mut stmt.stmts)
+}
+
+fn (mut sema Sema) expr(expr ast.Expr) {}
