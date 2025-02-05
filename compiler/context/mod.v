@@ -9,23 +9,25 @@ const stack = []&CContext{}
 
 pub fn push(ctx &CContext) {
 	unsafe {
-		stack << ctx
+		mut s := &stack
+		s << ctx
 	}
 }
 
 pub fn get() &CContext {
 	if stack == [] {
-		panic('empty CContext stack')
+		panic('context.get: empty CContext stack')
 	}
 	return stack.last()
 }
 
 pub fn pop() {
 	if stack == [] {
-		panic('empty CContext stack')
+		panic('context.pop: empty CContext stack')
 	}
 	unsafe {
-		_ = stack.pop()
+		mut s := &stack
+		_ = s.pop()
 	}
 }
 
